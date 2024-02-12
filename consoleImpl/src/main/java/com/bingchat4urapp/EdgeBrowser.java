@@ -31,6 +31,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.TimeoutException;
+import java.nio.file.Files;
 
 // Fake edge browser that use JCEF
 public class EdgeBrowser extends JFrame
@@ -165,8 +166,12 @@ public class EdgeBrowser extends JFrame
     // method that trying to load site and waits for complete document ready state
     // it return false if it could not load site
     // true if everything is ok
-    public boolean LoadAndWait(String url, java.time.Duration TimeOut, int AdditionalWait) throws InterruptedException{
+    public boolean LoadAndWaitForComplete(String url, java.time.Duration TimeOut, int AdditionalWait){
         _driver.get(url);
+        return WaitForComplete(TimeOut, AdditionalWait);
+    }
+
+    public boolean WaitForComplete(java.time.Duration TimeOut, int AdditionalWait){
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
             wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
@@ -178,6 +183,38 @@ public class EdgeBrowser extends JFrame
         catch (org.openqa.selenium.TimeoutException e){
             print("Failed to load site");
             return false;
+        }
+        catch (InterruptedException e){
+            print("Failed to sleep");
+            return false;
+        }
+    }
+
+    public boolean WaitForElement(java.time.Duration TimeOut, By Element){
+        WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
+        try{
+            wait.until(ExpectedConditions.elementToBeClickable(Element));
+            return true;
+        }
+        catch (org.openqa.selenium.TimeoutException e){
+            print("Can't find element");
+            return false;
+        }
+    }
+
+    // method that get html code of page by JS
+    public String GetHtml(){
+        JavascriptExecutor js = (JavascriptExecutor)_driver;
+        String pageContent = (String) js.executeScript("return document.documentElement.outerHTML;");
+        return pageContent;
+    }
+
+    public void GetHtml(String FilePath){
+        String html = GetHtml();
+        try {
+            Files.write(Paths.get(FilePath), html.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -222,6 +259,11 @@ public class EdgeBrowser extends JFrame
 
     public void Exit(){
         _driver.quit();
+        try {
+            Thread.sleep(3000); 
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         CefApp.getInstance().dispose();
         // for some reason previous line of code do not stop CEF when it use OSR mode 
         if (isWindows){
