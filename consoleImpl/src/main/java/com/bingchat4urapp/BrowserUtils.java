@@ -24,19 +24,31 @@ public class BrowserUtils {
     }
 
     // method that compare two images
-    public static Boolean CompareImages(BufferedImage CurrentImage, ImageData ToCompare){
-        BufferedImage CroppedImage = CurrentImage.getSubimage(ToCompare.position.getX(), ToCompare.position.getY(), ToCompare.position.getWidth(), ToCompare.position.getHeight());
+    public static Boolean CompareImagesAlg(BufferedImage FirstImage, BufferedImage SecondImage, double tolerance, double PercentOfMath){
+
+        if (FirstImage.getWidth()!=SecondImage.getWidth() || FirstImage.getHeight()!=SecondImage.getHeight()) return false;
         Double CountGood = 0.0;
-        for (int i=0; i<CroppedImage.getHeight(); i++){
-            for (int j=0; j<CroppedImage.getWidth(); j++){
+        for (int i=0; i<FirstImage.getHeight(); i++){
+            for (int j=0; j<FirstImage.getWidth(); j++){
                 // j - it's x cord and i - it's y cord
-                if (CroppedImage.getRGB(j, i) == ToCompare.image.getRGB(j, i)){
-                    CountGood+=1.0;
+                Color color1 = new Color(FirstImage.getRGB(j, i));
+                Color color2 = new Color(SecondImage.getRGB(j, i));
+                if (Math.abs(color1.getRed() - color2.getRed()) <= tolerance &&
+                    Math.abs(color1.getGreen() - color2.getGreen()) <= tolerance &&
+                    Math.abs(color1.getBlue() - color2.getBlue()) <= tolerance) {
+                    CountGood += 1.0;
                 }
             }
         }
-        print("Good = "+CountGood+" Total = "+ CroppedImage.getWidth()*CroppedImage.getHeight());
-        Boolean result = (CountGood/(CroppedImage.getWidth()*CroppedImage.getHeight()))*100>90;
+        print("Good = "+CountGood+" Total = "+ FirstImage.getWidth()*FirstImage.getHeight());
+        return (CountGood/(FirstImage.getWidth()*FirstImage.getHeight()))*100.0>=PercentOfMath;
+    }
+
+
+    public static Boolean CompareImages(BufferedImage CurrentImage, ImageData ToCompare){
+        BufferedImage CroppedImage = CurrentImage.getSubimage(ToCompare.position.getX(), ToCompare.position.getY(), ToCompare.position.getWidth(), ToCompare.position.getHeight());
+        Boolean result = CompareImagesAlg(CroppedImage, ToCompare.image, 10, 90.0);
+
         if (!result){
             try {
                 ImageIO.write(CroppedImage, "png", new File("failedCrop.png"));
@@ -58,6 +70,6 @@ public class BrowserUtils {
     }
     
     private static void print(String text){
-        System.out.println("[Browser utils]" + text);
+        System.out.println("[Browser utils] " + text);
     }
 }

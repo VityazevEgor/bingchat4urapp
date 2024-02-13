@@ -29,7 +29,8 @@ public class App
             chat._browser.TakeScreenshot("error.png");
         }
         if (result){
-            chat.AskBing("kek");
+            String answer = chat.AskBing("kek", 120, 0);
+            System.out.println("Bing said = "+answer);
         }
         System.out.println(result);
         chat.Exit();
