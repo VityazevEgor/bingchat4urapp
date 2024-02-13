@@ -17,20 +17,17 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import me.friwi.jcefmaven.CefAppBuilder;
 import me.friwi.jcefmaven.MavenCefAppHandlerAdapter;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-
 import java.io.*;
 import java.nio.file.Paths;
-import java.time.Duration;
-import java.util.concurrent.TimeoutException;
 import java.nio.file.Files;
 
 // Fake edge browser that use JCEF
