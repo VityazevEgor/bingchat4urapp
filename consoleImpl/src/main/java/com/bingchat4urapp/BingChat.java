@@ -12,45 +12,57 @@ import java.io.IOException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.interactions.Actions;
 
+import com.bingchat4urapp.BrowserUtils.ImageData;
 import com.jogamp.nativewindow.util.Rectangle;
 
 public class BingChat {
     public EdgeBrowser _browser;
     private HashMap<String, ImageData> _images = new HashMap<>();
 
-    public class ImageData{
-        public BufferedImage image;
-        public Rectangle position;
-        
-        public ImageData (BufferedImage _image, Rectangle _position){
-            image = _image;
-            position = _position;
-        }
-    }
+    
 
     public BingChat(String proxy, int width, int height, int DebugPort){
-        _browser = new EdgeBrowser(proxy, width, height, DebugPort);
-
         // load all images and their positions in HashMap
         try{
             _images.put("meAnything", new ImageData(
-                ImageIO.read(new File(getClass().getClassLoader().getResource("images/meAnything.png").getFile())), 
-                new Rectangle(229, 625, 111, 25)
+                ImageIO.read(getClass().getClassLoader().getResourceAsStream("images/meAnything.png")), 
+                new Rectangle(136, 625, 109, 24)
+            ));
+            _images.put("smallArrow", new ImageData(
+                ImageIO.read(getClass().getClassLoader().getResourceAsStream("images/smallArrow.png")), 
+                new Rectangle(832, 665, 33, 28)
             ));
         }
         catch (IOException e){
             print("I can't load images");
         }
+
+        _browser = new EdgeBrowser(proxy, width, height, DebugPort);
     }
 
     public Boolean Auth(String login, String password){
         Duration timeOutTime = java.time.Duration.ofSeconds(5);
         if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
         print("Loaded bing");
-        if (!_browser.WaitForElement(timeOutTime, By.id("id_s"))) return false;
+
+        if (!_browser.WaitForElement(timeOutTime, By.id("id_s"))){
+            // sometimes there is another button for login
+            if (_browser.WaitForElement(java.time.Duration.ofSeconds(2), By.className("id_text_signin"))){
+                print("Found another way to login");
+                _browser._driver.findElement(By.className("id_text_signin")).click();
+            }
+            else{
+                print("I can't even find second button");
+                return false;
+            }
+        }
+        else{
+            // if we found a first way to log in
+            _browser._driver.findElement(By.id("id_s")).click();
+        }
         print("Found login button");
         
-        _browser._driver.findElement(By.id("id_s")).click();
+        
         if (!_browser.WaitForComplete(timeOutTime, 0)) return false;
         print("Loaded login page");
         if (!_browser.WaitForElement(timeOutTime, By.name("loginfmt"))) return false;
@@ -78,10 +90,14 @@ public class BingChat {
     }
 
     public String AskBing(String promt) throws InterruptedException{
-        if (!_browser.LoadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5), 7000)) return "";
-        new Actions(_browser._driver).moveToLocation(267, 642).click().sendKeys("How are you?\n").perform();
-        print("I sent promt");
-        Thread.sleep(5000);
+        if (!_browser.LoadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return "";
+        //new Actions(_browser._driver).moveToLocation(267, 642).click().sendKeys("How are you?\n").perform();
+        //print("I sent promt");
+        //Thread.sleep(5000);
+        if (!_browser.WaitForImage(java.time.Duration.ofSeconds(10), _images.get("smallArrow"))){
+            print("Can't find image");
+        }
+        print("Loaded chat");
         _browser.TakeScreenshot("bingchat.png");
         return "";
     }

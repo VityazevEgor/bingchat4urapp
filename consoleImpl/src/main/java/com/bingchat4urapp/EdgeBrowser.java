@@ -17,8 +17,11 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.bingchat4urapp.BrowserUtils.ImageData;
 
 import me.friwi.jcefmaven.CefAppBuilder;
 import me.friwi.jcefmaven.MavenCefAppHandlerAdapter;
@@ -191,6 +194,26 @@ public class EdgeBrowser extends JFrame
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
             wait.until(ExpectedConditions.elementToBeClickable(Element));
+            return true;
+        }
+        catch (org.openqa.selenium.TimeoutException e){
+            print("Can't find element");
+            GetHtml("cantfind.html");
+            TakeScreenshot("cantfind.png");
+            return false;
+        }
+    }
+
+    // method that waits for image to appear in specific place
+    public boolean WaitForImage(java.time.Duration TimeOut, ImageData ImData){
+        WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
+        try{
+            wait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver arg0) {
+                    return BrowserUtils.CompareImages(TakeScreenshot(), ImData);
+                }
+            });
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){
