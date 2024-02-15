@@ -18,6 +18,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
+import org.openqa.selenium.SearchContext;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
 import com.bingchat4urapp.BrowserUtils.ImageData;
@@ -93,6 +95,52 @@ public class BingChat {
         return true;
     }
 
+    public Boolean CreateNewChat(){
+        Duration timeOutTime = java.time.Duration.ofSeconds(5);
+        if (!_browser.LoadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return false;
+
+        if (!_browser.WaitForElement(timeOutTime, By.cssSelector(".cib-serp-main"))){
+            print("Can't find main");
+            return false;
+        }
+
+        SearchContext main = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot();
+        if (!_browser.WaitForElement(timeOutTime, By.cssSelector("#cib-conversation-main"), main)){
+            print("Can't find conversation main");
+            return false;
+        }
+
+        SearchContext ConversationMain = main.findElement(By.cssSelector("#cib-conversation-main")).getShadowRoot();
+        if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-welcome-container"), ConversationMain)){
+            print("Can't find welcome container");
+            return false;
+        }
+
+        SearchContext WelcomeContainer = ConversationMain.findElement(By.cssSelector("cib-welcome-container")).getShadowRoot();
+        if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-tone-selector"), WelcomeContainer)){
+            print("Can't find tone selector");
+            return false;
+        }
+
+        SearchContext ToneSelector = WelcomeContainer.findElement(By.cssSelector("cib-tone-selector"));
+        if (!_browser.WaitForElement(timeOutTime, By.cssSelector(".tone-precise"), ToneSelector)){
+            print("Can't find tone tone-precise option");
+            return false;
+        }
+        
+        WebElement MorePrecise = ToneSelector.findElement(By.cssSelector(".tone-precise"));
+        new Actions(_browser._driver).moveToElement(MorePrecise).click().build().perform();
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        _browser.TakeScreenshot("SelectedMode.png");
+        return true;
+    }
+
     // TimeOutForAnswer in seconds
     public String AskBing(String promt, long TimeOutForAnswer, long TimeForAnwerShouldChange) throws InterruptedException{
         if (!_browser.LoadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return "";
@@ -108,25 +156,24 @@ public class BingChat {
 
         // time when we started waiting for answer from bing
         Instant TimeStart = Instant.now();
-        TextIsNotChanging = false;
 
-        // Thread that checks if bing is typing (I do not know if i need to implenet this method)
-        Thread DetectChanges = new Thread(()->{
+        // Experiment code
+        WebElement StopTypingButton = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
+            .findElement(By.cssSelector("#cib-action-bar-main")).getShadowRoot()
+            .findElement(By.cssSelector("cib-typing-indicator")).getShadowRoot()
+            .findElement(By.cssSelector("#stop-responding-button"));
 
-            BufferedImage RememeberImage = null;
-            synchronized(this){
-                RememeberImage = _browser.TakeScreenshot();
-            }
-            while (!Thread.interrupted()) {
-                try{
-                    Thread.sleep(TimeForAnwerShouldChange);
-                }
-                catch (InterruptedException e){}
-            }
-            // TODO implement method that detects if bingChat is not writing text
-        });
-        while (!ExtractBingAnswers(_browser.GetHtml()).contains("Received message.")) {
+        // while (!ExtractBingAnswers(_browser.GetHtml()).contains("Received message.")) {
 
+            // if (Duration.between(TimeStart, Instant.now()).toSeconds()>=TimeOutForAnswer){
+            //     print("Could not get answer in time");
+            //     break;
+            // }
+        //     Thread.sleep(500);
+
+        // }
+
+        while (!"true".equalsIgnoreCase(StopTypingButton.getAttribute("disabled"))) {
             if (Duration.between(TimeStart, Instant.now()).toSeconds()>=TimeOutForAnswer){
                 print("Could not get answer in time");
                 break;

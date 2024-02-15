@@ -13,10 +13,12 @@ import org.cef.browser.CefMessageRouter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.NoSuchDriverException;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -194,6 +196,21 @@ public class EdgeBrowser extends JFrame
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
             wait.until(ExpectedConditions.elementToBeClickable(Element));
+            return true;
+        }
+        catch (org.openqa.selenium.TimeoutException e){
+            print("Can't find element");
+            GetHtml("cantfind.html");
+            TakeScreenshot("cantfind.png");
+            return false;
+        }
+    }
+
+    // TODO recode this method so it would be able to ingore expection like ElementNotFound
+    public boolean WaitForElement(java.time.Duration TimeOut, By Element, SearchContext context){
+        WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
+        try{
+            wait.until(ExpectedConditions.visibilityOf(context.findElement(Element)));
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){
