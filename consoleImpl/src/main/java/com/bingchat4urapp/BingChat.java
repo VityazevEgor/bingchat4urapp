@@ -11,7 +11,9 @@ import javax.imageio.ImageIO;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -95,64 +97,82 @@ public class BingChat {
         return true;
     }
 
-    public Boolean CreateNewChat(){
+    // method that opens chat with bing and select specific conversation mode
+    public Boolean CreateNewChat(int ModeType){
         Duration timeOutTime = java.time.Duration.ofSeconds(5);
         if (!_browser.LoadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return false;
+        print("Loaded chat");
 
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector(".cib-serp-main"))){
             print("Can't find main");
             return false;
         }
+        print("Found main block");
 
         SearchContext main = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot();
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector("#cib-conversation-main"), main)){
             print("Can't find conversation main");
             return false;
         }
+        print("Found conversation block");
 
         SearchContext ConversationMain = main.findElement(By.cssSelector("#cib-conversation-main")).getShadowRoot();
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-welcome-container"), ConversationMain)){
             print("Can't find welcome container");
             return false;
         }
+        print("Found welcome container");
 
         SearchContext WelcomeContainer = ConversationMain.findElement(By.cssSelector("cib-welcome-container")).getShadowRoot();
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-tone-selector"), WelcomeContainer)){
             print("Can't find tone selector");
             return false;
         }
+        print("Found tone selector block");
 
-        SearchContext ToneSelector = WelcomeContainer.findElement(By.cssSelector("cib-tone-selector"));
+        SearchContext ToneSelector = WelcomeContainer.findElement(By.cssSelector("cib-tone-selector")).getShadowRoot();
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector(".tone-precise"), ToneSelector)){
-            print("Can't find tone tone-precise option");
+            print("Can't find tone-precise option");
             return false;
         }
+        print("Found options for conversation type");
         
         WebElement MorePrecise = ToneSelector.findElement(By.cssSelector(".tone-precise"));
-        new Actions(_browser._driver).moveToElement(MorePrecise).click().build().perform();
+        WebElement Balanced = ToneSelector.findElement(By.cssSelector(".tone-balanced"));
+        WebElement Creative = ToneSelector.findElement(By.cssSelector(".tone-creative"));
+
+        if (ModeType == 1){
+            new Actions(_browser._driver).moveToElement(Creative).click().build().perform();    
+        }
+        else if (ModeType == 2){
+            new Actions(_browser._driver).moveToElement(Balanced).click().build().perform();
+        }
+        else{
+            new Actions(_browser._driver).moveToElement(MorePrecise).click().build().perform();
+        }
+        print("Clicked on option");
 
         try {
+
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            print("For some reason i can not stop thread");
         }
-        _browser.TakeScreenshot("SelectedMode.png");
+        //_browser.TakeScreenshot("SelectedMode.png");
         return true;
     }
 
-    // TimeOutForAnswer in seconds
-    public String AskBing(String promt, long TimeOutForAnswer, long TimeForAnwerShouldChange) throws InterruptedException{
-        if (!_browser.LoadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return "";
+    // TimeOutForAnswer in seconds. This method must be called only after CreateNewChat
+    public String AskBing(String promt, long TimeOutForAnswer) throws InterruptedException{
+
         if (!_browser.WaitForImage(java.time.Duration.ofSeconds(10), _images.get("smallArrow"))){
             print("Can't find image");
-            return "";
+            return null;
         }
         promt = promt.replace("\n", "");
-        print("Loaded chat");
-        _browser.TakeScreenshot("loadedchat.png");
 
         new Actions(_browser._driver).moveToLocation(135, 639).click().sendKeys(promt+"\n").perform();
+        print("I sent promt");
 
         // time when we started waiting for answer from bing
         Instant TimeStart = Instant.now();
@@ -163,24 +183,15 @@ public class BingChat {
             .findElement(By.cssSelector("cib-typing-indicator")).getShadowRoot()
             .findElement(By.cssSelector("#stop-responding-button"));
 
-        // while (!ExtractBingAnswers(_browser.GetHtml()).contains("Received message.")) {
-
-            // if (Duration.between(TimeStart, Instant.now()).toSeconds()>=TimeOutForAnswer){
-            //     print("Could not get answer in time");
-            //     break;
-            // }
-        //     Thread.sleep(500);
-
-        // }
-
         while (!"true".equalsIgnoreCase(StopTypingButton.getAttribute("disabled"))) {
             if (Duration.between(TimeStart, Instant.now()).toSeconds()>=TimeOutForAnswer){
                 print("Could not get answer in time");
-                break;
+                _browser.TakeScreenshot("cantGetAnswer.png");
+                return null;
             }
             Thread.sleep(500);
         }
-        _browser.TakeScreenshot("gotAnswer.png");
+
         return ExtractBingAnswers(_browser.GetHtml()).replace("Received message.", "");
     }
 
@@ -207,6 +218,7 @@ public class BingChat {
     public void Exit(){
         _browser.Exit();
     }
+
     private void print(String text){
         System.out.println("[BingChat] "+text);
     }

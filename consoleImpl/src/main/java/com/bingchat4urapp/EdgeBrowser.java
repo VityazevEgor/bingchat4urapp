@@ -210,7 +210,18 @@ public class EdgeBrowser extends JFrame
     public boolean WaitForElement(java.time.Duration TimeOut, By Element, SearchContext context){
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
-            wait.until(ExpectedConditions.visibilityOf(context.findElement(Element)));
+            //wait.until(ExpectedConditions.visibilityOf(context.findElement(Element)));
+            wait.until(new ExpectedCondition<Boolean>() {
+               @Override
+               public Boolean apply(WebDriver driver){
+                    try{
+                        return context.findElement(Element).isDisplayed();
+                    }
+                    catch (Exception e){
+                        return false;
+                    }
+               } 
+            });
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){

@@ -31,7 +31,9 @@ public class App
         if (result){
             //String answer = chat.AskBing("kek", 120, 0);
             //System.out.println("Bing said = "+answer);
-            System.out.println(chat.CreateNewChat());
+            System.out.println(chat.CreateNewChat(1));
+            System.out.println(chat.AskBing("How are you?", 80));
+            System.out.println(chat.AskBing("What i said to u in previuos message?", 80));
         }
         System.out.println(result);
         chat.Exit();
