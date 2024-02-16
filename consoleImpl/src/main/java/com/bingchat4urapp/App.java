@@ -36,6 +36,7 @@ public class App
             System.out.println(chat.AskBing("What i said to u in previuos message?", 80));
         }
         System.out.println(result);
+        Thread.sleep(1000);
         chat.Exit();
         System.out.println("Called exit");
         System.exit(0);
