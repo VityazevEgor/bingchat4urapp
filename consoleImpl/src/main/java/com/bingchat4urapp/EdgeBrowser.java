@@ -70,7 +70,7 @@ public class EdgeBrowser extends JFrame
         builder.getCefSettings().remote_debugging_port = DebugPort;
         builder.getCefSettings().command_line_args_disabled = false;
 
-        if (!proxy.trim().isEmpty()){
+        if (proxy != null && !proxy.trim().isEmpty()){
             builder.addJcefArgs("--remote-allow-origins=*", "--proxy-server=socks5://"+proxy);
         }
         else{

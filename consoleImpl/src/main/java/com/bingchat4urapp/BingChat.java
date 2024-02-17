@@ -153,7 +153,6 @@ public class BingChat {
         print("Clicked on option");
 
         try {
-
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             print("For some reason i can not stop thread");
@@ -163,7 +162,7 @@ public class BingChat {
     }
 
     // TimeOutForAnswer in seconds. This method must be called only after CreateNewChat
-    public String AskBing(String promt, long TimeOutForAnswer) throws InterruptedException{
+    public String AskBing(String promt, long TimeOutForAnswer){
 
         if (!_browser.WaitForImage(java.time.Duration.ofSeconds(10), _images.get("smallArrow"))){
             print("Can't find image");
@@ -189,7 +188,13 @@ public class BingChat {
                 _browser.TakeScreenshot("cantGetAnswer.png");
                 return null;
             }
-            Thread.sleep(500);
+
+            try{
+                Thread.sleep(500);
+            }
+            catch (Exception e){
+                print("Can't stop thread for some reason");
+            }
         }
 
         return ExtractBingAnswers(_browser.GetHtml()).replace("Received message.", "");
@@ -220,6 +225,8 @@ public class BingChat {
     }
 
     private void print(String text){
-        System.out.println("[BingChat] "+text);
-    }
+        String purple = "\033[0;35m"; // ANSI код для темно-фиолетового цвета
+        String reset = "\033[0m"; // ANSI код для сброса цвета
+        System.out.println(purple + "[BingChat] " + text + reset);
+    }    
 }

@@ -3,7 +3,6 @@ package com.bingchat4urapp_server.bingchat4urapp_server.Controlers;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.config.Task;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,34 +30,68 @@ public class MainController {
         }
 
         TaskModel task = new TaskModel();
-        task.Type = 1;
+        task.type = 1;
         try{
-            task.Data = _mapper.writeValueAsString(body.toSingleValueMap());
+            task.data = _mapper.writeValueAsString(body.toSingleValueMap());
         }
         catch (Exception e){
-            System.err.println("Can't map for some reason");
+            System.out.println("Can't map for some reason");
             e.printStackTrace();
         }
 
-        if (task.Data != null){
+        if (task.data != null){
             _taskRepo.save(task);
-            return task.Id;
+            return task.id;
         }
         return null;
     }
 
     @PostMapping("/sendpromt")
     public Integer CreatPromtTask(@RequestBody MultiValueMap<String, String> body){
-        if (!body.containsKey("promt") || body.size()>1){
+        if (!body.containsKey("promt") || body.size()>2 || !body.containsKey("timeOutForAnswer") || !body.toSingleValueMap().get("timeOutForAnswer").matches("-?\\d+")){
             return null;
         }
 
         TaskModel task = new TaskModel();
-        task.Type = 2;
-        task.Data = body.toSingleValueMap().get("promt");
-        _taskRepo.save(task);
+        task.type = 2;
+        
+        try{
+            task.data = _mapper.writeValueAsString(body.toSingleValueMap());
+        }
+        catch (Exception e){
+            System.out.println("Can't map for some reason");
+            e.printStackTrace();
+        }
 
-        return task.Id;
+        if (task.data != null){
+            _taskRepo.save(task);
+            return task.id;
+        }
+
+        return null;
+    }
+
+    @PostMapping("/createchat")
+    public Integer CreatChat(@RequestBody MultiValueMap<String, String> body){
+        if (!body.containsKey("type") || body.size()>1 || !body.toSingleValueMap().get("type").matches("-?\\d+")){
+            return null;
+        }
+        TaskModel task = new TaskModel();
+        task.type = 3;
+
+        try{
+            task.data = _mapper.writeValueAsString(body.toSingleValueMap());
+        }
+        catch (Exception e){
+            System.out.println("Can't map for some reason");
+            e.printStackTrace();
+        }
+
+        if (task.data != null){
+            _taskRepo.save(task);
+            return task.id;
+        }
+        return null;
     }
 
     @GetMapping("/get")

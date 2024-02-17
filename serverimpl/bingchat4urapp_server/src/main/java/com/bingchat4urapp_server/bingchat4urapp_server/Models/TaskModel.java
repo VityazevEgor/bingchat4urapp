@@ -9,17 +9,17 @@ import jakarta.persistence.Id;
 public class TaskModel {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    public Integer Id;
+    public Integer id;
 
     // 1 - auth Bing. 2 - send promt to bing
-    public Integer Type;
+    public Integer type;
 
-    public String Data = null;
+    public String data = null;
 
-    public Boolean IsFinished = false;
+    public Boolean isFinished = false;
 
-    public Boolean GotError = false;
+    public Boolean gotError = false;
 
-    public String Result = null;
+    public String result = null;
 
 }
