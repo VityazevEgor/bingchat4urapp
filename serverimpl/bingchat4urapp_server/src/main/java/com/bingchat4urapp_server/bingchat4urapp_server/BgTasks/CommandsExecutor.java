@@ -27,10 +27,6 @@ public class CommandsExecutor {
     @PostConstruct
     public void Init(){
         if (_DoJob){
-            String proxy = "127.0.0.1:1080";
-            if (System.getProperty("os.name").contains("Windows")){
-                proxy = "127.0.0.1:8521";
-            }
             _chat = new BingChat(Shared.proxy, 1280, 720, 10431);
             print("Created BingChat object with proxy = " + Shared.proxy);
         }

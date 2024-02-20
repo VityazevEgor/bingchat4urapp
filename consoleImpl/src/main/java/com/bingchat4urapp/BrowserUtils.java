@@ -5,12 +5,22 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import net.lingala.zip4j.ZipFile;
 
 import javax.imageio.ImageIO;
 
 import com.jogamp.nativewindow.util.Rectangle;
 
 public class BrowserUtils {
+
+    public static Boolean Debug = false;
+
+    private static final String WinChromeDriverLink = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/win64/chromedriver-win64.zip";
+    private static final String LinuxChromeDriverLink = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/linux64/chromedriver-linux64.zip";
 
     public static class ImageData
     {
@@ -49,7 +59,7 @@ public class BrowserUtils {
         BufferedImage CroppedImage = CurrentImage.getSubimage(ToCompare.position.getX(), ToCompare.position.getY(), ToCompare.position.getWidth(), ToCompare.position.getHeight());
         Boolean result = CompareImagesAlg(CroppedImage, ToCompare.image, 10, 90.0);
 
-        if (!result){
+        if (!result && Debug){
             try {
                 ImageIO.write(CroppedImage, "png", new File("failedCrop.png"));
 
@@ -62,13 +72,56 @@ public class BrowserUtils {
                 // Save the original image with the red rectangle
                 ImageIO.write(CurrentImage, "png", new File("failedOriginal.png"));
             } catch (IOException e) {
-                // TODO Auto-generated catch block
+                print("Can't save debug data");
                 e.printStackTrace();
             }
         }
         return result;
     }
+
+    // download zip file with chrome driver and extract it
+    public static Boolean DownloadChromeDriver(){
+        Boolean isWindows = System.getProperty("os.name").contains("Windows");
+        String driverLink = isWindows ? WinChromeDriverLink : LinuxChromeDriverLink;
+        String ZipPath = Paths.get(System.getProperty("user.home"), "Documents", "chromedriver.zip").toString();
+
+        if (Files.exists(Paths.get(ZipPath))){
+            return true;
+        }
+
+        try{
+            InputStream in = new URL(driverLink).openStream();
+            Files.copy(in, Paths.get(ZipPath));
+            print("Downloaded zip file");
+
+            ZipFile zip = new ZipFile(ZipPath);
+            zip.extractAll(Paths.get(System.getProperty("user.home"), "Documents").toString());
+            zip.close();
+            print("Extracted zip file");
+        }
+        catch (Exception e){
+            print("Can't download driver");
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
     
+    public static String ExtractAuthLink(String str, String key) {
+        int i = str.indexOf(key);
+        if (i == -1) {
+            return "";
+        }
+        i += key.length();
+        int j = str.indexOf("\"", i);
+        if (j == -1) {
+            return str.substring(i);
+        }
+        return str.substring(i, j);
+    }
+
+
     private static void print(String text){
         System.out.println("[Browser utils] " + text);
     }

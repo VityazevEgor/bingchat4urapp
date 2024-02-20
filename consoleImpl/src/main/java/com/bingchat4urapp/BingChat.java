@@ -2,7 +2,6 @@ package com.bingchat4urapp;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,16 +9,15 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -30,10 +28,6 @@ import com.jogamp.nativewindow.util.Rectangle;
 public class BingChat {
     public EdgeBrowser _browser;
     private HashMap<String, ImageData> _images = new HashMap<>();
-
-    // fields for AskBing method
-    private boolean TextIsNotChanging = false;
-    private Rectangle PositionOfChat = new Rectangle(31, 243, 845, 307);
 
     public BingChat(String proxy, int width, int height, int DebugPort){
         // load all images and their positions in HashMap
@@ -54,6 +48,7 @@ public class BingChat {
         _browser = new EdgeBrowser(proxy, width, height, DebugPort);
     }
 
+
     // I need to fix it cuz there is sometime different types of auth
     public Boolean Auth(String login, String password){
         Duration timeOutTime = java.time.Duration.ofSeconds(5);
@@ -61,17 +56,15 @@ public class BingChat {
         print("Loaded bing");
 
         if (!_browser.WaitForElement(timeOutTime, By.id("id_s"))) return false;
-        if (_browser.WaitForElement(java.time.Duration.ofSeconds(2), By.id("id_accountItem"))){
+        _browser._driver.findElement(By.id("id_s")).click();
+        
+
+        if (_browser.WaitForElement(timeOutTime, By.cssSelector(".id_accountItem"))){
             print("Detected second type of auth");
-            _browser._driver.findElement(By.id("id_s")).click();
-            _browser._driver.findElement(By.id("id_accountItem")).click();
-        }
-        else{
-            print("Detected default auth");
-            _browser._driver.findElement(By.id("id_s")).click();
+            _browser._driver.findElement(By.cssSelector(".id_accountItem")).click();
         }
         
-        if (!_browser.WaitForComplete(timeOutTime, 0)) return false;
+        if (!_browser.WaitForComplete(timeOutTime, 4000)) return false;
         print("Loaded login page");
         if (!_browser.WaitForElement(timeOutTime, By.name("loginfmt"))) return false;
         _browser._driver.findElement(By.name("loginfmt")).sendKeys(login);
@@ -141,15 +134,37 @@ public class BingChat {
         WebElement Balanced = ToneSelector.findElement(By.cssSelector(".tone-balanced"));
         WebElement Creative = ToneSelector.findElement(By.cssSelector(".tone-creative"));
 
-        if (ModeType == 1){
-            new Actions(_browser._driver).moveToElement(Creative).click().build().perform();    
+        Instant start = Instant.now();
+        Boolean ElemtsOnTheCorrectPositions = false;
+        while (Duration.between(Instant.now(), start).getSeconds() <= timeOutTime.getSeconds()) {
+            if (CheckElemntPosition(Creative) && CheckElemntPosition(Balanced) && CheckElemntPosition(MorePrecise)){
+                ElemtsOnTheCorrectPositions = true;
+                break;
+            }
+            try{
+                Thread.sleep(500);
+            }
+            catch (InterruptedException e){}
         }
-        else if (ModeType == 2){
-            new Actions(_browser._driver).moveToElement(Balanced).click().build().perform();
+
+        if (!ElemtsOnTheCorrectPositions){
+            print("Could not load elemts to select chat mode");
+            return false;
         }
-        else{
-            new Actions(_browser._driver).moveToElement(MorePrecise).click().build().perform();
+
+        switch (ModeType) {
+            case 1:
+                new Actions(_browser._driver).moveToElement(Creative).click().build().perform();  
+                break;
+            
+            case 2:
+                new Actions(_browser._driver).moveToElement(Balanced).click().build().perform();
+                break;    
+            default:
+                new Actions(_browser._driver).moveToElement(MorePrecise).click().build().perform();
+                break;
         }
+
         print("Clicked on option");
 
         try {
@@ -159,6 +174,20 @@ public class BingChat {
         }
         //_browser.TakeScreenshot("SelectedMode.png");
         return true;
+    }
+
+    // method that checks if element position can be accesed by new Actions
+    private Boolean CheckElemntPosition(WebElement Element){
+        Point pos = Element.getLocation();
+        java.awt.Dimension BrowserSize = _browser.GetBrowserSize();
+
+        if (pos.getX()>=0 && pos.getX()<=BrowserSize.getWidth() && pos.getX()>=0 && pos.getX()<=BrowserSize.getHeight()){
+            return true;
+        }
+        else{
+            print("Elemet out of bounds");
+            return false;
+        }
     }
 
     // TimeOutForAnswer in seconds. This method must be called only after CreateNewChat
@@ -198,6 +227,22 @@ public class BingChat {
         }
 
         return ExtractBingAnswers(_browser.GetHtml()).replace("Received message.", "");
+    }
+
+    // method that change zoom, takescreen, reset zoom ans scroold page to the end
+    public BufferedImage TakeScreenOfAsnwer(String path){
+        JavascriptExecutor jsexec =  (JavascriptExecutor)_browser._driver;
+        jsexec.executeScript("document.body.style.zoom = '70%'");
+        BufferedImage result = null;
+        if (path != null){
+            result = _browser.TakeScreenshot(path);
+        }
+        else{
+            result = _browser.TakeScreenshot();
+        }
+        jsexec.executeScript("document.body.style.zoom = '100%'");
+        new Actions(_browser._driver).keyDown(Keys.CONTROL).sendKeys(Keys.END).keyUp(Keys.CONTROL).perform();
+        return result;
     }
 
     // method that gets raw text of bing answer

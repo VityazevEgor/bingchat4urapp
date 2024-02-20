@@ -16,7 +16,7 @@ public class App
 
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
-
+        
         BingChat chat = new BingChat(proxy, 1280, 720, 10431);
         Boolean result = false;
         try{
@@ -28,12 +28,12 @@ public class App
         if (result == false){
             chat._browser.TakeScreenshot("error.png");
         }
-        if (result){
-            //String answer = chat.AskBing("kek", 120, 0);
-            //System.out.println("Bing said = "+answer);
-            System.out.println(chat.CreateNewChat(1));
-            System.out.println(chat.AskBing("How are you?", 80));
-            System.out.println(chat.AskBing("What i said to u in previuos message?", 80));
+        if (result && 1==2){
+            System.out.println(chat.CreateNewChat(2));
+            System.out.println(chat.AskBing("Привет. Как дела?", 100));
+            chat.TakeScreenOfAsnwer("first.png");
+            //System.out.println(chat.AskBing("А теперь покажи формулы которые нужно знать для решения задач на горизонтальные броски тела", 100));
+            //chat.TakeScreenOfAsnwer("second.png");
         }
         System.out.println(result);
         Thread.sleep(1000);

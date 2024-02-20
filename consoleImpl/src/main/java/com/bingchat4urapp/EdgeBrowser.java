@@ -18,7 +18,6 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.NoSuchDriverException;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -136,7 +135,6 @@ public class EdgeBrowser extends JFrame
                 Exit();
             }
         });
-        setExtendedState(JFrame.ICONIFIED);
 
         // wait some time to give cef init
         try{
@@ -146,23 +144,34 @@ public class EdgeBrowser extends JFrame
             System.out.println("Filed to stop thread");
         }
         InitSelenium(DebugPort);
+        setExtendedState(JFrame.ICONIFIED);
     }
 
     private void InitSelenium(int DebugPort){
-        String desktopPath = Paths.get(System.getProperty("user.home"), "Desktop").toString();
+        if (!BrowserUtils.DownloadChromeDriver()){
+            print("Can't download chromedriver so /kill");
+            System.exit(0);
+        }
+
         if (isWindows){
-            String driverPath = Paths.get(desktopPath, "chromedriver.exe").toString();
+            String driverPath = Paths.get(System.getProperty("user.home"), "Documents", "chromedriver-win64", "chromedriver.exe").toString();
             System.setProperty("webdriver.chrome.driver", driverPath);
             print("I selected driver for Windows");
         }
         else{
-            String driverPath = Paths.get(desktopPath, "chromedriver").toString();
+            String driverPath = Paths.get(System.getProperty("user.home"), "Documents", "chromedriver-linux64", "chromedriver").toString();
             System.setProperty("webdriver.chrome.driver", driverPath);
-            print("I selecred driver for linux");
+            print("I selected driver for linux");
         }
+
         ChromeOptions options = new ChromeOptions();
         options.setExperimentalOption("debuggerAddress", "127.0.0.1:"+DebugPort);
         _driver = new ChromeDriver(options);
+    }
+
+
+    public Dimension GetBrowserSize(){
+        return _browserUI.getSize();
     }
 
     // method that trying to load site and waits for complete document ready state
@@ -206,11 +215,10 @@ public class EdgeBrowser extends JFrame
         }
     }
 
-    // TODO recode this method so it would be able to ingore expection like ElementNotFound
+    
     public boolean WaitForElement(java.time.Duration TimeOut, By Element, SearchContext context){
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
-            //wait.until(ExpectedConditions.visibilityOf(context.findElement(Element)));
             wait.until(new ExpectedCondition<Boolean>() {
                @Override
                public Boolean apply(WebDriver driver){
@@ -262,6 +270,7 @@ public class EdgeBrowser extends JFrame
         try {
             Files.write(Paths.get(FilePath), html.getBytes());
         } catch (IOException e) {
+            print("Can't write html to the file");
             e.printStackTrace();
         }
     }
@@ -294,6 +303,7 @@ public class EdgeBrowser extends JFrame
         return image;
     }
 
+    // method that makes screenshot using tools provided by JCEF Library
     public void MadeNativeScreenshot(){
         try{
             BufferedImage screen = _browser.createScreenshot(true).get();
@@ -306,13 +316,21 @@ public class EdgeBrowser extends JFrame
     }
 
     public void Exit(){
+        try {
+            Thread.sleep(1000); 
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         _driver.quit();
+        print("Finished driver");
+        // we need to give some time for driver
         try {
             Thread.sleep(3000); 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         CefApp.getInstance().dispose();
+        print("Dispose cef");
         // for some reason previous line of code do not stop CEF when it use OSR mode 
         if (isWindows){
             try{
