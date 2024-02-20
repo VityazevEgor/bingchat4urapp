@@ -18,7 +18,7 @@ java --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/su
 
 ## How to use
 
-This server accepts several types of requests and returns specific results based on the provided SpringBoot controller code. Here are the request types and their expected responses (а full example of the program can be found in the “example” folder):
+Here are the request types and their expected responses (а full example of the program can be found in the “example” folder):
 
 ### POST /auth
 
