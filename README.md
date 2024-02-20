@@ -1,5 +1,5 @@
 # bingchat4urapp
-An application that allows you to use BingChat in your Windows or Linux applications using the API of a local server.
+An application that allows you to use BingChat in your Windows or Linux applications using the API of a local server. This application does not rely on reverse engineering APIs. Instead, it utilizes the Java Chromium Embedded Framework (JCEF) to emulate a browser environment and Selenium for browser control. This approach ensures a seamless and robust interaction with BingChat, providing a reliable tool for your application needs.
 [Video demonstration](https://youtu.be/lHJaL333qAE)
 
 ## How to run
