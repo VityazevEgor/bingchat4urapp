@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f8f8f8;
+            font-family: 'San Francisco', 'Helvetica Neue', Helvetica, sans-serif;
+            flex-direction: column;
+        }
+
+        .rainbow-text {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            background: linear-gradient(90deg, red, yellow, green, cyan, blue, violet);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 5s ease-in-out infinite;
+        }
+
+        .author {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 20px;
+        }
+
+        @keyframes rainbow {
+            0%{background-position:100% 50%}
+            50%{background-position:0% 50%}
+            100%{background-position:100% 50%}
+        }
+    </style>
+</head>
+<body>
+    <div class="rainbow-text">Please wait. BingChat4UrApp is loading</div>
+    <div class="author">Coded by Egor Vityazev</div>
+</body>
+</html>

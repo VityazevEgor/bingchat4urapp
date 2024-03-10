@@ -28,10 +28,10 @@ public class App
         if (result == false){
             chat._browser.TakeScreenshot("error.png");
         }
-        if (result && 1==2){
-            System.out.println(chat.CreateNewChat(2));
-            System.out.println(chat.AskBing("Привет. Как дела?", 100));
-            chat.TakeScreenOfAsnwer("first.png");
+        if (result){
+            //System.out.println(chat.CreateNewChat(3));
+            //System.out.println(chat.AskBing("У меня есть текст в котором пользователь описывает что ему нужно сделать: Я хочу поиграть в майнкрафт в понедельник, а потом во вторник сходит вечером с мамой за попкупками\". Я хочу чтобы ты перевёл строку пользователя в удобный формат JSON у которого будут поля:name - название заметки time - время в формате DateTime C# (если не указана точная дата, то считай время от текущего) desription - описание", 120));
+            //chat.TakeScreenOfAsnwer("first.png");
             //System.out.println(chat.AskBing("А теперь покажи формулы которые нужно знать для решения задач на горизонтальные броски тела", 100));
             //chat.TakeScreenOfAsnwer("second.png");
         }
@@ -39,6 +39,5 @@ public class App
         Thread.sleep(1000);
         chat.Exit();
         System.out.println("Called exit");
-        System.exit(0);
     }
 }

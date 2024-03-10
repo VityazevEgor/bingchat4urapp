@@ -5,9 +5,8 @@ An application that allows you to use BingChat in your Windows or Linux applicat
 ## How to run
 1. Download OpenJDK version 17 or higher from the official Oracle website.
 2. Download the .jar file from the Releases section.
-3. Depending on your operating system, perform the following steps:
-   - **Linux**: Execute the command `java -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar`. The application will be launched on port 8080.
-   - **Windows**: Execute the command `java --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar`. The application will be launched on port 8080.
+3. Run .jar file using following command: `java --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar` 
+4. The application will be launched on port 8080.
 
 ## Proxy Support
 If you want to use a proxy, you need to pass the proxy address as a parameter to the .jar file. Please note that only SOCKS5 proxies are supported. For example, you can pass the proxy to the application through the console like this:

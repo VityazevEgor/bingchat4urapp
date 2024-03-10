@@ -53,11 +53,17 @@ public class BingChat {
     public Boolean Auth(String login, String password){
         Duration timeOutTime = java.time.Duration.ofSeconds(5);
         if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
+        _browser.CleanCookies();
+        print("I deleted all cocokies for the bing.com. Going to load site again");
+        _browser._driver.get("https://google.com"); // got damn that thing is not good
+        
+        if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
         print("Loaded bing");
 
         if (!_browser.WaitForElement(timeOutTime, By.id("id_s"))) return false;
-        _browser._driver.findElement(By.id("id_s")).click();
-        
+        //_browser._driver.findElement(By.id("id_s")).click();
+        new Actions(_browser._driver).moveToElement(_browser._driver.findElement(By.id("id_s"))).click().perform();
+        print("Clicked on login button");
 
         if (_browser.WaitForElement(timeOutTime, By.cssSelector(".id_accountItem"))){
             print("Detected second type of auth");
@@ -159,7 +165,8 @@ public class BingChat {
             
             case 2:
                 new Actions(_browser._driver).moveToElement(Balanced).click().build().perform();
-                break;    
+                break;
+                    
             default:
                 new Actions(_browser._driver).moveToElement(MorePrecise).click().build().perform();
                 break;

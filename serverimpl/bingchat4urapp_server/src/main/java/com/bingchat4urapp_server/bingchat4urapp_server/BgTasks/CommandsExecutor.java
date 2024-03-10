@@ -32,7 +32,7 @@ public class CommandsExecutor {
         }
     }
 
-    @Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 1500)
     public void ProcessCommands(){
         TaskModel task = _context.findFirstUnfinishedTask();
         if (task != null) {

@@ -3,7 +3,6 @@ package com.bingchat4urapp;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import org.cef.CefApp;
 import org.cef.CefClient;
@@ -33,6 +32,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 // Fake edge browser that use JCEF
 public class EdgeBrowser extends JFrame
@@ -52,8 +52,7 @@ public class EdgeBrowser extends JFrame
     // proxy - SOCKS5 proxy like 127.0.0.1:1800. empty string if no proxy
     public EdgeBrowser(String proxy, int width, int height, int DebugPort){
         isWindows = System.getProperty("os.name").contains("Windows");
-        setUndecorated(isWindows);
-        Boolean UseOSR = isWindows;
+        Boolean UseOSR = true;
         // JCEF init
         CefAppBuilder builder = new CefAppBuilder();
         builder.getCefSettings().user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0";
@@ -88,46 +87,36 @@ public class EdgeBrowser extends JFrame
         CefMessageRouter msgRouter = CefMessageRouter.create();
         _client.addMessageRouter(msgRouter);
 
-        _browser = _client.createBrowser("https://google.com", UseOSR, false);
+        // Now i need to export html file with loader page
+        InputStream loaderHtmlStream = getClass().getClassLoader().getResourceAsStream("html/loader.html");
+        Path pathToLoaderHtml = Paths.get(System.getProperty("user.home"), "Documents", "loader.html");
+        if (!Files.exists(pathToLoaderHtml)) {
+            try {
+                Files.copy(loaderHtmlStream, pathToLoaderHtml);
+            } catch (IOException e) {
+                print("Can't export loader html page");
+                System.exit(1);
+            }
+        }
+        else{
+            print("Loader html is already exported");
+        }
+
+        _browser = _client.createBrowser("file:///"+pathToLoaderHtml.toString(), UseOSR, false);
         _browserUI = _browser.getUIComponent();
 
         _panel = new JLayeredPane();
         _panel.setPreferredSize(new Dimension(width, height));
 
-        // if we are on linux then we going to create label that hide browser ui cuz setOpacity is not wokring on linux...
-        if (!isWindows){
-            JLabel label = new JLabel();
-            label.setText("[BingChat4urApp] You can hide this window");
-            label.setBackground(Color.BLACK);
-            label.setForeground(Color.white);
-            // we are not closing the whole area of form cuz it can stop browserUI from rendering...
-            label.setBounds(0,0, width-2, height-2);
-            label.setOpaque(true);
-            _panel.add(label, JLayeredPane.PALETTE_LAYER);
-
-            // also we going to prevent user from opening browser window on linux
-            addWindowStateListener(new WindowStateListener() {
-            public void windowStateChanged(WindowEvent e) {
-                    if ((e.getNewState() & JFrame.NORMAL) == JFrame.NORMAL) {
-                        System.out.println("Окно развернуто");
-                        //setExtendedState(JFrame.ICONIFIED);
-                    }
-                }
-            });
-        }
         _browserUI.setBounds(0,0,width, height);
         _panel.add(_browserUI, JLayeredPane.DEFAULT_LAYER);
 
         setContentPane(_panel);
 
-        // on windows we can create "fake headless" browser by setting windows opacity to 0 and removing it from taskbar
-        if (isWindows){
-            setOpacity(0.0f);
-            setType(Window.Type.UTILITY);
-        }
         pack();
         setVisible(true);
         System.out.println("Craeted window with witdh = " + getWidth() + " height = " + getHeight());
+        System.out.println("Browser size: " +" Width = "+_browserUI.getWidth() + " Height = "+_browserUI.getHeight());
         // if windows was closed then we close JCEF
         addWindowListener(new WindowAdapter() {
             @Override
@@ -144,13 +133,13 @@ public class EdgeBrowser extends JFrame
             System.out.println("Filed to stop thread");
         }
         InitSelenium(DebugPort);
-        setExtendedState(JFrame.ICONIFIED);
+        setVisible(false);
     }
 
     private void InitSelenium(int DebugPort){
         if (!BrowserUtils.DownloadChromeDriver()){
             print("Can't download chromedriver so /kill");
-            System.exit(0);
+            System.exit(1);
         }
 
         if (isWindows){
@@ -172,6 +161,10 @@ public class EdgeBrowser extends JFrame
 
     public Dimension GetBrowserSize(){
         return _browserUI.getSize();
+    }
+
+    public void CleanCookies(){
+        _driver.manage().deleteAllCookies();
     }
 
     // method that trying to load site and waits for complete document ready state
@@ -341,6 +334,7 @@ public class EdgeBrowser extends JFrame
             }
         }
         dispose();
+        System.exit(0);
     }
 
     private void print(String text){
