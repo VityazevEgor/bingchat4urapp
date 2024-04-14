@@ -16,3 +16,10 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+bing.html
+cantfind.html
+cantfind.png
+error.png
+first.png
+logintest.png
+edge_browser_logs.txt

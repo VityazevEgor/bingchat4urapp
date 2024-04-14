@@ -3,13 +3,11 @@ package com.bingchat4urapp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import javax.imageio.ImageIO;
-
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,29 +20,13 @@ import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.bingchat4urapp.BrowserUtils.ImageData;
-import com.jogamp.nativewindow.util.Rectangle;
-
 public class BingChat {
     public EdgeBrowser _browser;
-    private HashMap<String, ImageData> _images = new HashMap<>();
+    private final Duration timeOutTime = java.time.Duration.ofSeconds(5);
+
+    private final Logger logger = LogManager.getLogger(com.bingchat4urapp.BingChat.class);
 
     public BingChat(String proxy, int width, int height, int DebugPort){
-        // load all images and their positions in HashMap
-        try{
-            _images.put("meAnything", new ImageData(
-                ImageIO.read(getClass().getClassLoader().getResourceAsStream("images/meAnything.png")), 
-                new Rectangle(136, 625, 109, 24)
-            ));
-            _images.put("smallArrow", new ImageData(
-                ImageIO.read(getClass().getClassLoader().getResourceAsStream("images/smallArrow.png")), 
-                new Rectangle(832, 665, 33, 28)
-            ));
-        }
-        catch (IOException e){
-            print("I can't load images");
-        }
-
         _browser = new EdgeBrowser(proxy, width, height, DebugPort);
     }
 
@@ -54,87 +36,86 @@ public class BingChat {
         Duration timeOutTime = java.time.Duration.ofSeconds(5);
         if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
         _browser.CleanCookies();
-        print("I deleted all cocokies for the bing.com. Going to load site again");
+        logger.info("I deleted all cocokies for the bing.com. Going to load site again");
         _browser._driver.get("https://google.com"); // got damn that thing is not good
         
         if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
-        print("Loaded bing");
+        logger.info("Loaded bing");
 
         if (!_browser.WaitForElement(timeOutTime, By.id("id_s"))) return false;
         //_browser._driver.findElement(By.id("id_s")).click();
         new Actions(_browser._driver).moveToElement(_browser._driver.findElement(By.id("id_s"))).click().perform();
-        print("Clicked on login button");
+        logger.info("Clicked on login button");
 
         if (_browser.WaitForElement(timeOutTime, By.cssSelector(".id_accountItem"))){
-            print("Detected second type of auth");
+            logger.info("Detected second type of auth");
             _browser._driver.findElement(By.cssSelector(".id_accountItem")).click();
         }
         
         if (!_browser.WaitForComplete(timeOutTime, 4000)) return false;
-        print("Loaded login page");
+        logger.info("Loaded login page");
         if (!_browser.WaitForElement(timeOutTime, By.name("loginfmt"))) return false;
         _browser._driver.findElement(By.name("loginfmt")).sendKeys(login);
         _browser._driver.findElement(By.id("idSIButton9")).click();
-        print("Entered login and clicked next button");
+        logger.info("Entered login and clicked next button");
 
         if (!_browser.WaitForElement(timeOutTime, By.name("passwd"))) return false;
         _browser._driver.findElement(By.name("passwd")).sendKeys(password);
         _browser._driver.findElement(By.id("idSIButton9")).click();
-        print("Entered password");
+        logger.info("Entered password");
 
         if (!_browser.WaitForComplete(timeOutTime, 0) || !_browser.WaitForElement(timeOutTime, By.id("acceptButton"))) return false;
-        print("Loadded 'Stay signed' page");
+        logger.info("Loadded 'Stay signed' page");
         _browser._driver.findElement(By.id("acceptButton")).click();
 
         if (!_browser.WaitForComplete(timeOutTime, 0) || !_browser.WaitForElement(timeOutTime, By.id("bnp_btn_accept"))) return false;
         _browser._driver.findElement(By.id("bnp_btn_accept")).click();
-        print("Finished auth!");
+        logger.info("Finished auth!");
 
-        _browser.GetHtml("bing.html");
-        _browser.TakeScreenshot("logintest.png");
+        // _browser.GetHtml("bing.html");
+        // _browser.TakeScreenshot("logintest.png");
 
         return true;
     }
 
     // method that opens chat with bing and select specific conversation mode
     public Boolean CreateNewChat(int ModeType){
-        Duration timeOutTime = java.time.Duration.ofSeconds(5);
         if (!_browser.LoadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return false;
-        print("Loaded chat");
+        logger.info("Loaded chat");
 
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector(".cib-serp-main"))){
-            print("Can't find main");
+            logger.error("Can't find main");
             return false;
         }
-        print("Found main block");
+        logger.info("Found main block");
 
         SearchContext main = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot();
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector("#cib-conversation-main"), main)){
-            print("Can't find conversation main");
+            logger.error("Can't find conversation main");
             return false;
         }
-        print("Found conversation block");
+        logger.info("Found conversation block");
 
         SearchContext ConversationMain = main.findElement(By.cssSelector("#cib-conversation-main")).getShadowRoot();
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-welcome-container"), ConversationMain)){
-            print("Can't find welcome container");
+            logger.error("Can't find welcome container");
             return false;
         }
-        print("Found welcome container");
+        logger.info("Found welcome container");
 
         SearchContext WelcomeContainer = ConversationMain.findElement(By.cssSelector("cib-welcome-container")).getShadowRoot();
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-tone-selector"), WelcomeContainer)){
-            print("Can't find tone selector");
+            logger.error("Can't find tone selector");
             return false;
         }
-        print("Found tone selector block");
+        logger.info("Found tone selector block");
 
         SearchContext ToneSelector = WelcomeContainer.findElement(By.cssSelector("cib-tone-selector")).getShadowRoot();
         if (!_browser.WaitForElement(timeOutTime, By.cssSelector(".tone-precise"), ToneSelector)){
-            print("Can't find tone-precise option");
+            logger.error("Can't find tone-precise option");
             return false;
         }
-        print("Found options for conversation type");
+        logger.info("Found options for conversation type");
         
         WebElement MorePrecise = ToneSelector.findElement(By.cssSelector(".tone-precise"));
         WebElement Balanced = ToneSelector.findElement(By.cssSelector(".tone-balanced"));
@@ -154,7 +135,7 @@ public class BingChat {
         }
 
         if (!ElemtsOnTheCorrectPositions){
-            print("Could not load elemts to select chat mode");
+            logger.error("Could not load elemts to select chat mode");
             return false;
         }
 
@@ -172,12 +153,12 @@ public class BingChat {
                 break;
         }
 
-        print("Clicked on option");
+        logger.info("Clicked on option");
 
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            print("For some reason i can not stop thread");
+            logger.error("For some reason i can not stop thread", e);
         }
         //_browser.TakeScreenshot("SelectedMode.png");
         return true;
@@ -192,7 +173,7 @@ public class BingChat {
             return true;
         }
         else{
-            print("Elemet out of bounds");
+            logger.warn("Elemet out of bounds");
             return false;
         }
     }
@@ -200,14 +181,19 @@ public class BingChat {
     // TimeOutForAnswer in seconds. This method must be called only after CreateNewChat
     public String AskBing(String promt, long TimeOutForAnswer){
 
-        if (!_browser.WaitForImage(java.time.Duration.ofSeconds(10), _images.get("smallArrow"))){
-            print("Can't find image");
+        SearchContext actionBarContext = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
+            .findElement(By.cssSelector("#cib-action-bar-main")).getShadowRoot();
+
+        if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-text-input"), actionBarContext)){
+            logger.error("Can't find action bar");
             return null;
         }
-        promt = promt.replace("\n", "");
 
-        new Actions(_browser._driver).moveToLocation(135, 639).click().sendKeys(promt+"\n").perform();
-        print("I sent promt");
+        WebElement textInput = actionBarContext.findElement(By.cssSelector("cib-text-input")).getShadowRoot().findElement(By.cssSelector("#searchbox"));
+        promt = promt.replace("\n", "").replace("\r", "");
+
+        new Actions(_browser._driver).moveToElement(textInput).click().sendKeys(promt+"\n").perform();
+        logger.info("I sent promt");
 
         // time when we started waiting for answer from bing
         Instant TimeStart = Instant.now();
@@ -220,7 +206,7 @@ public class BingChat {
 
         while (!"true".equalsIgnoreCase(StopTypingButton.getAttribute("disabled"))) {
             if (Duration.between(TimeStart, Instant.now()).toSeconds()>=TimeOutForAnswer){
-                print("Could not get answer in time");
+                logger.error("Could not get answer in time");
                 _browser.TakeScreenshot("cantGetAnswer.png");
                 return null;
             }
@@ -229,7 +215,7 @@ public class BingChat {
                 Thread.sleep(500);
             }
             catch (Exception e){
-                print("Can't stop thread for some reason");
+                logger.error("Can't stop thread for some reason", e);
             }
         }
 
@@ -274,11 +260,5 @@ public class BingChat {
 
     public void Exit(){
         _browser.Exit();
-    }
-
-    private void print(String text){
-        String purple = "\033[0;35m"; // ANSI код для темно-фиолетового цвета
-        String reset = "\033[0m"; // ANSI код для сброса цвета
-        System.out.println(purple + "[BingChat] " + text + reset);
-    }    
+    } 
 }

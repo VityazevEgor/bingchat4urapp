@@ -4,6 +4,9 @@ package com.bingchat4urapp;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cef.CefApp;
 import org.cef.CefClient;
 import org.cef.CefApp.CefAppState;
@@ -48,6 +51,8 @@ public class EdgeBrowser extends JFrame
     // field for selenium
     public WebDriver _driver;
 
+    private final Logger logger = LogManager.getLogger(com.bingchat4urapp.EdgeBrowser.class);
+
 
     // proxy - SOCKS5 proxy like 127.0.0.1:1800. empty string if no proxy
     public EdgeBrowser(String proxy, int width, int height, int DebugPort){
@@ -79,7 +84,7 @@ public class EdgeBrowser extends JFrame
             _app = builder.build();
         }
         catch (Exception e){
-            System.out.println("Can't build cef app. Terminating app");
+            logger.error("Error while initializing JCEF", e);
             System.exit(1);
         }
 
@@ -94,12 +99,12 @@ public class EdgeBrowser extends JFrame
             try {
                 Files.copy(loaderHtmlStream, pathToLoaderHtml);
             } catch (IOException e) {
-                print("Can't export loader html page");
+                logger.error("Error while copying loader.html", e);
                 System.exit(1);
             }
         }
         else{
-            print("Loader html is already exported");
+            logger.info("loader.html already exists");
         }
 
         _browser = _client.createBrowser("file:///"+pathToLoaderHtml.toString(), UseOSR, false);
@@ -115,8 +120,9 @@ public class EdgeBrowser extends JFrame
 
         pack();
         setVisible(true);
-        System.out.println("Craeted window with witdh = " + getWidth() + " height = " + getHeight());
-        System.out.println("Browser size: " +" Width = "+_browserUI.getWidth() + " Height = "+_browserUI.getHeight());
+        logger.info("Browser size: " +" Width = "+_browserUI.getWidth() + " Height = "+_browserUI.getHeight());
+        logger.info("Craeted window with witdh = " + getWidth() + " height = " + getHeight());
+
         // if windows was closed then we close JCEF
         addWindowListener(new WindowAdapter() {
             @Override
@@ -129,32 +135,31 @@ public class EdgeBrowser extends JFrame
         try{
             Thread.sleep(2000);
         }
-        catch (Exception e){
-            System.out.println("Filed to stop thread");
-        }
+        catch (Exception e){}
         InitSelenium(DebugPort);
-        setVisible(false);
+        setTitle("BingChat4UrApp by Egor Viatyzev");
+        //setVisible(false);
     }
 
     private void InitSelenium(int DebugPort){
         if (!BrowserUtils.DownloadChromeDriver()){
-            print("Can't download chromedriver so /kill");
+            logger.error("Can't download chromedriver so /kill");
             System.exit(1);
         }
 
         if (isWindows){
             String driverPath = Paths.get(System.getProperty("user.home"), "Documents", "chromedriver-win64", "chromedriver.exe").toString();
             System.setProperty("webdriver.chrome.driver", driverPath);
-            print("I selected driver for Windows");
+            logger.info("I selected driver for Windows");
         }
         else{
             String driverPath = Paths.get(System.getProperty("user.home"), "Documents", "chromedriver-linux64", "chromedriver").toString();
             System.setProperty("webdriver.chrome.driver", driverPath);
-            print("I selected driver for linux");
+            logger.info("I selected driver for Linux");
         }
 
         ChromeOptions options = new ChromeOptions();
-        options.setExperimentalOption("debuggerAddress", "127.0.0.1:"+DebugPort);
+        options.setExperimentalOption("debuggerAddress", "127.0.0.1:" + DebugPort);
         _driver = new ChromeDriver(options);
     }
 
@@ -165,6 +170,24 @@ public class EdgeBrowser extends JFrame
 
     public void CleanCookies(){
         _driver.manage().deleteAllCookies();
+    }
+
+    private void generateErrorReport(){
+        String htmlPageName = BrowserUtils.GenerateRandomFileName(15)+".html";
+        String screenShotName = BrowserUtils.GenerateRandomFileName(15)+".png";
+        if (!Files.exists(BrowserUtils.logsDir)){
+            try {
+                Files.createDirectory(BrowserUtils.logsDir);
+            } catch (IOException e) {
+                logger.error("Can't create logsDir", e);
+                return;
+            }
+        }
+
+        GetHtml(htmlPageName);
+        TakeScreenshot(screenShotName);
+        logger.warn("Saved screenshot to "+BrowserUtils.logsDir.toString()+"/"+screenShotName);
+        logger.warn("Saved html page to "+BrowserUtils.logsDir.toString()+"/"+htmlPageName);
     }
 
     // method that trying to load site and waits for complete document ready state
@@ -184,12 +207,8 @@ public class EdgeBrowser extends JFrame
             }
             return true;
         }
-        catch (org.openqa.selenium.TimeoutException e){
-            print("Failed to load site");
-            return false;
-        }
-        catch (InterruptedException e){
-            print("Failed to sleep");
+        catch (Exception e){
+            logger.error("Can't load site", e);
             return false;
         }
     }
@@ -201,9 +220,8 @@ public class EdgeBrowser extends JFrame
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){
-            print("Can't find element");
-            GetHtml("cantfind.html");
-            TakeScreenshot("cantfind.png");
+            logger.error("Can't find element", e);
+            generateErrorReport();
             return false;
         }
     }
@@ -226,9 +244,8 @@ public class EdgeBrowser extends JFrame
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){
-            print("Can't find element");
-            GetHtml("cantfind.html");
-            TakeScreenshot("cantfind.png");
+            logger.error("Can't find element", e);
+            generateErrorReport();
             return false;
         }
     }
@@ -246,7 +263,8 @@ public class EdgeBrowser extends JFrame
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){
-            print("Can't find element");
+            logger.error("Can't find element", e);
+            generateErrorReport();
             return false;
         }
     }
@@ -263,8 +281,7 @@ public class EdgeBrowser extends JFrame
         try {
             Files.write(Paths.get(FilePath), html.getBytes());
         } catch (IOException e) {
-            print("Can't write html to the file");
-            e.printStackTrace();
+            logger.error("Can't save page to file", e);
         }
     }
 
@@ -276,7 +293,7 @@ public class EdgeBrowser extends JFrame
             result = ImageIO.read(screen);
         }
         catch (IOException e){
-            print("Failed to copy screen to BufferedImage in {TakeScreenshot}");
+            logger.error("Failed to copy screen to BufferedImage", e);
         }
         return result;
     }
@@ -289,55 +306,33 @@ public class EdgeBrowser extends JFrame
                 ImageIO.write(image, "png", new File(FilePath));
             }
             catch (IOException e){
-                print("I can't save screenshot in {TakeScreenshot}");
-                e.printStackTrace();
+                logger.error("Failed to save screen to file", e);
             }
         }
         return image;
     }
 
-    // method that makes screenshot using tools provided by JCEF Library
-    public void MadeNativeScreenshot(){
-        try{
-            BufferedImage screen = _browser.createScreenshot(true).get();
-            File outpu = new File("screen.png");
-            ImageIO.write(screen, "png", outpu);
-        }
-        catch (Exception e){
-            System.out.println("Could not make screenshot");
-        }
-    }
-
     public void Exit(){
         try {
             Thread.sleep(1000); 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        } catch (InterruptedException e) {}
         _driver.quit();
-        print("Finished driver");
+        logger.info("Finished driver");
         // we need to give some time for driver
         try {
             Thread.sleep(3000); 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        } catch (InterruptedException e) {}
         CefApp.getInstance().dispose();
-        print("Dispose cef");
+        logger.info("Dispose cef");
         // for some reason previous line of code do not stop CEF when it use OSR mode 
         if (isWindows){
             try{
                 Runtime.getRuntime().exec("taskkill /F /IM jcef_helper.exe");
             }
             catch(IOException e){
-                print("I can't stop process of CEF Helper");
+                logger.error("Failed to kill jcef_helper.exe", e);
             }
         }
-        dispose();
         System.exit(0);
-    }
-
-    private void print(String text){
-        System.out.println("[EdgeBrowser] "+text);
     }
 }

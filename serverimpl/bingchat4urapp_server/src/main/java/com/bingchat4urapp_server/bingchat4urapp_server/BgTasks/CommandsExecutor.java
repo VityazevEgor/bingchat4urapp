@@ -1,6 +1,8 @@
 package com.bingchat4urapp_server.bingchat4urapp_server.BgTasks;
 
 import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class CommandsExecutor {
     
     private BingChat _chat;
-    private Boolean _DoJob = true;
+    private Boolean _DoJob = false;
     private ObjectMapper _mapper = new ObjectMapper();
     
     @Autowired
@@ -29,6 +31,8 @@ public class CommandsExecutor {
         if (_DoJob){
             _chat = new BingChat(Shared.proxy, 1280, 720, 10431);
             print("Created BingChat object with proxy = " + Shared.proxy);
+            var t = LogManager.getLogger();
+            t.info("test");
         }
     }
 

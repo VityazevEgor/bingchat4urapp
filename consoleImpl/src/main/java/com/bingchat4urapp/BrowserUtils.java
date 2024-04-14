@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import net.lingala.zip4j.ZipFile;
 
@@ -21,6 +22,8 @@ public class BrowserUtils {
 
     private static final String WinChromeDriverLink = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/win64/chromedriver-win64.zip";
     private static final String LinuxChromeDriverLink = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/linux64/chromedriver-linux64.zip";
+
+    public static final Path logsDir = Paths.get("logsDir").toAbsolutePath();
 
     public static class ImageData
     {
@@ -121,6 +124,16 @@ public class BrowserUtils {
         return str.substring(i, j);
     }
 
+    // метод, который генеирирует случайное имя для файла
+    public static String GenerateRandomFileName(int length){
+        String alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = (int)(Math.random()*alphabet.length());
+            sb.append(alphabet.charAt(index));
+        }
+        return sb.toString();
+    }
 
     private static void print(String text){
         System.out.println("[Browser utils] " + text);
