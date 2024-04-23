@@ -105,12 +105,4 @@ public class MainController {
             return null;
         }
     }
-
-    @GetMapping("/")
-    public ModelAndView Hello(){
-        var model = new ModelAndView("main");
-        model.addObject("name", "Test");
-
-        return model;
-    }
 }

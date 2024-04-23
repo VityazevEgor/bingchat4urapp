@@ -38,6 +38,8 @@ public class CommandsExecutor {
 
     @Scheduled(fixedDelay = 1500)
     public void ProcessCommands(){
+        if (!_DoJob) return;
+
         TaskModel task = _context.findFirstUnfinishedTask();
         if (task != null) {
             Map<String, String> data = convertJsonToMap(task);
