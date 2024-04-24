@@ -32,4 +32,42 @@ public class Utils {
 
         return newTask;
     }
+
+    public TaskModel createAuthTask(String login, String password){
+        Map<String, String> authTask = Map.of("login", login, "password", password);
+
+        String jsonString = null;
+        try {
+            jsonString = mapper.writeValueAsString(authTask);
+        }
+        catch (Exception e){
+            logger.error("Can't serialize data", e);
+            return null;
+        }
+
+        var newTask = new TaskModel();
+        newTask.type = 1;
+        newTask.data = jsonString;
+
+        return newTask;
+    }
+
+    public TaskModel createNewChatTask(String type){
+        Map<String, String> newChatTask = Map.of("type", type);
+
+        String jsonString = null;
+        try {
+            jsonString = mapper.writeValueAsString(newChatTask);
+        }
+        catch (Exception e){
+            logger.error("Can't serialize data", e);
+            return null;
+        }
+
+        var newTask = new TaskModel();
+        newTask.type = 3;
+        newTask.data = jsonString;
+
+        return newTask;
+    }
 }
