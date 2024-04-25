@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class CommandsExecutor {
     
     private BingChat _chat;
-    private Boolean _DoJob = false;
+    private Boolean _DoJob = true;
     private ObjectMapper _mapper = new ObjectMapper();
     
     @Autowired

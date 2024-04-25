@@ -6,13 +6,6 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Bingchat4urappServerApplication",
-            "request": "launch",
-            "mainClass": "com.bingchat4urapp_server.bingchat4urapp_server.Bingchat4urappServerApplication",
-            "projectName": "bingchat4urapp_server"
-        },
-        {
-            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"
@@ -21,7 +14,7 @@
             "type": "java",
             "name": "App",
             "request": "launch",
-            "mainClass": "com.bingchat4urapp_server.Bingchat4urappServerApplication",
+            "mainClass": "com.bingchat4urapp_server.bingchat4urapp_server.Bingchat4urappServerApplication",
             "projectName": "bingchat4urapp_server",
             "vmArgs": "--add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED"
         }

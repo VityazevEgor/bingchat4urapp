@@ -44,8 +44,8 @@ public class GUIController {
     }
 
     @PostMapping("/sendauthgui")
-    public String postMethodName(@RequestBody String loing, @RequestParam String password) {
-        var newTask = _utils.createAuthTask(loing, password);
+    public String postMethodName(@RequestParam String login, @RequestParam String password) {
+        var newTask = _utils.createAuthTask(login, password);
         _context.save(newTask);
         return "redirect:/waittask/"+newTask.id;
     }

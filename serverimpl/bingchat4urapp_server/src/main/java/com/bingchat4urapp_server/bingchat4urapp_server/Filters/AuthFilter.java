@@ -23,7 +23,7 @@ public class AuthFilter extends OncePerRequestFilter {
     private final Logger logger = LoggerFactory.getLogger(AuthFilter.class);
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var lastAuthTask = _context.findLastAuthTask();
         boolean pass = lastAuthTask != null && !lastAuthTask.gotError && lastAuthTask.isFinished;
 
