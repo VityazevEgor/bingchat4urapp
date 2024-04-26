@@ -36,6 +36,10 @@ public class CommandsExecutor {
         }
     }
 
+    // 1 - авторизация
+    // 2 - вопрос
+    // 3 - создание чата
+
     @Scheduled(fixedDelay = 1500)
     public void ProcessCommands(){
         if (!_DoJob) return;

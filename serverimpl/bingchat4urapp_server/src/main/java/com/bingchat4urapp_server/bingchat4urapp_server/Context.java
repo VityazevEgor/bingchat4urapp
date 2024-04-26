@@ -12,4 +12,8 @@ public interface Context extends JpaRepository<TaskModel, Integer> {
     // get last TaskModel where field 'type' == 1
     @Query("SELECT t FROM TaskModel t WHERE t.type = 1 ORDER BY t.id DESC LIMIT 1")
     TaskModel findLastAuthTask();
+
+    // get firt TaskModel where field  'type' == 3 (It's means that chat was created)
+    @Query("SELECT t FROM TaskModel t WHERE t.type = 3 ORDER BY t.id ASC LIMIT 1")
+    TaskModel findCreateChatTask();
 }

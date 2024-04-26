@@ -13,16 +13,44 @@
 
     <style>
         body {
-            background-color: #343a40;
-            color: #f8f9fa;
+            background-color: #212121; /* Основной цвет страницы */
+            color: #e0e0e0; /* Цвет текста, сочетающийся с новым основным цветом */
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
+
+        .answer-div {
+            background-color: #424242; /* Цвет фона блока, сочетающийся с основным цветом */
+            color: #e0e0e0; /* Цвет текста в блоке */
+            border: 1px solid #616161; /* Цвет рамки блока */
+            overflow: auto;
+            max-height: 80vh;
+            width: 60%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+            margin: auto;
+            max-width: 100%;
+            padding: 20px; /* Отступы внутри блока */
+            border-radius: 10px; /* Скругление углов блока */
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Тень блока */
+        }
+
+        .home-button {
+            background-color: #616161; /* Цвет фона кнопки */
+            color: #e0e0e0; /* Цвет текста кнопки */
+            border-color: #757575; /* Цвет рамки кнопки */
+            width: 60%; /* Ширина кнопки, соответствующая ширине блока pre */
+            margin: auto; /* Центрирование кнопки */
+        }
+
         .center-div {
             text-align: center;
-            border: 1px solid #f8f9fa;
+            border: 1px solid #616161;
+            border-radius: 10px;
+            color: #e0e0e0;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
             animation: pulse 2s infinite;
@@ -39,14 +67,20 @@
   <body>
     <div class="center-div" th:if="${not currentTask.isFinished}">
       <h1>Task is still in progress</h1>
-      <!-- Display TaskModel properties -->
       <p class="text-muted" th:text="'ID: ' + ${currentTask.id}"></p>
       <p class="text-muted" th:text="'Type: ' + ${currentTask.type}"></p>
     </div>
 
     <div class="center-div" th:if="${currentTask.isFinished and currentTask.gotError}">
-        <h2 class="text-danger">An error has occurred!</h2>
+        <h2 class="text-danger">An error has occurred! Check console for details</h2>
         <a href="/" class="btn btn-primary">Go to Main Page</a>
+    </div>
+
+    <div th:if="${currentTask.isFinished and not currentTask.gotError}">
+      <pre th:text="${currentTask.result}" class="answer-div p-3 mb-2 text-light rounded small"></pre>
+      <div class="d-flex justify-content-center">
+        <a href="/" class="btn btn-primary btn-lg" >Go to Main Page</a>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

@@ -9,15 +9,15 @@ public class App
 {
     public static void main( String[] args ) throws InterruptedException, IOException
     {
-        String proxy = "127.0.0.1:1080";
-        if (System.getProperty("os.name").contains("Windows")){
-            proxy = "127.0.0.1:8521";
-        }
+        // String proxy = "127.0.0.1:1080";
+        // if (System.getProperty("os.name").contains("Windows")){
+        //     proxy = "127.0.0.1:8521";
+        // }
 
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
         
-        BingChat chat = new BingChat(proxy, 1280, 720, 10431);
+        BingChat chat = new BingChat(null, 1280, 720, 10431);
         Boolean result = false;
         //chat.Exit();
         try{
@@ -30,9 +30,9 @@ public class App
             chat._browser.TakeScreenshot("error.png");
         }
         if (result){
-            // System.out.println(chat.CreateNewChat(2));
-            // System.out.println(chat.AskBing("Как у тебя дела?", 120));
-            // chat.TakeScreenOfAsnwer("first.png");
+            System.out.println(chat.CreateNewChat(2));
+            System.out.println(chat.AskBing("Как у тебя дела?", 120));
+            chat.TakeScreenOfAsnwer("first.png");
             //System.out.println(chat.AskBing("А теперь покажи формулы которые нужно знать для решения задач на горизонтальные броски тела", 100));
             //chat.TakeScreenOfAsnwer("second.png");
         }
