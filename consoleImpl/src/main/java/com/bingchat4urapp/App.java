@@ -17,7 +17,7 @@ public class App
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
         
-        BingChat chat = new BingChat(null, 1280, 720, 10431);
+        BingChat chat = new BingChat(null, 1280, 1000, 10431);
         Boolean result = false;
         //chat.Exit();
         try{
@@ -30,8 +30,8 @@ public class App
             chat._browser.TakeScreenshot("error.png");
         }
         if (result){
-            System.out.println(chat.CreateNewChat(2));
-            System.out.println(chat.AskBing("Как у тебя дела?", 120));
+            System.out.println(chat.CreateNewChat(3));
+            //System.out.println(chat.AskBing("Как у тебя дела?", 120));
             chat.TakeScreenOfAsnwer("first.png");
             //System.out.println(chat.AskBing("А теперь покажи формулы которые нужно знать для решения задач на горизонтальные броски тела", 100));
             //chat.TakeScreenOfAsnwer("second.png");

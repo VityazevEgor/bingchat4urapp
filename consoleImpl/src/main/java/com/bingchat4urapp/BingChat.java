@@ -123,6 +123,10 @@ public class BingChat {
 
         Instant start = Instant.now();
         Boolean ElemtsOnTheCorrectPositions = false;
+        
+        // scroll web page down to botoom
+        new Actions(_browser._driver).scrollByAmount(0, 1000);
+
         while (Duration.between(Instant.now(), start).getSeconds() <= timeOutTime.getSeconds()) {
             if (CheckElemntPosition(Creative) && CheckElemntPosition(Balanced) && CheckElemntPosition(MorePrecise)){
                 ElemtsOnTheCorrectPositions = true;
@@ -224,8 +228,7 @@ public class BingChat {
 
     // method that change zoom, takescreen, reset zoom ans scroold page to the end
     public BufferedImage TakeScreenOfAsnwer(String path){
-        JavascriptExecutor jsexec =  (JavascriptExecutor)_browser._driver;
-        jsexec.executeScript("document.body.style.zoom = '70%'");
+        setZoom(70);
         BufferedImage result = null;
         if (path != null){
             result = _browser.TakeScreenshot(path);
@@ -233,9 +236,14 @@ public class BingChat {
         else{
             result = _browser.TakeScreenshot();
         }
-        jsexec.executeScript("document.body.style.zoom = '100%'");
+        setZoom(100);
         new Actions(_browser._driver).keyDown(Keys.CONTROL).sendKeys(Keys.END).keyUp(Keys.CONTROL).perform();
         return result;
+    }
+
+    private void setZoom(Integer percentage){
+        JavascriptExecutor jsexec =  (JavascriptExecutor)_browser._driver;
+        jsexec.executeScript("document.body.style.zoom = '"+percentage+"%'");
     }
 
     // method that gets raw text of bing answer
