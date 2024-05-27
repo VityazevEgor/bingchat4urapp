@@ -22,7 +22,7 @@ import org.openqa.selenium.interactions.Actions;
 
 public class BingChat {
     public EdgeBrowser _browser;
-    private final Duration timeOutTime = java.time.Duration.ofSeconds(5);
+    private final Duration timeOutTime = java.time.Duration.ofSeconds(10);
 
     private final Logger logger = LogManager.getLogger(com.bingchat4urapp.BingChat.class);
 
@@ -33,7 +33,6 @@ public class BingChat {
 
     // I need to fix it cuz there is sometime different types of auth
     public Boolean Auth(String login, String password){
-        Duration timeOutTime = java.time.Duration.ofSeconds(5);
         if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
         _browser.CleanCookies();
         logger.info("I deleted all cocokies for the bing.com. Going to load site again");
@@ -139,7 +138,7 @@ public class BingChat {
         }
 
         if (!ElemtsOnTheCorrectPositions){
-            logger.error("Could not load elemts to select chat mode");
+            logger.error("Could not load elements to select chat mode");
             return false;
         }
 

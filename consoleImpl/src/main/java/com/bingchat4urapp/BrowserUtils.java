@@ -36,6 +36,16 @@ public class BrowserUtils {
         }
     }
 
+    public static void checkLogsDir(){
+        if (!Files.exists(logsDir)){
+            try {
+                Files.createDirectory(logsDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     // method that compare two images
     public static Boolean CompareImagesAlg(BufferedImage FirstImage, BufferedImage SecondImage, double tolerance, double PercentOfMath){
 

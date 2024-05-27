@@ -119,6 +119,8 @@ public class EdgeBrowser extends JFrame
         setContentPane(_panel);
 
         pack();
+        setTitle("BingChat4UrApp by Egor Viatyzev");
+
         setVisible(true);
         logger.info("Browser size: " +" Width = "+_browserUI.getWidth() + " Height = "+_browserUI.getHeight());
         logger.info("Craeted window with witdh = " + getWidth() + " height = " + getHeight());
@@ -137,8 +139,7 @@ public class EdgeBrowser extends JFrame
         }
         catch (Exception e){}
         InitSelenium(DebugPort);
-        setTitle("BingChat4UrApp by Egor Viatyzev");
-        //setVisible(false);
+        setVisible(false);
     }
 
     private void InitSelenium(int DebugPort){
@@ -175,14 +176,7 @@ public class EdgeBrowser extends JFrame
     private void generateErrorReport(){
         String htmlPageName = BrowserUtils.GenerateRandomFileName(15)+".html";
         String screenShotName = BrowserUtils.GenerateRandomFileName(15)+".png";
-        if (!Files.exists(BrowserUtils.logsDir)){
-            try {
-                Files.createDirectory(BrowserUtils.logsDir);
-            } catch (IOException e) {
-                logger.error("Can't create logsDir", e);
-                return;
-            }
-        }
+        BrowserUtils.checkLogsDir();
 
         GetHtml(htmlPageName);
         TakeScreenshot(screenShotName);
@@ -277,9 +271,10 @@ public class EdgeBrowser extends JFrame
     }
 
     public void GetHtml(String FilePath){
+        BrowserUtils.checkLogsDir();
         String html = GetHtml();
         try {
-            Files.write(Paths.get(FilePath), html.getBytes());
+            Files.write(Paths.get(BrowserUtils.logsDir.toString(), FilePath), html.getBytes());
         } catch (IOException e) {
             logger.error("Can't save page to file", e);
         }
@@ -300,10 +295,11 @@ public class EdgeBrowser extends JFrame
 
     // method that takes screenshot and save it to file
     public BufferedImage TakeScreenshot(String FilePath){
+        BrowserUtils.checkLogsDir();
         BufferedImage image = TakeScreenshot();
         if (image !=null){
             try{
-                ImageIO.write(image, "png", new File(FilePath));
+                ImageIO.write(image, "png", new File(Paths.get(BrowserUtils.logsDir.toString(), FilePath).toString()));
             }
             catch (IOException e){
                 logger.error("Failed to save screen to file", e);
