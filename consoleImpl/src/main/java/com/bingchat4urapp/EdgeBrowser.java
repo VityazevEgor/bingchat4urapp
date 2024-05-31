@@ -52,6 +52,7 @@ public class EdgeBrowser extends JFrame
     public WebDriver _driver;
 
     private final Logger logger = LogManager.getLogger(com.bingchat4urapp.EdgeBrowser.class);
+    private final String chachePach = Paths.get(System.getProperty("user.home"),  "Documents",  "cefChache").toAbsolutePath().toString();
 
 
     // proxy - SOCKS5 proxy like 127.0.0.1:1800. empty string if no proxy
@@ -72,6 +73,7 @@ public class EdgeBrowser extends JFrame
         // Enable debug port to control JCEF via Selenium
         builder.getCefSettings().remote_debugging_port = DebugPort;
         builder.getCefSettings().command_line_args_disabled = false;
+        builder.getCefSettings().cache_path = chachePach;
 
         if (proxy != null && !proxy.trim().isEmpty()){
             builder.addJcefArgs("--remote-allow-origins=*", "--proxy-server=socks5://"+proxy);
@@ -129,7 +131,7 @@ public class EdgeBrowser extends JFrame
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                Exit();
+                exit();
             }
         });
 
@@ -138,11 +140,11 @@ public class EdgeBrowser extends JFrame
             Thread.sleep(2000);
         }
         catch (Exception e){}
-        InitSelenium(DebugPort);
-        setVisible(false);
+        initSelenium(DebugPort);
+        //setVisible(false);
     }
 
-    private void InitSelenium(int DebugPort){
+    private void initSelenium(int DebugPort){
         if (!BrowserUtils.DownloadChromeDriver()){
             logger.error("Can't download chromedriver so /kill");
             System.exit(1);
@@ -165,11 +167,11 @@ public class EdgeBrowser extends JFrame
     }
 
 
-    public Dimension GetBrowserSize(){
+    public Dimension getBrowserSize(){
         return _browserUI.getSize();
     }
 
-    public void CleanCookies(){
+    public void cleanCookies(){
         _driver.manage().deleteAllCookies();
     }
 
@@ -178,8 +180,8 @@ public class EdgeBrowser extends JFrame
         String screenShotName = BrowserUtils.GenerateRandomFileName(15)+".png";
         BrowserUtils.checkLogsDir();
 
-        GetHtml(htmlPageName);
-        TakeScreenshot(screenShotName);
+        getHtml(htmlPageName);
+        takeScreenshot(screenShotName);
         logger.warn("Saved screenshot to "+BrowserUtils.logsDir.toString()+"/"+screenShotName);
         logger.warn("Saved html page to "+BrowserUtils.logsDir.toString()+"/"+htmlPageName);
     }
@@ -187,12 +189,12 @@ public class EdgeBrowser extends JFrame
     // method that trying to load site and waits for complete document ready state
     // it return false if it could not load site
     // true if everything is ok
-    public boolean LoadAndWaitForComplete(String url, java.time.Duration TimeOut, int AdditionalWait){
+    public boolean loadAndWaitForComplete(String url, java.time.Duration TimeOut, int AdditionalWait){
         _driver.get(url);
-        return WaitForComplete(TimeOut, AdditionalWait);
+        return waitForComplete(TimeOut, AdditionalWait);
     }
 
-    public boolean WaitForComplete(java.time.Duration TimeOut, int AdditionalWait){
+    public boolean waitForComplete(java.time.Duration TimeOut, int AdditionalWait){
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
             wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
@@ -207,7 +209,7 @@ public class EdgeBrowser extends JFrame
         }
     }
 
-    public boolean WaitForElement(java.time.Duration TimeOut, By Element){
+    public boolean waitForElement(java.time.Duration TimeOut, By Element){
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
             wait.until(ExpectedConditions.elementToBeClickable(Element));
@@ -221,7 +223,7 @@ public class EdgeBrowser extends JFrame
     }
 
     
-    public boolean WaitForElement(java.time.Duration TimeOut, By Element, SearchContext context){
+    public boolean waitForElement(java.time.Duration TimeOut, By Element, SearchContext context){
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
             wait.until(new ExpectedCondition<Boolean>() {
@@ -245,13 +247,13 @@ public class EdgeBrowser extends JFrame
     }
 
     // method that waits for image to appear in specific place
-    public boolean WaitForImage(java.time.Duration TimeOut, ImageData ImData){
+    public boolean waitForImage(java.time.Duration TimeOut, ImageData ImData){
         WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
         try{
             wait.until(new ExpectedCondition<Boolean>() {
                 @Override
                 public Boolean apply(WebDriver arg0) {
-                    return BrowserUtils.CompareImages(TakeScreenshot(), ImData);
+                    return BrowserUtils.CompareImages(takeScreenshot(), ImData);
                 }
             });
             return true;
@@ -264,15 +266,15 @@ public class EdgeBrowser extends JFrame
     }
 
     // method that get html code of page by JS
-    public String GetHtml(){
+    public String getHtml(){
         JavascriptExecutor js = (JavascriptExecutor)_driver;
         String pageContent = (String) js.executeScript("return document.documentElement.outerHTML;");
         return pageContent;
     }
 
-    public void GetHtml(String FilePath){
+    public void getHtml(String FilePath){
         BrowserUtils.checkLogsDir();
-        String html = GetHtml();
+        String html = getHtml();
         try {
             Files.write(Paths.get(BrowserUtils.logsDir.toString(), FilePath), html.getBytes());
         } catch (IOException e) {
@@ -281,7 +283,7 @@ public class EdgeBrowser extends JFrame
     }
 
     // method that takes screenshot of browser using selenium
-    public BufferedImage TakeScreenshot(){
+    public BufferedImage takeScreenshot(){
         BufferedImage result = null;
         File screen = ((TakesScreenshot)_driver).getScreenshotAs(OutputType.FILE);
         try{
@@ -294,9 +296,9 @@ public class EdgeBrowser extends JFrame
     }
 
     // method that takes screenshot and save it to file
-    public BufferedImage TakeScreenshot(String FilePath){
+    public BufferedImage takeScreenshot(String FilePath){
         BrowserUtils.checkLogsDir();
-        BufferedImage image = TakeScreenshot();
+        BufferedImage image = takeScreenshot();
         if (image !=null){
             try{
                 ImageIO.write(image, "png", new File(Paths.get(BrowserUtils.logsDir.toString(), FilePath).toString()));
@@ -308,7 +310,7 @@ public class EdgeBrowser extends JFrame
         return image;
     }
 
-    public void Exit(){
+    public void exit(){
         try {
             Thread.sleep(1000); 
         } catch (InterruptedException e) {}

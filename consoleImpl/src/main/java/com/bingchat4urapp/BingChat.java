@@ -2,16 +2,11 @@ package com.bingchat4urapp;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import java.awt.image.BufferedImage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -33,84 +28,108 @@ public class BingChat {
 
     // I need to fix it cuz there is sometime different types of auth
     public Boolean Auth(String login, String password){
-        if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
-        _browser.CleanCookies();
-        logger.info("I deleted all cocokies for the bing.com. Going to load site again");
-        _browser._driver.get("https://google.com"); // got damn that thing is not good
+        if (!_browser.loadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
         
-        if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
-        logger.info("Loaded bing");
+        // TODO сделать возможность делать чистую авторизацию (удалять информацию о продедылущей)
+        // _browser.CleanCookies();
+        // logger.info("I deleted all cocokies for the bing.com. Going to load site again");
+        // _browser._driver.get("https://google.com"); // got damn that thing is not good
+        
+        // if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
+        // logger.info("Loaded bing");
 
-        if (!_browser.WaitForElement(timeOutTime, By.id("id_s"))) return false;
+        if (!_browser.waitForElement(timeOutTime, By.id("id_s"))){
+            // если нету кнопки "Войти" то чекаем не авторизированы ли мы уже
+            if (_browser.waitForElement(timeOutTime, By.id("id_n"))){
+                logger.info("You already logged in as - " + _browser._driver.findElement(By.id("id_n")).getText());
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
         //_browser._driver.findElement(By.id("id_s")).click();
-        new Actions(_browser._driver).moveToElement(_browser._driver.findElement(By.id("id_s"))).click().perform();
-        logger.info("Clicked on login button");
+        WebElement ariaSwitcherButton = _browser._driver.findElement(By.id("id_l"));
+        Instant initTime =  Instant.now();
 
-        if (_browser.WaitForElement(timeOutTime, By.cssSelector(".id_accountItem"))){
+        while (!"true".equalsIgnoreCase(ariaSwitcherButton.getAttribute("aria-expanded"))) {
+            if (Duration.between(initTime, Instant.now()).toSeconds()>=timeOutTime.getSeconds()){
+                logger.error("Could not open area in time");
+                return false;
+            }
+
+            new Actions(_browser._driver).moveToElement(_browser._driver.findElement(By.id("id_s"))).click().perform();
+            logger.info("Clicked on login button");
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }   
+        }
+        logger.info("Expanded area");
+
+        if (_browser.waitForElement(timeOutTime, By.cssSelector(".id_accountItem"))){
             logger.info("Detected second type of auth");
             _browser._driver.findElement(By.cssSelector(".id_accountItem")).click();
         }
         
-        if (!_browser.WaitForComplete(timeOutTime, 4000)) return false;
+        if (!_browser.waitForComplete(timeOutTime, 4000)) return false;
         logger.info("Loaded login page");
-        if (!_browser.WaitForElement(timeOutTime, By.name("loginfmt"))) return false;
+        if (!_browser.waitForElement(timeOutTime, By.name("loginfmt"))) return false;
         _browser._driver.findElement(By.name("loginfmt")).sendKeys(login);
         _browser._driver.findElement(By.id("idSIButton9")).click();
         logger.info("Entered login and clicked next button");
 
-        if (!_browser.WaitForElement(timeOutTime, By.name("passwd"))) return false;
+        if (!_browser.waitForElement(timeOutTime, By.name("passwd"))) return false;
         _browser._driver.findElement(By.name("passwd")).sendKeys(password);
         _browser._driver.findElement(By.id("idSIButton9")).click();
         logger.info("Entered password");
 
-        if (!_browser.WaitForComplete(timeOutTime, 0) || !_browser.WaitForElement(timeOutTime, By.id("acceptButton"))) return false;
+        if (!_browser.waitForComplete(timeOutTime, 0) || !_browser.waitForElement(timeOutTime, By.id("acceptButton"))) return false;
         logger.info("Loadded 'Stay signed' page");
         _browser._driver.findElement(By.id("acceptButton")).click();
 
-        if (!_browser.WaitForComplete(timeOutTime, 0) || !_browser.WaitForElement(timeOutTime, By.id("bnp_btn_accept"))) return false;
+        if (!_browser.waitForComplete(timeOutTime, 0) || !_browser.waitForElement(timeOutTime, By.id("bnp_btn_accept"))) return false;
         _browser._driver.findElement(By.id("bnp_btn_accept")).click();
         logger.info("Finished auth!");
-
-        // _browser.GetHtml("bing.html");
-        // _browser.TakeScreenshot("logintest.png");
 
         return true;
     }
 
     // method that opens chat with bing and select specific conversation mode
     public Boolean CreateNewChat(int ModeType){
-        if (!_browser.LoadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return false;
+        if (!_browser.loadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return false;
         logger.info("Loaded chat");
 
-        if (!_browser.WaitForElement(timeOutTime, By.cssSelector(".cib-serp-main"))){
+        if (!_browser.waitForElement(timeOutTime, By.cssSelector(".cib-serp-main"))){
             logger.error("Can't find main");
             return false;
         }
         logger.info("Found main block");
 
         SearchContext main = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot();
-        if (!_browser.WaitForElement(timeOutTime, By.cssSelector("#cib-conversation-main"), main)){
+        if (!_browser.waitForElement(timeOutTime, By.cssSelector("#cib-conversation-main"), main)){
             logger.error("Can't find conversation main");
             return false;
         }
         logger.info("Found conversation block");
 
         SearchContext ConversationMain = main.findElement(By.cssSelector("#cib-conversation-main")).getShadowRoot();
-        if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-welcome-container"), ConversationMain)){
+        if (!_browser.waitForElement(timeOutTime, By.cssSelector("cib-welcome-container"), ConversationMain)){
             logger.error("Can't find welcome container");
             return false;
         }
         logger.info("Found welcome container");
 
         SearchContext WelcomeContainer = ConversationMain.findElement(By.cssSelector("cib-welcome-container")).getShadowRoot();
-        if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-tone-selector"), WelcomeContainer)){
+        if (!_browser.waitForElement(timeOutTime, By.cssSelector("cib-tone-selector"), WelcomeContainer)){
             logger.error("Can't find tone selector");
             return false;
         }
         logger.info("Found tone selector block");
 
         SearchContext ToneSelector = WelcomeContainer.findElement(By.cssSelector("cib-tone-selector")).getShadowRoot();
-        if (!_browser.WaitForElement(timeOutTime, By.cssSelector(".tone-precise"), ToneSelector)){
+        if (!_browser.waitForElement(timeOutTime, By.cssSelector(".tone-precise"), ToneSelector)){
             logger.error("Can't find tone-precise option");
             return false;
         }
@@ -170,7 +189,7 @@ public class BingChat {
     // method that checks if element position can be accesed by new Actions
     private Boolean CheckElemntPosition(WebElement Element){
         Point pos = Element.getLocation();
-        java.awt.Dimension BrowserSize = _browser.GetBrowserSize();
+        java.awt.Dimension BrowserSize = _browser.getBrowserSize();
 
         if (pos.getX()>=0 && pos.getX()<=BrowserSize.getWidth() && pos.getX()>=0 && pos.getX()<=BrowserSize.getHeight()){
             return true;
@@ -187,7 +206,7 @@ public class BingChat {
         SearchContext actionBarContext = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
             .findElement(By.cssSelector("#cib-action-bar-main")).getShadowRoot();
 
-        if (!_browser.WaitForElement(timeOutTime, By.cssSelector("cib-text-input"), actionBarContext)){
+        if (!_browser.waitForElement(timeOutTime, By.cssSelector("cib-text-input"), actionBarContext)){
             logger.error("Can't find action bar");
             return null;
         }
@@ -210,7 +229,7 @@ public class BingChat {
         while (!"true".equalsIgnoreCase(StopTypingButton.getAttribute("disabled"))) {
             if (Duration.between(TimeStart, Instant.now()).toSeconds()>=TimeOutForAnswer){
                 logger.error("Could not get answer in time");
-                _browser.TakeScreenshot("cantGetAnswer.png");
+                _browser.takeScreenshot("cantGetAnswer.png");
                 return null;
             }
 
@@ -222,7 +241,7 @@ public class BingChat {
             }
         }
 
-        return ExtractBingAnswers(_browser.GetHtml()).replace("Received message.", "");
+        return extractBingAnswerRecode();
     }
 
     // method that change zoom, takescreen, reset zoom ans scroold page to the end
@@ -230,10 +249,10 @@ public class BingChat {
         setZoom(70);
         BufferedImage result = null;
         if (path != null){
-            result = _browser.TakeScreenshot(path);
+            result = _browser.takeScreenshot(path);
         }
         else{
-            result = _browser.TakeScreenshot();
+            result = _browser.takeScreenshot();
         }
         setZoom(100);
         new Actions(_browser._driver).keyDown(Keys.CONTROL).sendKeys(Keys.END).keyUp(Keys.CONTROL).perform();
@@ -245,27 +264,25 @@ public class BingChat {
         jsexec.executeScript("document.body.style.zoom = '"+percentage+"%'");
     }
 
-    // method that gets raw text of bing answer
-    private String ExtractBingAnswers(String html) {
-        List<String> results = new ArrayList<>();
-        if (html == null) return "";
-
-        Document doc = Jsoup.parse(html);
-        Elements contentNodes = doc.select("#CIBLiveRegion");
-        for (Element node : contentNodes) {
-            results.add(node.html().replace("<br>", "\n"));
+    public String extractBingAnswerRecode(){
+        List<WebElement> actionBarContext = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
+            .findElement(By.cssSelector("#cib-conversation-main")).getShadowRoot()
+            .findElements(By.cssSelector("cib-chat-turn"));
+        List<WebElement> cibMessages =  actionBarContext.get(actionBarContext.size()-1).getShadowRoot().findElement(By.cssSelector(".response-message-group")).getShadowRoot()
+            .findElements(By.cssSelector("cib-message"));
+        for (WebElement block : cibMessages){
+            String ariaLabel = block.getAttribute("aria-label");
+            if (ariaLabel != null && ariaLabel.contains("Copilot")){
+                logger.info("Found answer");
+                System.out.println(ariaLabel);
+                return ariaLabel;
+            }
         }
-
-        if (results.size()>0){
-            return results.get(results.size()-1);
-        }
-        else{
-            return "";
-        }
+        return null;
     }
 
 
     public void Exit(){
-        _browser.Exit();
+        _browser.exit();
     } 
 }

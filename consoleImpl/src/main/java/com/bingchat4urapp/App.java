@@ -2,6 +2,7 @@ package com.bingchat4urapp;
 
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Scanner;
 import java.io.IOException;
 import java.nio.file.*;
 
@@ -13,7 +14,7 @@ public class App
         // if (System.getProperty("os.name").contains("Windows")){
         //     proxy = "127.0.0.1:8521";
         // }
-
+        Scanner sc = new Scanner(System.in);
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
         
@@ -27,12 +28,14 @@ public class App
             
         }
         if (result == false){
-            chat._browser.TakeScreenshot("error.png");
+            chat._browser.takeScreenshot("error.png");
         }
         if (result){
+            //sc.nextLine();
+            //chat.extractBingAnswerRecode();
             System.out.println(chat.CreateNewChat(3));
-            //System.out.println(chat.AskBing("Как у тебя дела?", 120));
-            chat.TakeScreenOfAsnwer("first.png");
+            System.out.println(chat.AskBing("Как у тебя дела?", 120));
+            //chat.TakeScreenOfAsnwer("first.png");
             //System.out.println(chat.AskBing("А теперь покажи формулы которые нужно знать для решения задач на горизонтальные броски тела", 100));
             //chat.TakeScreenOfAsnwer("second.png");
         }
