@@ -27,7 +27,7 @@ public class BingChat {
 
 
     // I need to fix it cuz there is sometime different types of auth
-    public Boolean Auth(String login, String password){
+    public Boolean auth(String login, String password){
         if (!_browser.loadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
         
         // TODO сделать возможность делать чистую авторизацию (удалять информацию о продедылущей)
@@ -97,7 +97,7 @@ public class BingChat {
     }
 
     // method that opens chat with bing and select specific conversation mode
-    public Boolean CreateNewChat(int ModeType){
+    public Boolean createNewChat(int ModeType){
         if (!_browser.loadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return false;
         logger.info("Loaded chat");
 
@@ -146,7 +146,7 @@ public class BingChat {
         new Actions(_browser._driver).scrollByAmount(0, 1000);
 
         while (Duration.between(Instant.now(), start).getSeconds() <= timeOutTime.getSeconds()) {
-            if (CheckElemntPosition(Creative) && CheckElemntPosition(Balanced) && CheckElemntPosition(MorePrecise)){
+            if (checkElemntPosition(Creative) && checkElemntPosition(Balanced) && checkElemntPosition(MorePrecise)){
                 ElemtsOnTheCorrectPositions = true;
                 break;
             }
@@ -187,8 +187,8 @@ public class BingChat {
     }
 
     // method that checks if element position can be accesed by new Actions
-    private Boolean CheckElemntPosition(WebElement Element){
-        Point pos = Element.getLocation();
+    private Boolean checkElemntPosition(WebElement element){
+        Point pos = element.getLocation();
         java.awt.Dimension BrowserSize = _browser.getBrowserSize();
 
         if (pos.getX()>=0 && pos.getX()<=BrowserSize.getWidth() && pos.getX()>=0 && pos.getX()<=BrowserSize.getHeight()){
@@ -201,7 +201,7 @@ public class BingChat {
     }
 
     // TimeOutForAnswer in seconds. This method must be called only after CreateNewChat
-    public String AskBing(String promt, long TimeOutForAnswer){
+    public String askBing(String promt, long timeOutForAnswer){
 
         SearchContext actionBarContext = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
             .findElement(By.cssSelector("#cib-action-bar-main")).getShadowRoot();
@@ -218,16 +218,16 @@ public class BingChat {
         logger.info("I sent promt");
 
         // time when we started waiting for answer from bing
-        Instant TimeStart = Instant.now();
+        Instant startTime = Instant.now();
 
         // Experiment code
-        WebElement StopTypingButton = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
+        WebElement stopTypingButton = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
             .findElement(By.cssSelector("#cib-action-bar-main")).getShadowRoot()
             .findElement(By.cssSelector("cib-typing-indicator")).getShadowRoot()
             .findElement(By.cssSelector("#stop-responding-button"));
 
-        while (!"true".equalsIgnoreCase(StopTypingButton.getAttribute("disabled"))) {
-            if (Duration.between(TimeStart, Instant.now()).toSeconds()>=TimeOutForAnswer){
+        while (!"true".equalsIgnoreCase(stopTypingButton.getAttribute("disabled"))) {
+            if (Duration.between(startTime, Instant.now()).toSeconds()>=timeOutForAnswer){
                 logger.error("Could not get answer in time");
                 _browser.takeScreenshot("cantGetAnswer.png");
                 return null;
@@ -245,7 +245,7 @@ public class BingChat {
     }
 
     // method that change zoom, takescreen, reset zoom ans scroold page to the end
-    public BufferedImage TakeScreenOfAsnwer(String path){
+    public BufferedImage takeScreenOfAsnwer(String path){
         setZoom(70);
         BufferedImage result = null;
         if (path != null){
@@ -282,7 +282,7 @@ public class BingChat {
     }
 
 
-    public void Exit(){
+    public void exit(){
         _browser.exit();
     } 
 }

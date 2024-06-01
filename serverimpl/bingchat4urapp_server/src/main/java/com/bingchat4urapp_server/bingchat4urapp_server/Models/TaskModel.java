@@ -14,6 +14,7 @@ public class TaskModel {
     // 1 - auth Bing. 2 - send promt to bing
     public Integer type;
 
+    // Json of taks parametrs
     public String data = null;
 
     public Boolean isFinished = false;
@@ -21,5 +22,8 @@ public class TaskModel {
     public Boolean gotError = false;
 
     public String result = null;
+
+    // name of image
+    public String imageResult = null;
 
 }

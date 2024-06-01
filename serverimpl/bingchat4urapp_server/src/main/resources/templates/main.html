@@ -54,11 +54,10 @@
             </div>
         </nav>
         <div class="container text-center">
-            <!-- Ваш код -->
             <form th:action="@{/sendgui}" method="post" class="d-flex justify-content-center">
-                <a class="btn btn-outline-secondary rounded-end" type="button" href="/newchatgui">Clean</a>
+                <a class="btn btn-outline-secondary" type="button" href="/newchatgui" style="border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0;">Clean</a>
                 <textarea class="form-control dark-textarea" name="promt"></textarea>
-                <button class="btn btn-outline-secondary rounded-start" type="submit">Send</button>
+                <button class="btn btn-outline-secondary" type="submit" style="border-left: 0; border-top-left-radius:  0; border-bottom-left-radius:  0;">Send</button>
             </form>
         </div>
     </div>

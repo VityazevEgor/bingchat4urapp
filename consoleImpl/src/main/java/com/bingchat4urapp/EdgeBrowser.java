@@ -145,7 +145,7 @@ public class EdgeBrowser extends JFrame
     }
 
     private void initSelenium(int DebugPort){
-        if (!BrowserUtils.DownloadChromeDriver()){
+        if (!BrowserUtils.downloadChromeDriver()){
             logger.error("Can't download chromedriver so /kill");
             System.exit(1);
         }
@@ -176,8 +176,8 @@ public class EdgeBrowser extends JFrame
     }
 
     private void generateErrorReport(){
-        String htmlPageName = BrowserUtils.GenerateRandomFileName(15)+".html";
-        String screenShotName = BrowserUtils.GenerateRandomFileName(15)+".png";
+        String htmlPageName = BrowserUtils.generateRandomFileName(15)+".html";
+        String screenShotName = BrowserUtils.generateRandomFileName(15)+".png";
         BrowserUtils.checkLogsDir();
 
         getHtml(htmlPageName);
@@ -253,7 +253,7 @@ public class EdgeBrowser extends JFrame
             wait.until(new ExpectedCondition<Boolean>() {
                 @Override
                 public Boolean apply(WebDriver arg0) {
-                    return BrowserUtils.CompareImages(takeScreenshot(), ImData);
+                    return BrowserUtils.compareImages(takeScreenshot(), ImData);
                 }
             });
             return true;

@@ -10,7 +10,7 @@
 
     <style>
         body {
-            background-color: #343a40;
+            background-color: #212121;
             color: #fff;
             height: 100vh;
             display: flex;
@@ -18,10 +18,10 @@
             justify-content: center;
         }
         .dark-textarea {
-            background-color: #343a40;
+            background-color: #424242;
             border-radius: 0;
             color: #fff;
-            border-color: #6c757d; /* same as .btn-outline-secondary */
+            border-color: #424242; /* same as .btn-outline-secondary */
             border-left: none;
             border-right: none;
         }
@@ -34,24 +34,30 @@
             outline: none;
             box-shadow: none;
         }
+        .custom-border{
+          border: 1px solid #616161;
+          border-radius: 10px;
+        }
     </style>
 
     <title>Login Page</title>
   </head>
   <body>
     <div class="container">
-      <form class="text-center border border-light p-5" th:action="@{/sendauthgui}" method="post">
-        <p class="h4 mb-4">Sign in</p>
+      <center>
+        <form class="text-center custom-border p-5" th:action="@{/sendauthgui}" method="post" style="width: 50%;">
+          <p class="h4 mb-4">Sign in</p>
 
-        <!-- Email -->
-        <input type="email" name="login"  class="form-control mb-4 dark-textarea" placeholder="E-mail">
+          <!-- Email -->
+          <input type="email" name="login"  class="form-control mb-4 dark-textarea" placeholder="E-mail">
 
-        <!-- Password -->
-        <input type="password" name="password" class="form-control mb-4 dark-textarea" placeholder="Password">
+          <!-- Password -->
+          <input type="password" name="password" class="form-control mb-4 dark-textarea" placeholder="Password">
 
-        <!-- Sign in button -->
-        <button class="btn btn-outline-secondary btn-block my-4" type="submit">Sign in</button>
-      </form>
+          <!-- Sign in button -->
+          <button class="btn btn-outline-secondary btn-block" type="submit" style="width: 100%;">Sign in</button>
+        </form>
+      </center>
     </div>
 
     <!-- Optional JavaScript; choose one of the two! -->

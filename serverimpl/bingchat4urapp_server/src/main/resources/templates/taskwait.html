@@ -67,8 +67,7 @@
   <body>
     <div class="center-div" th:if="${not currentTask.isFinished}">
       <h1>Task is still in progress</h1>
-      <p class="text-muted" th:text="'ID: ' + ${currentTask.id}"></p>
-      <p class="text-muted" th:text="'Type: ' + ${currentTask.type}"></p>
+      <p th:text="'Type: ' + ${currentTask.type}"></p>
     </div>
 
     <div class="center-div" th:if="${currentTask.isFinished and currentTask.gotError}">
@@ -80,6 +79,7 @@
       <pre th:text="${currentTask.result}" class="answer-div p-3 mb-2 text-light rounded small"></pre>
       <div class="d-flex justify-content-center">
         <a href="/" class="btn btn-primary btn-lg" >Go to Main Page</a>
+        <a th:if="${currentTask.imageResult != null}" th:href="@{/image/{imageName}(imageName=${currentTask.imageResult})}" class="btn btn-secondary btn-lg" style="margin-left: 5%;">Open photo answer</a>
       </div>
     </div>
 

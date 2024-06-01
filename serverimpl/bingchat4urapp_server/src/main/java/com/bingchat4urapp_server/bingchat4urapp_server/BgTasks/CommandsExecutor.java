@@ -1,6 +1,9 @@
 package com.bingchat4urapp_server.bingchat4urapp_server.BgTasks;
 
+import java.nio.file.Paths;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +11,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
-
 import com.bingchat4urapp.BingChat;
+import com.bingchat4urapp.BrowserUtils;
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
 import com.bingchat4urapp_server.bingchat4urapp_server.Shared;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
@@ -46,6 +49,10 @@ public class CommandsExecutor {
 
         TaskModel task = _context.findFirstUnfinishedTask();
         if (task != null) {
+            if (task.type == 0){
+                _chat.exit();
+                return;
+            }
             Map<String, String> data = convertJsonToMap(task);
             if (data != null) {
                 switch (task.type) {
@@ -58,6 +65,7 @@ public class CommandsExecutor {
                     case 3:
                         processСreateChatTask(task, data);
                         break;
+
                     default:
                         GotError(task, "Huh?");
                         break;
@@ -68,7 +76,7 @@ public class CommandsExecutor {
 
     private void processСreateChatTask(TaskModel task, Map<String, String> data){
         print("Got create chat task");
-        Boolean result = _chat.CreateNewChat(Integer.parseInt(data.get("type")));
+        Boolean result = _chat.createNewChat(Integer.parseInt(data.get("type")));
         task.isFinished = true;
         task.gotError = !result;
         _context.save(task);
@@ -77,7 +85,7 @@ public class CommandsExecutor {
 
     private void processAuthTask(TaskModel task, Map<String, String> data) {
         print("Got auth task");
-        Boolean result = _chat.Auth(data.get("login"), data.get("password"));
+        Boolean result = _chat.auth(data.get("login"), data.get("password"));
         task.isFinished = true;
         task.gotError = !result;
         _context.save(task);
@@ -88,10 +96,22 @@ public class CommandsExecutor {
         print("Got promt task");
         String prompt = data.get("promt");
         Long timeOutForAnswer = Long.parseLong(data.get("timeOutForAnswer"));
-        String result = _chat.AskBing(prompt, timeOutForAnswer);
+        String result = _chat.askBing(prompt, timeOutForAnswer);
         task.isFinished = true;
         task.gotError = result == null;
         task.result = result;
+
+        var imageResult = _chat._browser.takeScreenshot();
+        String imageName = BrowserUtils.generateRandomFileName(15)+".png";
+        try{
+            ImageIO.write(imageResult, "png", Paths.get(Shared.imagesPath.toString(), imageName).toFile());
+            task.imageResult = imageName;
+        }
+        catch (Exception e)  {
+            print("Can't save image of answer!");
+            e.printStackTrace();
+        }
+
         _context.save(task);
         print("Finished promt task");
     }

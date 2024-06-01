@@ -5,6 +5,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.RequestsModels;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -69,5 +70,17 @@ public class Utils {
         newTask.data = jsonString;
 
         return newTask;
+    }
+
+    public TaskModel createPromtTask(RequestsModels.PromtRequest promptRequest) {
+        return createPromtTask(promptRequest.getPromt(), promptRequest.getTimeOutForAnswer().toString());
+    }
+
+    public TaskModel createChatTask(RequestsModels.ChatRequest chatRequest) {
+        return createNewChatTask(chatRequest.getType().toString());
+    }
+
+    public TaskModel createAuthTask(RequestsModels.AuthRequest authRequest){
+        return createAuthTask(authRequest.getLogin(), authRequest.getPassword());
     }
 }

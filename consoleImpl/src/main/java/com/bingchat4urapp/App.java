@@ -22,7 +22,7 @@ public class App
         Boolean result = false;
         //chat.Exit();
         try{
-            result = chat.Auth(data.get(0), data.get(1));
+            result = chat.auth(data.get(0), data.get(1));
         }
         catch (Exception e){
             
@@ -33,15 +33,15 @@ public class App
         if (result){
             //sc.nextLine();
             //chat.extractBingAnswerRecode();
-            System.out.println(chat.CreateNewChat(3));
-            System.out.println(chat.AskBing("Как у тебя дела?", 120));
+            System.out.println(chat.createNewChat(3));
+            System.out.println(chat.askBing("Как у тебя дела?", 120));
             //chat.TakeScreenOfAsnwer("first.png");
             //System.out.println(chat.AskBing("А теперь покажи формулы которые нужно знать для решения задач на горизонтальные броски тела", 100));
             //chat.TakeScreenOfAsnwer("second.png");
         }
         System.out.println(result);
         Thread.sleep(1000);
-        chat.Exit();
+        chat.exit();
         System.out.println("Called exit");
     }
 }

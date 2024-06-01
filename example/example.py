@@ -17,7 +17,8 @@ if (login!="skip"):
     password = getpass.getpass("Enter password: ")
 
     data = {"login": login, "password": password}
-    response = requests.post("http://127.0.0.1:8080/auth", data=data)
+    response = requests.post("http://127.0.0.1:8080/auth", json=data)
+    print("Response from server = ", response.text)
 
     result = get_data(response.text)
     if (result["gotError"] == True):
@@ -26,7 +27,7 @@ if (login!="skip"):
 
 print("Finsihed auth!")
 
-response = requests.post("http://127.0.0.1:8080/createchat", data={"type":2})
+response = requests.post("http://127.0.0.1:8080/createchat", json={"type":3})
 result = get_data(response.text)
 if (result["gotError"] == True):
     print("Can't create chat")
@@ -37,7 +38,7 @@ while (True):
     promt = input("Enter promt: ")
     if (promt == "exit"):
         break
-    response = requests.post("http://127.0.0.1:8080/sendpromt", data={"promt":promt, "timeOutForAnswer":90})
+    response = requests.post("http://127.0.0.1:8080/sendpromt", json={"promt":promt, "timeOutForAnswer":90})
     result = get_data(response.text)
     if (result["gotError"] !=True):
         print(result["result"])

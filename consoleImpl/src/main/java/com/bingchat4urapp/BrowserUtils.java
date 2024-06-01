@@ -47,7 +47,7 @@ public class BrowserUtils {
     }
 
     // method that compare two images
-    public static Boolean CompareImagesAlg(BufferedImage FirstImage, BufferedImage SecondImage, double tolerance, double PercentOfMath){
+    public static Boolean compareImagesAlg(BufferedImage FirstImage, BufferedImage SecondImage, double tolerance, double PercentOfMath){
 
         if (FirstImage.getWidth()!=SecondImage.getWidth() || FirstImage.getHeight()!=SecondImage.getHeight()) return false;
         Double CountGood = 0.0;
@@ -68,9 +68,9 @@ public class BrowserUtils {
     }
 
 
-    public static Boolean CompareImages(BufferedImage CurrentImage, ImageData ToCompare){
+    public static Boolean compareImages(BufferedImage CurrentImage, ImageData ToCompare){
         BufferedImage CroppedImage = CurrentImage.getSubimage(ToCompare.position.getX(), ToCompare.position.getY(), ToCompare.position.getWidth(), ToCompare.position.getHeight());
-        Boolean result = CompareImagesAlg(CroppedImage, ToCompare.image, 10, 90.0);
+        Boolean result = compareImagesAlg(CroppedImage, ToCompare.image, 10, 90.0);
 
         if (!result && Debug){
             try {
@@ -93,7 +93,7 @@ public class BrowserUtils {
     }
 
     // download zip file with chrome driver and extract it
-    public static Boolean DownloadChromeDriver(){
+    public static Boolean downloadChromeDriver(){
         Boolean isWindows = System.getProperty("os.name").contains("Windows");
         String driverLink = isWindows ? WinChromeDriverLink : LinuxChromeDriverLink;
         String ZipPath = Paths.get(System.getProperty("user.home"), "Documents", "chromedriver.zip").toString();
@@ -121,7 +121,7 @@ public class BrowserUtils {
         return true;
     }
     
-    public static String ExtractAuthLink(String str, String key) {
+    public static String extractAuthLink(String str, String key) {
         int i = str.indexOf(key);
         if (i == -1) {
             return "";
@@ -135,7 +135,7 @@ public class BrowserUtils {
     }
 
     // метод, который генеирирует случайное имя для файла
-    public static String GenerateRandomFileName(int length){
+    public static String generateRandomFileName(int length){
         String alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         StringBuilder sb = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
