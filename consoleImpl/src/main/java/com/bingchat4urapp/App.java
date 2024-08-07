@@ -1,8 +1,6 @@
 package com.bingchat4urapp;
 
-import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
 import java.io.IOException;
 import java.nio.file.*;
 
@@ -10,11 +8,22 @@ public class App
 {
     public static void main( String[] args ) throws InterruptedException, IOException
     {
-        // String proxy = "127.0.0.1:1080";
-        // if (System.getProperty("os.name").contains("Windows")){
-        //     proxy = "127.0.0.1:8521";
-        // }
-        Scanner sc = new Scanner(System.in);
+        testUDEdge();
+    }
+
+    private static void testUDEdge() throws InterruptedException{
+        UndetectedEdgeBrowser udBrowser = new UndetectedEdgeBrowser("https://chatgpt.com/", "127.0.0.1:2080", 1280, 1000, false, true);
+        Thread.sleep(10000);
+        udBrowser.getHTML();
+        for (int i=0; i<2; i++){
+            udBrowser.emulateLeftClikc(214, 285);
+            Thread.sleep(5000);
+            System.out.println("Clicked!");
+        }
+        udBrowser.getHTML();
+        udBrowser.exit();
+    }
+    private static void testBingChat() throws InterruptedException, IOException{
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
         

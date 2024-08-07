@@ -241,7 +241,7 @@ public class BingChat {
             }
         }
 
-        return extractBingAnswerRecode();
+        return extractBingAnswer();
     }
 
     // method that change zoom, takescreen, reset zoom ans scroold page to the end
@@ -264,24 +264,88 @@ public class BingChat {
         jsexec.executeScript("document.body.style.zoom = '"+percentage+"%'");
     }
 
-    public String extractBingAnswerRecode(){
-        List<WebElement> actionBarContext = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
-            .findElement(By.cssSelector("#cib-conversation-main")).getShadowRoot()
-            .findElements(By.cssSelector("cib-chat-turn"));
-        List<WebElement> cibMessages =  actionBarContext.get(actionBarContext.size()-1).getShadowRoot().findElement(By.cssSelector(".response-message-group")).getShadowRoot()
-            .findElements(By.cssSelector("cib-message"));
-        for (WebElement block : cibMessages){
-            String ariaLabel = block.getAttribute("aria-label");
-            if (ariaLabel != null && ariaLabel.contains("Copilot")){
-                logger.info("Found answer");
-                System.out.println(ariaLabel);
-                return ariaLabel;
+    // да кода больше, но мне так проще потом вспоминать что я делал :)
+    public String extractBingAnswer(){
+        try {
+            logger.info("Start extracting Bing answer");
+            
+            // Получение главного контейнера
+            WebElement cibSerpMain = _browser._driver.findElement(By.cssSelector(".cib-serp-main"));
+            if (cibSerpMain == null) {
+                logger.error("Main container '.cib-serp-main' not found");
+                return null;
             }
+            logger.info("Found main container '.cib-serp-main'");
+            
+            // Переход к дочерним элементам с использованием Shadow DOM
+            WebElement cibConversationMain = cibSerpMain.getShadowRoot().findElement(By.cssSelector("#cib-conversation-main"));
+            if (cibConversationMain == null) {
+                logger.error("Conversation main '#cib-conversation-main' not found");
+                return null;
+            }
+            logger.info("Found conversation main '#cib-conversation-main'");
+            
+            // Получение списка всех chat-turn
+            List<WebElement> actionBarContext = cibConversationMain.getShadowRoot().findElements(By.cssSelector("cib-chat-turn"));
+            if (actionBarContext == null || actionBarContext.isEmpty()) {
+                logger.error("Chat turns 'cib-chat-turn' not found");
+                return null;
+            }
+            logger.info("Found chat turns 'cib-chat-turn', total: " + actionBarContext.size());
+            
+            // Получение последнего chat-turn
+            WebElement lastChatTurn = actionBarContext.get(actionBarContext.size() - 1);
+            if (lastChatTurn == null) {
+                logger.error("Last chat turn not found");
+                return null;
+            }
+            logger.info("Found last chat turn");
+            
+            // Переход к элементам внутри последнего chat-turn
+            WebElement cibMessage = lastChatTurn.getShadowRoot().findElement(By.cssSelector(".response-message-group"));
+            if (cibMessage == null) {
+                logger.error(".response-message-group not found in last chat turn");
+                return null;
+            }
+            logger.info("Found .response-message-group in last chat turn");
+            
+            WebElement cibMessageShadow = cibMessage.getShadowRoot().findElement(By.cssSelector("cib-message"));
+            if (cibMessageShadow == null) {
+                logger.error("cib-message not found in .response-message-group");
+                return null;
+            }
+            logger.info("Found cib-message in .response-message-group");
+            
+            WebElement responseBlock = cibMessageShadow.getShadowRoot().findElement(By.cssSelector("cib-shared"));
+            if (responseBlock == null) {
+                logger.error("cib-shared not found in cib-message");
+                return null;
+            }
+            logger.info("Found cib-shared in cib-message");
+            
+            WebElement responseContent = responseBlock.findElement(By.cssSelector(".content.user-select-text"));
+            if (responseContent == null) {
+                logger.error(".content.user-select-text not found in cib-shared");
+                return null;
+            }
+            logger.info("Found .content.user-select-text in cib-shared");
+            
+            // Получение атрибута aria-label
+            String ariaLabel = responseContent.getAttribute("aria-label");
+            if (ariaLabel != null && ariaLabel.contains("Copilot")) {
+                logger.info("Found answer: " + ariaLabel);
+                return ariaLabel;
+            } else {
+                logger.error("Aria label is null or does not contain 'Copilot'. Can't get answer");
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error("An error occurred: " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
-
-
+    
     public void exit(){
         _browser.exit();
     } 
