@@ -12,6 +12,7 @@ import org.cef.CefApp.CefAppState;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefMessageRouter;
 import org.cef.handler.CefDisplayHandlerAdapter;
+
 import me.friwi.jcefmaven.CefAppBuilder;
 import me.friwi.jcefmaven.MavenCefAppHandlerAdapter;
 
@@ -41,9 +42,11 @@ public class UndetectedEdgeBrowser extends JFrame{
     public UndetectedEdgeBrowser(String startUrl, String proxy, int width, int height, Boolean hideWindow, Boolean cleanChache){
         isWindows = System.getProperty("os.name").contains("Windows");
         Boolean UseOSR = true;
+        if (hideWindow != null && hideWindow) setUndecorated(true);
+
         // JCEF init
         CefAppBuilder builder = new CefAppBuilder();
-        builder.getCefSettings().user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0";
+        builder.getCefSettings().user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0";
         builder.getCefSettings().windowless_rendering_enabled = UseOSR;
         builder.setAppHandler(new MavenCefAppHandlerAdapter() {
             @Override
@@ -58,13 +61,14 @@ public class UndetectedEdgeBrowser extends JFrame{
         if (proxy != null && !proxy.trim().isEmpty()){
             builder.addJcefArgs("--proxy-server=socks5://"+proxy);
         }
-        builder.addJcefArgs("--enable-chrome-runtime");
+        // idk if it even working :)
+        builder.addJcefArgs("--enable-chrome-runtime", "--enable-blink-features=InterestCohortAPI", "--accept-language=en-US,en;q=0.9", "--accept-encoding=gzip, deflate, br");
 
         try{
             _app = builder.build();
         }
         catch (Exception e){
-            logger.error("Error while initializing JCEF", e);
+            logger.error("Can't init CEF browser", e);
             System.exit(1);
         }
 
@@ -74,7 +78,8 @@ public class UndetectedEdgeBrowser extends JFrame{
             @Override
             public boolean onConsoleMessage(CefBrowser browser, CefSettings.LogSeverity level, String message, String source, int line) {
                 // TODO make something like stack of messages to give methods ability to get answers from JS
-                logger.info("Got message from console: \n" + message);
+                //logger.info("Got message from console: \n" + message);
+                System.out.println(message);
                 return true;
             }
         });
@@ -118,7 +123,7 @@ public class UndetectedEdgeBrowser extends JFrame{
         setTitle("Test UD JCEF browser");
 
         setVisible(true);
-        if (hideWindow || hideWindow == null) setState(JFrame.ICONIFIED);
+        if (hideWindow != null && hideWindow ) setState(JFrame.ICONIFIED);
         logger.info("Browser size: " +" Width = "+_browserUI.getWidth() + " Height = "+_browserUI.getHeight());
         logger.info("Craeted window with witdh = " + getWidth() + " height = " + getHeight());
 
@@ -136,7 +141,8 @@ public class UndetectedEdgeBrowser extends JFrame{
         }
         catch (Exception e){}
         if ( hideWindow == null || hideWindow){
-            setVisible(false);
+            //setVisible(false); we can't hide window cuz without window we can not send key events to component
+            setOpacity(0f);
         }
     }
 
@@ -155,6 +161,54 @@ public class UndetectedEdgeBrowser extends JFrame{
 
         for (int i=0; i<moves.size(); i++){
             _browserUI.dispatchEvent(moves.get(i));
+        }
+    }
+
+    // TODO implemet screenshot method
+
+    private void emulateKeyPress(int keyCode){
+        char keyChar = UndetectedBrowserUtils.getCharFromKeyCode(keyCode);
+        emulateKeyPress(keyCode, keyChar);
+    }
+
+    // this method works only if JFram is visible
+    public void emulateKeyPress(int keyCode, char keyChar){
+        var keyEvents = new ArrayList<KeyEvent>();
+        
+        keyEvents.add(new KeyEvent(
+            _browserUI,
+            KeyEvent.KEY_PRESSED, 
+            System.currentTimeMillis(), 
+            0,
+            keyCode,
+            keyChar
+        ));
+
+        keyEvents.add(new KeyEvent(
+            _browserUI,
+            KeyEvent.KEY_RELEASED,    
+            System.currentTimeMillis()+10,
+            0,
+            keyCode,
+            keyChar
+        ));
+
+        for (KeyEvent event : keyEvents) {
+            _browserUI.dispatchEvent(event);
+        }
+    }
+
+    // TODO implement method which can do the same thing but using JS
+    public void enterText(String text) throws Exception{
+        
+        // this code support only english alphabet
+        for (char c : text.toCharArray()){
+            Integer keyCode = UndetectedBrowserUtils.getKeyCodeFromChar(c);
+            if (keyCode == null){
+                throw new Exception("There is not keycode for this character - " + c);
+            }
+            //keyCode = KeyEvent.getExtendedKeyCodeForChar(c);
+            emulateKeyPress(keyCode);
         }
     }
 
