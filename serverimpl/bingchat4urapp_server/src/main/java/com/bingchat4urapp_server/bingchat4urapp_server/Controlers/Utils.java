@@ -14,18 +14,22 @@ public class Utils {
     private ObjectMapper mapper = new ObjectMapper();
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(Utils.class);
 
+    private String writeValueAsString(Map<String, String> data){
+        String result = null;
+        try{
+            result = mapper.writeValueAsString(data);
+        } catch (Exception ex){
+            logger.error("Can't serialize data", ex);
+        }
+
+        return result;
+    }
+
     public TaskModel createPromtTask(String promt, String timeOutForAnswer){
         // create String String Map that conatins promt and timeoutForAnswer
         Map<String, String> promtTask = Map.of("promt", promt, "timeOutForAnswer", timeOutForAnswer);
         // convert map to json string
-        String jsonString = null;
-        try {
-            jsonString = mapper.writeValueAsString(promtTask);
-        }
-        catch (Exception e){
-            logger.error("Can't serialize data", e);
-            return null;
-        }
+        String jsonString = writeValueAsString(promtTask);
 
         var newTask = new TaskModel();
         newTask.type = 2;
@@ -37,14 +41,7 @@ public class Utils {
     public TaskModel createAuthTask(String login, String password){
         Map<String, String> authTask = Map.of("login", login, "password", password);
 
-        String jsonString = null;
-        try {
-            jsonString = mapper.writeValueAsString(authTask);
-        }
-        catch (Exception e){
-            logger.error("Can't serialize data", e);
-            return null;
-        }
+        String jsonString = writeValueAsString(authTask);
 
         var newTask = new TaskModel();
         newTask.type = 1;
@@ -56,14 +53,7 @@ public class Utils {
     public TaskModel createNewChatTask(String type){
         Map<String, String> newChatTask = Map.of("type", type);
 
-        String jsonString = null;
-        try {
-            jsonString = mapper.writeValueAsString(newChatTask);
-        }
-        catch (Exception e){
-            logger.error("Can't serialize data", e);
-            return null;
-        }
+        String jsonString = writeValueAsString(newChatTask);
 
         var newTask = new TaskModel();
         newTask.type = 3;

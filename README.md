@@ -19,64 +19,62 @@ java --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/su
 
 Here are the request types and their expected responses (а full example of the program can be found in the “example” folder):
 
-### POST /auth
+### POST /api/auth
 
 This endpoint is used to create an authentication task. It expects a request body with `login` and `password` fields.
 
 Example using Python:
 
 ```python
-import requests
-
-url = "http://localhost:8080/auth"
-data = {"login": "your_login", "password": "your_password"}
-response = requests.post(url, data=data)
-
-print(response.text)
+url = "http://127.0.0.1:8080/api/auth"
+data = {"login": login, "password": password}
+response = requests.post(url, json=data)
+    
+print("Response from server =", response.text)
 ```
 The server will return the ID of the created task.
 
-### POST /createchat
-This endpoint is used to create a chat. It expects a request body with a type field, which should be a number.
-* 1 - More creative
-* 2 - More Balanced
-* 3 - More Precise
+### POST /api/createchat
+This endpoint is used to create a chat. It expects a JSON body with a `type` field, which should be a number:
+* `1` - More creative
+* `2` - More Balanced
+* `3` - More Precise
 
 Example using Python:
 ```python
 import requests
 
-url = "http://localhost:8080/createchat"
-data = {"type": "2"}
-response = requests.post(url, data=data)
+url = "http://127.0.0.1:8080/api/createchat"
+data = {"type": 3}
+response = requests.post(url, json=data)
 
 print(response.text)
 ```
 The server will return the ID of the created task.
 
-### POST /sendpromt
-This endpoint is used to create a prompt task. It expects a request body with promt and timeOutForAnswer fields. The timeOutForAnswer field should be a number.
+### POST /api/sendpromt
+This endpoint is used to create a prompt task. It expects a JSON body with `promt` and `timeOutForAnswer` fields. The `timeOutForAnswer` field should be a number representing the timeout for the answer in seconds.
 
 Example using Python:
 ```python
 import requests
 
-url = "http://localhost:8080/sendpromt"
-data = {"promt": "your_prompt", "timeOutForAnswer": "90"}
-response = requests.post(url, data=data)
+url = "http://127.0.0.1:8080/api/sendpromt"
+data = {"promt": "your_prompt", "timeOutForAnswer": 90}
+response = requests.post(url, json=data)
 
 print(response.text)
 ```
 The server will return the ID of the created task.
 
-### GET /get
-This endpoint is used to get a task. It expects an id parameter in the request.
+### GET /api/get/{id}
+This endpoint is used to retrieve a task by its ID. It expects the `id` to be passed as a part of the URL.
 
 Example using Python:
 ```python
 import requests
 
-url = "http://localhost:8080/get?id=1"
+url = "http://localhost:8080/get/1"
 response = requests.get(url)
 
 print(response.text)
@@ -89,3 +87,14 @@ The server will return a TaskModel object with the following fields:
 * isFinished: A boolean indicating whether the task is finished.
 * gotError: A boolean indicating whether there was an error.
 * result: The result of the task (answer on your ptomt)
+
+### GET /api/exit
+This endpoint is used to close server app correctly.
+
+Example using Python:
+```python
+import requests
+
+response = requests.get("http://127.0.0.1:8080/api/exit")
+print("Session ended.")
+```

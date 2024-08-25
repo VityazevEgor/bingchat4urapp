@@ -56,7 +56,7 @@ public class EdgeBrowser extends JFrame
 
 
     // proxy - SOCKS5 proxy like 127.0.0.1:1800. empty string if no proxy
-    public EdgeBrowser(String proxy, int width, int height, int DebugPort){
+    public EdgeBrowser(String proxy, int width, int height, int DebugPort, Boolean hideWindow){
         isWindows = System.getProperty("os.name").contains("Windows");
         Boolean UseOSR = true;
         // JCEF init
@@ -141,7 +141,7 @@ public class EdgeBrowser extends JFrame
         }
         catch (Exception e){}
         initSelenium(DebugPort);
-        //setVisible(false);
+        if (hideWindow) setVisible(false);
     }
 
     private void initSelenium(int DebugPort){

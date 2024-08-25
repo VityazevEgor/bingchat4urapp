@@ -21,8 +21,8 @@ public class BingChat {
 
     private final Logger logger = LogManager.getLogger(com.bingchat4urapp.BingChat.class);
 
-    public BingChat(String proxy, int width, int height, int DebugPort){
-        _browser = new EdgeBrowser(proxy, width, height, DebugPort);
+    public BingChat(String proxy, int width, int height, int DebugPort, Boolean hideWindow){
+        _browser = new EdgeBrowser(proxy, width, height, DebugPort, hideWindow);
     }
 
 

@@ -62,7 +62,7 @@ public class UndetectedEdgeBrowser extends JFrame{
             builder.addJcefArgs("--proxy-server=socks5://"+proxy);
         }
         // idk if it even working :)
-        builder.addJcefArgs("--enable-chrome-runtime", "--enable-blink-features=InterestCohortAPI", "--accept-language=en-US,en;q=0.9", "--accept-encoding=gzip, deflate, br");
+        builder.addJcefArgs("--enable-chrome-runtime", "--no-sandbox");
 
         try{
             _app = builder.build();

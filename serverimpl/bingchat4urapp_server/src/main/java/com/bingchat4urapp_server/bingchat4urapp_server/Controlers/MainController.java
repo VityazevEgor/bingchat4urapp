@@ -6,9 +6,11 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
@@ -17,6 +19,7 @@ import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 import jakarta.validation.Valid;
 
 @RestController
+@RequestMapping(path = "/api/")
 public class MainController {
     
     @Autowired
@@ -69,8 +72,8 @@ public class MainController {
         }
     }
 
-    @GetMapping("/get")
-    public TaskModel GetTask(@RequestParam Integer id){
+    @RequestMapping(value = "get/{id}", method = RequestMethod.GET)
+    public TaskModel GetTask(@PathVariable Integer id){
         Optional<TaskModel> found = _taskRepo.findById(id);
         if (found.isPresent()){
             return found.get();

@@ -32,7 +32,7 @@ public class CommandsExecutor {
     @PostConstruct
     public void Init(){
         if (_DoJob){
-            _chat = new BingChat(Shared.proxy, 1280, 1000, 10431);
+            _chat = new BingChat(Shared.proxy, 1280, 1000, 10431, true);
             print("Created BingChat object with proxy = " + Shared.proxy);
             var t = LogManager.getLogger();
             t.info("test");
@@ -67,9 +67,12 @@ public class CommandsExecutor {
                         break;
 
                     default:
-                        GotError(task, "Huh?");
+                        GotError(task, "Got task with unknow type");
                         break;
                 }
+            }
+            else{
+                GotError(task, "Could not get data from task (Maybe is null or in wrong JSON format)");
             }
         }
     }

@@ -17,6 +17,7 @@ public class FiltersCfg {
         FilterRegistrationBean<AuthFilter> registrationBean = new FilterRegistrationBean<AuthFilter>();
         registrationBean.setFilter(filter);
         registrationBean.addUrlPatterns("/");
+        registrationBean.setOrder(0);
         return registrationBean;
     }
 
@@ -26,6 +27,7 @@ public class FiltersCfg {
         FilterRegistrationBean<NoChatFilter> registrationBean = new FilterRegistrationBean<NoChatFilter>();
         registrationBean.setFilter(filter);
         registrationBean.addUrlPatterns("/");
+        registrationBean.setOrder(1);
         return registrationBean;
     }
 }

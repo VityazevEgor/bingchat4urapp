@@ -12,12 +12,13 @@ public class App
 {
     public static void main( String[] args ) throws InterruptedException, IOException
     {
-        testKeyEmulation();
+        testBingChat();
     }
 
+    @SuppressWarnings("unused")
     private static void testKeyEmulation(){
-        UndetectedEdgeBrowser udBrowser = new UndetectedEdgeBrowser(null, null, 1280, 1000, false, true);
-        UndetectedBrowserUtils.sleep(3000);
+        UndetectedEdgeBrowser udBrowser = new UndetectedEdgeBrowser("https://bot.sannysoft.com/", null, 1280, 1000, false, true);
+        UndetectedBrowserUtils.sleep(30000);
         System.out.println("Enetring text");
         try {
             udBrowser.enterText("lol kek. 1-2 = 3");
@@ -48,7 +49,7 @@ public class App
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
         
-        BingChat chat = new BingChat(null, 1280, 1000, 10431);
+        BingChat chat = new BingChat(null, 1280, 1000, 10431, false);
         Boolean result = false;
         //chat.Exit();
         try{
@@ -65,6 +66,7 @@ public class App
             //chat.extractBingAnswerRecode();
             System.out.println(chat.createNewChat(3));
             System.out.println(chat.askBing("Как у тебя дела?", 120));
+            System.out.println(chat.askBing("Когда родился путин?", 120));
             //chat.TakeScreenOfAsnwer("first.png");
             //System.out.println(chat.AskBing("А теперь покажи формулы которые нужно знать для решения задач на горизонтальные броски тела", 100));
             //chat.TakeScreenOfAsnwer("second.png");

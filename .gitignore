@@ -24,3 +24,7 @@ first.png
 logintest.png
 edge_browser_logs.txt
 /consoleImpl/logsDir
+/serverimpl/bingchat4urapp_server/images
+/serverimpl/bingchat4urapp_server/logsDir
+serverimpl/bingchat4urapp_server/bc4uaDB.db
+*.db
