@@ -6,11 +6,9 @@
 
   <groupId>com.bingchat4urapp</groupId>
   <artifactId>bingchat4urapp</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
 
   <name>bingchat4urapp</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

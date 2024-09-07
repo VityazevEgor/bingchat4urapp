@@ -32,7 +32,7 @@ public class CommandsExecutor {
     @PostConstruct
     public void Init(){
         if (_DoJob){
-            _chat = new BingChat(Shared.proxy, 1280, 1000, 10431, true);
+            _chat = new BingChat(Shared.proxy, 1280, 1000, 10431, Shared.hideBrowserWindow);
             print("Created BingChat object with proxy = " + Shared.proxy);
             var t = LogManager.getLogger();
             t.info("test");

@@ -28,17 +28,9 @@ public class BingChat {
 
     // I need to fix it cuz there is sometime different types of auth
     public Boolean auth(String login, String password){
-        if (!_browser.loadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
-        
-        // TODO сделать возможность делать чистую авторизацию (удалять информацию о продедылущей)
-        // _browser.CleanCookies();
-        // logger.info("I deleted all cocokies for the bing.com. Going to load site again");
-        // _browser._driver.get("https://google.com"); // got damn that thing is not good
-        
-        // if (!_browser.LoadAndWaitForComplete("https://bing.com", timeOutTime, 0)) return false;
-        // logger.info("Loaded bing");
+        if (!_browser.loadAndWaitForComplete("https://copilot.microsoft.com/", timeOutTime, 0)) return false;
 
-        if (!_browser.waitForElement(timeOutTime, By.id("id_s"))){
+        if (!_browser.waitForElement(timeOutTime, By.id("id_a"))){
             // если нету кнопки "Войти" то чекаем не авторизированы ли мы уже
             if (_browser.waitForElement(timeOutTime, By.id("id_n"))){
                 logger.info("You already logged in as - " + _browser._driver.findElement(By.id("id_n")).getText());
@@ -48,30 +40,25 @@ public class BingChat {
                 return false;
             }
         }
-        //_browser._driver.findElement(By.id("id_s")).click();
-        WebElement ariaSwitcherButton = _browser._driver.findElement(By.id("id_l"));
-        Instant initTime =  Instant.now();
+        logger.info("Found 'Login' button");
+        WebElement ariaDiv = _browser._driver.findElement(By.id("id_l"));
+        WebElement ariraSwitchButton = _browser._driver.findElement(By.id("id_a"));
 
-        while (!"true".equalsIgnoreCase(ariaSwitcherButton.getAttribute("aria-expanded"))) {
+        Instant initTime =  Instant.now();
+        while (!"true".equalsIgnoreCase(ariaDiv.getAttribute("aria-expanded"))) {
             if (Duration.between(initTime, Instant.now()).toSeconds()>=timeOutTime.getSeconds()){
                 logger.error("Could not open area in time");
                 return false;
             }
-
-            new Actions(_browser._driver).moveToElement(_browser._driver.findElement(By.id("id_s"))).click().perform();
-            logger.info("Clicked on login button");
+            new Actions(_browser._driver).moveToElement(ariraSwitchButton).click().perform();
             try {
                 Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }   
+            } catch (InterruptedException e) {}
         }
         logger.info("Expanded area");
+        WebElement firstLoginButton = _browser._driver.findElement(By.xpath("//ul[@class='id_accountList_container']//li[1]//a"));
+        new Actions(_browser._driver).moveToElement(firstLoginButton).click().perform();
 
-        if (_browser.waitForElement(timeOutTime, By.cssSelector(".id_accountItem"))){
-            logger.info("Detected second type of auth");
-            _browser._driver.findElement(By.cssSelector(".id_accountItem")).click();
-        }
         
         if (!_browser.waitForComplete(timeOutTime, 4000)) return false;
         logger.info("Loaded login page");
@@ -89,8 +76,11 @@ public class BingChat {
         logger.info("Loadded 'Stay signed' page");
         _browser._driver.findElement(By.id("acceptButton")).click();
 
-        if (!_browser.waitForComplete(timeOutTime, 0) || !_browser.waitForElement(timeOutTime, By.id("bnp_btn_accept"))) return false;
-        _browser._driver.findElement(By.id("bnp_btn_accept")).click();
+        if (!_browser.waitForComplete(timeOutTime, 0)) return false;
+        if (_browser.waitForElement(timeOutTime, By.id("bnp_btn_accept"))){
+            // now it's optinal
+            _browser._driver.findElement(By.id("bnp_btn_accept")).click();
+        }
         logger.info("Finished auth!");
 
         return true;
@@ -98,7 +88,7 @@ public class BingChat {
 
     // method that opens chat with bing and select specific conversation mode
     public Boolean createNewChat(int ModeType){
-        if (!_browser.loadAndWaitForComplete("https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx", java.time.Duration.ofSeconds(5),0)) return false;
+        if (!_browser.loadAndWaitForComplete("https://copilot.microsoft.com/" , java.time.Duration.ofSeconds(5),0)) return false;
         logger.info("Loaded chat");
 
         if (!_browser.waitForElement(timeOutTime, By.cssSelector(".cib-serp-main"))){
@@ -265,29 +255,22 @@ public class BingChat {
     }
 
     // да кода больше, но мне так проще потом вспоминать что я делал :)
+    // [7 сентября 2024] Убрал проверки на null ибо в этом нету смысла т.к при отсуствии элемента тут выбрасывается исключения и код просто не доходит до проверки на null
     public String extractBingAnswer(){
         try {
             logger.info("Start extracting Bing answer");
             
             // Получение главного контейнера
             WebElement cibSerpMain = _browser._driver.findElement(By.cssSelector(".cib-serp-main"));
-            if (cibSerpMain == null) {
-                logger.error("Main container '.cib-serp-main' not found");
-                return null;
-            }
             logger.info("Found main container '.cib-serp-main'");
             
             // Переход к дочерним элементам с использованием Shadow DOM
             WebElement cibConversationMain = cibSerpMain.getShadowRoot().findElement(By.cssSelector("#cib-conversation-main"));
-            if (cibConversationMain == null) {
-                logger.error("Conversation main '#cib-conversation-main' not found");
-                return null;
-            }
             logger.info("Found conversation main '#cib-conversation-main'");
             
             // Получение списка всех chat-turn
             List<WebElement> actionBarContext = cibConversationMain.getShadowRoot().findElements(By.cssSelector("cib-chat-turn"));
-            if (actionBarContext == null || actionBarContext.isEmpty()) {
+            if (actionBarContext.isEmpty()) {
                 logger.error("Chat turns 'cib-chat-turn' not found");
                 return null;
             }
@@ -295,21 +278,25 @@ public class BingChat {
             
             // Получение последнего chat-turn
             WebElement lastChatTurn = actionBarContext.get(actionBarContext.size() - 1);
-            if (lastChatTurn == null) {
-                logger.error("Last chat turn not found");
-                return null;
-            }
             logger.info("Found last chat turn");
             
             // Переход к элементам внутри последнего chat-turn
             WebElement cibMessage = lastChatTurn.getShadowRoot().findElement(By.cssSelector(".response-message-group"));
-            if (cibMessage == null) {
-                logger.error(".response-message-group not found in last chat turn");
-                return null;
-            }
             logger.info("Found .response-message-group in last chat turn");
             
-            WebElement cibMessageShadow = cibMessage.getShadowRoot().findElement(By.cssSelector("cib-message"));
+            // их может быть больше чем 1 когда у нас бинг произвёл поиск
+            List<WebElement> cibMessagesShadow = cibMessage.getShadowRoot().findElements(By.cssSelector("cib-message"));
+            WebElement cibMessageShadow = null;
+            for (WebElement el : cibMessagesShadow){
+                try{
+                    el.getShadowRoot().findElement(By.cssSelector("cib-shared"));
+                    cibMessageShadow = el;
+                    break;
+                }
+                catch (Exception ex){
+                    logger.info("Wrong cib-message block");
+                }
+            }
             if (cibMessageShadow == null) {
                 logger.error("cib-message not found in .response-message-group");
                 return null;
@@ -317,17 +304,9 @@ public class BingChat {
             logger.info("Found cib-message in .response-message-group");
             
             WebElement responseBlock = cibMessageShadow.getShadowRoot().findElement(By.cssSelector("cib-shared"));
-            if (responseBlock == null) {
-                logger.error("cib-shared not found in cib-message");
-                return null;
-            }
             logger.info("Found cib-shared in cib-message");
             
             WebElement responseContent = responseBlock.findElement(By.cssSelector(".content.user-select-text"));
-            if (responseContent == null) {
-                logger.error(".content.user-select-text not found in cib-shared");
-                return null;
-            }
             logger.info("Found .content.user-select-text in cib-shared");
             
             // Получение атрибута aria-label

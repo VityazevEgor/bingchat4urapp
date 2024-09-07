@@ -12,23 +12,46 @@ import java.util.regex.Pattern;
 public class Bingchat4urappServerApplication {
 
 	public static void main(String[] args) {
-		if (args.length>0){
-			String proxy = args[0];
-			if (isValidProxy(proxy)){
-				System.out.print("It is valid proxy i'm going to use it");
-				Shared.proxy = proxy;
+		String proxy = null;
+		Boolean hideBrowser = true; 
+
+		// Обработка аргументов командной строки
+		for (int i = 0; i < args.length; i++) {
+			switch (args[i]) {
+				case "--proxy":
+					if (i + 1 < args.length) {
+						proxy = args[i + 1];
+						i++;
+					} else {
+						System.out.println("Error: no value is specified for --proxy");
+						System.exit(1);
+					}
+					break;
+				case "--hideBrowser":
+					if (i + 1 < args.length) {
+						hideBrowser = Boolean.parseBoolean(args[i + 1]);
+						i++;
+					} else {
+						System.out.println("Error: no value is specified for --hideBrowser");
+						System.exit(1);
+					}
+					break;
+				default:
+					System.out.println("Unknown arg: " + args[i]);
+					System.exit(1);
 			}
 		}
-		if (!Files.exists(Shared.imagesPath)){
-			try{
-			Files.createDirectories(Shared.imagesPath);
-			}
-			catch(Exception e){
-				System.out.println("Error creating folder for images! \n\n");
-				e.printStackTrace();
-				System.exit(1);
-			}
+
+		// Если указан proxy и он валидный
+		if (proxy != null && isValidProxy(proxy)) {
+			System.out.println("Using proxy: " + proxy);
+			Shared.proxy = proxy;
+		} else {
+			Shared.proxy = null;
+			System.out.println("Proxy is not valid. Running browser without proxy (null).");
 		}
+		// remove before package
+		Shared.hideBrowserWindow = hideBrowser;
 		SpringApplication app = new SpringApplication(Bingchat4urappServerApplication.class);
 		app.setHeadless(false);
 		app.run();

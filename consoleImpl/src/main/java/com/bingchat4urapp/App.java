@@ -49,9 +49,8 @@ public class App
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
         
-        BingChat chat = new BingChat(null, 1280, 1000, 10431, false);
+        BingChat chat = new BingChat("127.0.0.1:2080", 1280, 1000, 10431, false);
         Boolean result = false;
-        //chat.Exit();
         try{
             result = chat.auth(data.get(0), data.get(1));
         }
@@ -65,8 +64,8 @@ public class App
             //sc.nextLine();
             //chat.extractBingAnswerRecode();
             System.out.println(chat.createNewChat(3));
-            System.out.println(chat.askBing("Как у тебя дела?", 120));
-            System.out.println(chat.askBing("Когда родился путин?", 120));
+            //System.out.println(chat.askBing("Как у тебя дела?", 120));
+            System.out.println(chat.askBing("Найди в итнернете когда родился путин?", 120));
             //chat.TakeScreenOfAsnwer("first.png");
             //System.out.println(chat.AskBing("А теперь покажи формулы которые нужно знать для решения задач на горизонтальные броски тела", 100));
             //chat.TakeScreenOfAsnwer("second.png");
