@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 
 
 
@@ -26,7 +27,14 @@ public class GUIController {
     @GetMapping("/")
     public ModelAndView main(){
         var model = new ModelAndView("main");
-        model.addObject("name", "Test");
+
+        TaskModel lastTask = _context.findLastFinishedTask();
+        if (lastTask != null && lastTask.result != null){
+            if (lastTask.result.length() >60) {
+                lastTask.result = lastTask.result.substring(0, 60);
+            }
+            model.addObject("lastTask", lastTask);
+        }
         return model;
     }
 

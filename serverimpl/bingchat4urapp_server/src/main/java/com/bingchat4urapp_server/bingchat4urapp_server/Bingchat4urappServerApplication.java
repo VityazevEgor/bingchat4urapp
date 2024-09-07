@@ -50,7 +50,18 @@ public class Bingchat4urappServerApplication {
 			Shared.proxy = null;
 			System.out.println("Proxy is not valid. Running browser without proxy (null).");
 		}
-		// remove before package
+
+		// Создание папки для изображений, если она не существует
+		if (!Files.exists(Shared.imagesPath)) {
+			try {
+				Files.createDirectories(Shared.imagesPath);
+			} catch (Exception e) {
+				System.out.println("Can't create folder for images! \n\n");
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+
 		Shared.hideBrowserWindow = hideBrowser;
 		SpringApplication app = new SpringApplication(Bingchat4urappServerApplication.class);
 		app.setHeadless(false);

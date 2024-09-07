@@ -58,6 +58,15 @@
             <textarea class="form-control dark-textarea" name="promt"></textarea>
             <button class="btn btn-outline-secondary" type="submit" style="border-left: 0; border-top-left-radius:  0; border-bottom-left-radius:  0;">Send</button>
         </form>
+        <div th:if="${lastTask}" class="d-flex justify-content-between align-items-center mt-3 p-3 border" style="border-color: #6c757d;">
+            <div class="me-3">
+                <p class="mb-0" th:text="${lastTask.result}">Task result</p>
+            </div><div class="mx-3">|</div>
+            
+            <div>
+                <a th:href="@{'~/task/' + ${lastTask.id}}" class="btn btn-outline-secondary" >Open this task</a>
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
