@@ -17,7 +17,7 @@ import org.openqa.selenium.interactions.Actions;
 
 public class BingChat {
     public EdgeBrowser _browser;
-    private final Duration timeOutTime = java.time.Duration.ofSeconds(10);
+    public final Duration timeOutTime = java.time.Duration.ofSeconds(10);
 
     private final Logger logger = LogManager.getLogger(com.bingchat4urapp.BingChat.class);
 

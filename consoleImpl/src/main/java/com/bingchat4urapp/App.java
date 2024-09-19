@@ -12,7 +12,18 @@ public class App
 {
     public static void main( String[] args ) throws InterruptedException, IOException
     {
-        testBingChat();
+        testDuckBingChat();
+    }
+
+    private static void testDuckBingChat() throws InterruptedException, IOException{
+        Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
+        List<String> data = Files.readAllLines(pwdPath);
+
+        DuckBingChat chat = new DuckBingChat("127.0.0.1:2080", 1280, 1000, 10431, false);
+        System.out.println(chat.createDuckChat());
+        System.out.println(chat.detectDuckAnswerClassName());
+        Thread.sleep(2000);
+        chat.exit();
     }
 
     @SuppressWarnings("unused")
