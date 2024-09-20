@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>com.bingchat4urapp</groupId>
 			<artifactId>bingchat4urapp</artifactId>
-			<version>1.4</version>
+			<version>1.5</version>
 		</dependency>
 
 		<dependency>

@@ -18,11 +18,16 @@ import org.openqa.selenium.interactions.Actions;
 public class BingChat {
     public EdgeBrowser _browser;
     public final Duration timeOutTime = java.time.Duration.ofSeconds(10);
+    private Boolean emulateErrors = false;
 
     private final Logger logger = LogManager.getLogger(com.bingchat4urapp.BingChat.class);
 
     public BingChat(String proxy, int width, int height, int DebugPort, Boolean hideWindow){
         _browser = new EdgeBrowser(proxy, width, height, DebugPort, hideWindow);
+    }
+
+    public void setEmulateErrors(boolean isEnabled){
+        emulateErrors = isEnabled;
     }
 
 
@@ -192,6 +197,10 @@ public class BingChat {
 
     // TimeOutForAnswer in seconds. This method must be called only after CreateNewChat
     public String askBing(String promt, long timeOutForAnswer){
+        // simulate error
+        if (emulateErrors) {
+            return null;
+        }
 
         SearchContext actionBarContext = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
             .findElement(By.cssSelector("#cib-action-bar-main")).getShadowRoot();
@@ -202,13 +211,15 @@ public class BingChat {
         }
 
         WebElement textInput = actionBarContext.findElement(By.cssSelector("cib-text-input")).getShadowRoot().findElement(By.cssSelector("#searchbox"));
-        promt = promt.replace("\n", "").replace("\r", "");
+        promt = promt.replace("\n", " ").replace("\r", " ");
 
         new Actions(_browser._driver).moveToElement(textInput).click().sendKeys(promt+"\n").perform();
         logger.info("I sent promt");
 
         // time when we started waiting for answer from bing
         Instant startTime = Instant.now();
+
+        //simulate error
 
         // Experiment code
         WebElement stopTypingButton = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import com.bingchat4urapp.BingChat;
 import com.bingchat4urapp.BrowserUtils;
+import com.bingchat4urapp.DuckBingChat;
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
 import com.bingchat4urapp_server.bingchat4urapp_server.Shared;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
@@ -22,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class CommandsExecutor {
     
-    private BingChat _chat;
+    private DuckBingChat _chat;
     private Boolean _DoJob = true;
     private ObjectMapper _mapper = new ObjectMapper();
     
@@ -32,7 +33,14 @@ public class CommandsExecutor {
     @PostConstruct
     public void Init(){
         if (_DoJob){
-            _chat = new BingChat(Shared.proxy, 1280, 1000, 10431, Shared.hideBrowserWindow);
+            _chat = new DuckBingChat(Shared.proxy, 1280, 1000, 10431, Shared.hideBrowserWindow);
+            if (Shared.examMode){
+                _chat.setExamMode(true);
+                print("Exam mode is ENABLED!");
+            }
+            if (Shared.emulateBingErros){
+                _chat.setEmulateErrors(true);
+            }
             print("Created BingChat object with proxy = " + Shared.proxy);
             var t = LogManager.getLogger();
             t.info("test");

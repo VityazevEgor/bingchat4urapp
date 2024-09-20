@@ -6,24 +6,49 @@ import com.jogamp.common.util.InterruptSource.Thread;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.awt.event.*;
+import java.util.*;
 
 public class App 
 {
     public static void main( String[] args ) throws InterruptedException, IOException
     {
-        testDuckBingChat();
+        emulateErrorSituatin();
     }
 
-    private static void testDuckBingChat() throws InterruptedException, IOException{
+    private static void emulateErrorSituatin() throws IOException{
+        var chat = new DuckBingChat("127.0.0.1:2080", 1280, 1000, 10431, false);
+        chat.setExamMode(true);
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
-
-        DuckBingChat chat = new DuckBingChat("127.0.0.1:2080", 1280, 1000, 10431, false);
-        System.out.println(chat.createDuckChat());
-        System.out.println(chat.detectDuckAnswerClassName());
-        Thread.sleep(2000);
+        var authRes = chat.auth(data.get(0), data.get(1));
+        if (authRes && chat.createNewChat(3)){
+            var promtResult = chat.askBing("Как у тебя дела?", 120);
+            System.out.println("AI response: " + promtResult);
+            promtResult = chat.askBing("Напиши формулу поиска угловой скорости для физики", 120);
+            System.out.println("AI response: " + promtResult);
+        }
+        waitForInput();
         chat.exit();
+    }
+
+    @SuppressWarnings("unused")
+    private static void testDuckBingChat() throws InterruptedException, IOException{
+        DuckBingChat chat = new DuckBingChat(null, 1280, 1000, 10431, false);
+        System.out.println(chat.acceptAllDuck());
+        var detectResult = chat.createNewDuckChat();
+        if (detectResult){
+            System.out.println(chat.askDuckAI("Напиши hello world на java", 120));
+            //System.out.println(chat.askDuckAI("Напиши основные формулы в физике, которые используется в механике", 120));
+            //Thread.sleep(2000);
+        }
+        waitForInput();
+        chat.exit();
+    }
+
+    private static void waitForInput(){
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
+        scanner.close();
     }
 
     @SuppressWarnings("unused")

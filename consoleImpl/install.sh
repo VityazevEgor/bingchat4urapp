@@ -24,7 +24,7 @@ fi
 mvn install:install-file -Dfile="$jar_file" \
   -DgroupId=com.bingchat4urapp \
   -DartifactId=bingchat4urapp \
-  -Dversion=1.4 \
+  -Dversion=1.5 \
   -Dpackaging=jar \
   -Dname=bingchat4urapp
 

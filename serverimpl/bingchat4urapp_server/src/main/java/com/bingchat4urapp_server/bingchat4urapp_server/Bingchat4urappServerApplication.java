@@ -36,6 +36,24 @@ public class Bingchat4urappServerApplication {
 						System.exit(1);
 					}
 					break;
+				case "--examMode":
+					if (i + 1 < args.length) {
+						Shared.examMode = Boolean.parseBoolean(args[i + 1]);
+						i++;
+					} else {
+						System.out.println("Error: no value is specified for --examMode");
+						System.exit(1);
+					}
+					break;
+				case "--emulateErrors":
+					if (i + 1 < args.length) {
+						Shared.emulateBingErros = Boolean.parseBoolean(args[i + 1]);
+						i++;
+					} else {
+						System.out.println("Error: no value is specified for --emulateErrors");
+						System.exit(1);
+					}
+					break;
 				default:
 					System.out.println("Unknown arg: " + args[i]);
 					System.exit(1);
