@@ -11,6 +11,8 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         body {
             background-color: #212121; /* Основной цвет страницы */
@@ -27,9 +29,9 @@
             border: 1px solid #616161; /* Цвет рамки блока */
             overflow: auto;
             max-height: 80vh;
-            width: 60%;
+            width: 95%;
             word-wrap: break-word;
-            white-space: pre-wrap;
+            /* white-space: pre-wrap; */
             margin-bottom: 20px;
             margin: auto;
             max-width: 100%;
@@ -76,7 +78,11 @@
     </div>
 
     <div th:if="${currentTask.isFinished and not currentTask.gotError}">
-      <pre th:text="${currentTask.result}" class="answer-div p-3 mb-2 text-light rounded small"></pre>
+      <div th:if="${answerLines != null}" class="answer-div p-3 mb-2 text-light rounded small">
+        <p th:each="line: ${answerLines}" th:text="${line}"></p>
+      </div>
+      <h2 class="text-danger" th:if="${answerLines == null}" >There is no lines from answer...</h2>
+
       <div class="d-flex justify-content-center">
         <a href="/" class="btn btn-primary btn-lg" >Go to Main Page</a>
         <a th:if="${currentTask.imageResult != null}" th:href="@{/image/{imageName}(imageName=${currentTask.imageResult})}" class="btn btn-secondary btn-lg" style="margin-left: 5%;">Open photo answer</a>

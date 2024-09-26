@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
-import com.bingchat4urapp.BingChat;
 import com.bingchat4urapp.BrowserUtils;
 import com.bingchat4urapp.DuckBingChat;
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
@@ -39,6 +38,7 @@ public class CommandsExecutor {
                 print("Exam mode is ENABLED!");
             }
             if (Shared.emulateBingErros){
+                print("Emulate erros mode is ENABLED");
                 _chat.setEmulateErrors(true);
             }
             print("Created BingChat object with proxy = " + Shared.proxy);

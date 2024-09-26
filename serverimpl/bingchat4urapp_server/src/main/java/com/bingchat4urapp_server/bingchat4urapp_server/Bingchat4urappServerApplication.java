@@ -12,8 +12,7 @@ import java.util.regex.Pattern;
 public class Bingchat4urappServerApplication {
 
 	public static void main(String[] args) {
-		String proxy = null;
-		Boolean hideBrowser = true; 
+		String proxy = null; 
 
 		// Обработка аргументов командной строки
 		for (int i = 0; i < args.length; i++) {
@@ -29,7 +28,7 @@ public class Bingchat4urappServerApplication {
 					break;
 				case "--hideBrowser":
 					if (i + 1 < args.length) {
-						hideBrowser = Boolean.parseBoolean(args[i + 1]);
+						Shared.hideBrowserWindow = Boolean.parseBoolean(args[i + 1]);
 						i++;
 					} else {
 						System.out.println("Error: no value is specified for --hideBrowser");
@@ -80,7 +79,6 @@ public class Bingchat4urappServerApplication {
 			}
 		}
 
-		Shared.hideBrowserWindow = hideBrowser;
 		SpringApplication app = new SpringApplication(Bingchat4urappServerApplication.class);
 		app.setHeadless(false);
 		app.run();

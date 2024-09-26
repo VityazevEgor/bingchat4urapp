@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.bingchat4urapp_server</groupId>
 	<artifactId>bingchat4urapp_server</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<name>bingchat4urapp_server</name>
 	<description>Server version of BingChat4urApp</description>
 	<properties>

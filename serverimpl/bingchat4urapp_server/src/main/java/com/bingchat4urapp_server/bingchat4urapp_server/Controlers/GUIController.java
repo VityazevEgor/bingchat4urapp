@@ -28,13 +28,21 @@ public class GUIController {
     public ModelAndView main(){
         var model = new ModelAndView("main");
 
-        TaskModel lastTask = _context.findLastFinishedTask();
-        if (lastTask != null && lastTask.result != null){
-            if (lastTask.result.length() >60) {
-                lastTask.result = lastTask.result.substring(0, 60);
+        // TaskModel lastTask = _context.findLastFinishedTask();
+        // if (lastTask != null && lastTask.result != null){
+        //     if (lastTask.result.length() >60) {
+        //         lastTask.result = lastTask.result.substring(0, 60);
+        //     }
+        //     model.addObject("lastTask", lastTask);
+        // }
+
+        var promtModels = _context.findLatestFinishedPromtTasks();
+        for (TaskModel currentPromt : promtModels) {
+            if (currentPromt.result != null && currentPromt.result.length() >60){
+                currentPromt.result = currentPromt.result.substring(0,60);
             }
-            model.addObject("lastTask", lastTask);
         }
+        model.addObject("latestPromts", promtModels);
         return model;
     }
 
@@ -76,6 +84,11 @@ public class GUIController {
 
         var view = new ModelAndView("taskwait");
         view.addObject("currentTask", taskModel);
+
+        // Добовляем массив строк для того, чтобы построчно вывести ответ
+        if (!taskModel.gotError && taskModel.isFinished && taskModel.result != null){
+            view.addObject("answerLines", taskModel.result.split("\n"));
+        }
         return view;
     }
         
