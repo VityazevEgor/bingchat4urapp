@@ -12,7 +12,7 @@ An application that allows you to use BingChat in your Windows or Linux applicat
 If you want to use a proxy, you need to pass the proxy address as a parameter to the .jar file. Please note that only SOCKS5 proxies are supported. For example, you can pass the proxy to the application through the console like this:
 
 ```bash
-java --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar 127.0.0.1:8521
+java --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar --proxy 127.0.0.1:8521
 ```
 
 ## How to use

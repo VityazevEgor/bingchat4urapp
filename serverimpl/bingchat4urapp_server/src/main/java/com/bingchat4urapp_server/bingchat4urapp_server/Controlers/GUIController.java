@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
+import com.bingchat4urapp_server.bingchat4urapp_server.BgTasks.CommandsExecutor;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 
 
@@ -24,17 +25,12 @@ public class GUIController {
     @Autowired
     private Utils _utils;
 
+    @Autowired
+    private CommandsExecutor cmdExecutor;
+
     @GetMapping("/")
     public ModelAndView main(){
         var model = new ModelAndView("main");
-
-        // TaskModel lastTask = _context.findLastFinishedTask();
-        // if (lastTask != null && lastTask.result != null){
-        //     if (lastTask.result.length() >60) {
-        //         lastTask.result = lastTask.result.substring(0, 60);
-        //     }
-        //     model.addObject("lastTask", lastTask);
-        // }
 
         var promtModels = _context.findLatestFinishedPromtTasks();
         for (TaskModel currentPromt : promtModels) {
@@ -43,12 +39,20 @@ public class GUIController {
             }
         }
         model.addObject("latestPromts", promtModels);
+        String aiInUse = cmdExecutor.getUseDuckDuck() ? "Using DuckDuck" : "Using Copilot";
+        model.addObject("aiInUse", aiInUse);
         return model;
     }
 
     @GetMapping("/authgui")
     public ModelAndView authGui() {
         return new ModelAndView("auth");
+    }
+
+    @GetMapping("/switchai")
+    public String switchAi(){
+        cmdExecutor.setUseDuckDuck(!cmdExecutor.getUseDuckDuck());
+        return "redirect:/";
     }
 
     @GetMapping("/newchatgui")

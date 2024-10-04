@@ -32,7 +32,7 @@ public class CommandsExecutor {
     @PostConstruct
     public void Init(){
         if (_DoJob){
-            _chat = new DuckBingChat(Shared.proxy, 1280, 1000, 10431, Shared.hideBrowserWindow);
+            _chat = new DuckBingChat(Shared.proxy, 1920, 1080, 10431, Shared.hideBrowserWindow);
             if (Shared.examMode){
                 _chat.setExamMode(true);
                 print("Exam mode is ENABLED!");
@@ -44,6 +44,21 @@ public class CommandsExecutor {
             print("Created BingChat object with proxy = " + Shared.proxy);
             var t = LogManager.getLogger();
             t.info("test");
+        }
+    }
+
+    public void setUseDuckDuck(Boolean value){
+        if (_chat != null){
+            _chat.setUseDuckDuck(value);
+        }
+    }
+
+    public Boolean getUseDuckDuck(){
+        if (_chat != null){
+            return _chat.getUseDuckDuck();
+        }
+        else{
+            return false;
         }
     }
 

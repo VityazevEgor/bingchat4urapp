@@ -35,24 +35,13 @@
 </head>
 <body>
     <div class="container text-center" style="height: 80%;">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="#">BingChat4urapp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Main</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Shutdown server (to risky for misclick)</a>
-                        </li>
-                    </ul>
-                </div>
+        <div class="d-flex justify-content-between align-items-center bg-dark text-white p-3 mb-3">
+            <div class="h4 mb-0">BingChat4urapp</div>
+            <div class="d-flex align-items-center" style="width: 50%;">
+                <span id="statusText" class="me-3" th:text="${aiInUse}">Using Bing</span>
+                <a class="btn btn-outline-light" id="switchAIButton" style="width: 90%;" href="/switchai">Switch AI</a>
             </div>
-        </nav>
+        </div>
         <form th:action="@{/sendgui}" method="post" class="d-flex justify-content-center" style="height: 80%;">
             <a class="btn btn-outline-secondary" type="button" href="/newchatgui" style="border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0;">Clean</a>
             <textarea class="form-control dark-textarea" name="promt"></textarea>

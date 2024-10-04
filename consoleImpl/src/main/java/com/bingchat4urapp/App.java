@@ -16,8 +16,9 @@ public class App
     }
 
     private static void emulateErrorSituatin() throws IOException{
-        var chat = new DuckBingChat("127.0.0.1:2080", 1280, 1000, 10431, false);
+        var chat = new DuckBingChat("127.0.0.1:2080", 1920, 1080, 10431, false);
         chat.setExamMode(true);
+        chat.setEmulateErrors(true);
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
         var authRes = chat.auth(data.get(0), data.get(1));

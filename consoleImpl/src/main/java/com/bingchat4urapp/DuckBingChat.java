@@ -21,7 +21,7 @@ import org.openqa.selenium.interactions.Actions;
 public class DuckBingChat extends BingChat{
 
     private Boolean examMode = false;
-    private Boolean bingHaveErrors = false;
+    private Boolean useDuckDuck = false;
     private final Logger logger = LogManager.getLogger(com.bingchat4urapp.DuckBingChat.class);
     private String answerDivClassName = null;
     private WebElement textArea = null, sendButton = null;
@@ -35,9 +35,17 @@ public class DuckBingChat extends BingChat{
         examMode = isEnabled;
     }
 
+    public void setUseDuckDuck(Boolean useIt){
+        useDuckDuck = useIt;
+    }
+
+    public Boolean getUseDuckDuck(){
+        return useDuckDuck;
+    }
+
     @Override
     public String askBing(String prompt, long timeOutForAnswer) {
-        if (examMode && bingHaveErrors) {
+        if (examMode && useDuckDuck) {
             logger.warn("We had problems with bing and exam mode is enabled. Trying to get answers from DuckDuck.");
             return tryDuckDuck(prompt, timeOutForAnswer);
         }
@@ -45,7 +53,7 @@ public class DuckBingChat extends BingChat{
         String result = super.askBing(prompt, timeOutForAnswer);
 
         if (result == null) {
-            bingHaveErrors = true;
+            useDuckDuck = true;
             if (examMode) {
                 logger.warn("Exam mode is enabled; Got error from Bing. Trying to get answer from DuckDuck instead.");
                 return tryDuckDuck(prompt, timeOutForAnswer);
@@ -70,7 +78,7 @@ public class DuckBingChat extends BingChat{
 
     @Override
     public Boolean createNewChat(int ModeType){
-        if (examMode && bingHaveErrors){
+        if (examMode && useDuckDuck){
             logger.warn("We had problems with bing. Going to create new chat with duck duck");
             acceptAllDuck();
             return createNewDuckChat();
@@ -78,7 +86,7 @@ public class DuckBingChat extends BingChat{
         else{
             var result = super.createNewChat(ModeType);
             if (!result) {
-                bingHaveErrors = true;
+                useDuckDuck = true;
             }
             return result;
         }
@@ -98,18 +106,6 @@ public class DuckBingChat extends BingChat{
         }
         logger.info("Found button");
         _browser._driver.findElement(By.xpath("//button[@type='button' and @tabindex='1']")).click();
-
-        // if (!_browser.waitForElement(timeOutTime, By.xpath("//button[@type='button' and @tabindex='-1']"))){
-        //     logger.error("Can't find 'Next' button");
-        //     return false;
-        // }
-        // logger.info("Found 'Next' button");
-        // _browser._driver.findElement(By.xpath("//button[@type='button' and @tabindex='-1']")).click();
-
-        // if (!_browser.waitForElement(timeOutTime, By.xpath("//button[@type='button' and @tabindex='-1']"))){
-        //     logger.error("Can't find 'Next' button");
-        //     return false;
-        // }
 
         JavascriptExecutor js = (JavascriptExecutor) _browser._driver;
         try{
