@@ -122,14 +122,21 @@ public class CommandsExecutor {
         print("Got promt task");
         String prompt = data.get("promt");
         Long timeOutForAnswer = Long.parseLong(data.get("timeOutForAnswer"));
-        String result = _chat.askBing(prompt, timeOutForAnswer);
-        task.isFinished = true;
-        task.gotError = result == null;
-        task.result = result;
-
-        var imageResult = _chat._browser.takeScreenshot();
-        String imageName = BrowserUtils.generateRandomFileName(15)+".png";
         try{
+            String result = _chat.askBing(prompt, timeOutForAnswer);
+            task.isFinished = true;
+            task.gotError = result == null;
+            task.result = result;
+        }catch (Exception ex){
+            print("Got unexpected error in promt task");
+            ex.printStackTrace();
+            task.isFinished = true;
+            task.gotError = true;
+        }
+
+        try{
+            var imageResult = _chat._browser.takeScreenshot();
+            String imageName = BrowserUtils.generateRandomFileName(15)+".png";
             ImageIO.write(imageResult, "png", Paths.get(Shared.imagesPath.toString(), imageName).toFile());
             task.imageResult = imageName;
         }

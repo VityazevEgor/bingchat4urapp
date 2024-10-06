@@ -133,7 +133,7 @@ public class DuckBingChat extends BingChat{
             textArea.sendKeys("Напиши слово \"Lol kek\"");
             sendButton.click();
     
-            if (!waitDuckResponse(sendButton, 5)) {
+            if (!waitDuckResponse(sendButton, 25)) {
                 logger.error("Could not get answer in time");
                 return false;
             }
