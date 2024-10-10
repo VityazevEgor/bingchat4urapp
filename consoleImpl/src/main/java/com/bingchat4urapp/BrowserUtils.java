@@ -145,6 +145,13 @@ public class BrowserUtils {
         return sb.toString();
     }
 
+    public static void sleep(Integer seconds){
+        try{
+            Thread.sleep(seconds * 1000);
+        }
+        catch (Exception ex){}
+    }
+
     private static void print(String text){
         System.out.println("[Browser utils] " + text);
     }

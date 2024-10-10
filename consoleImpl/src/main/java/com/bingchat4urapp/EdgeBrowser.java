@@ -41,29 +41,29 @@ import java.nio.file.Path;
 public class EdgeBrowser extends JFrame
 {
     // fields for browser
-    private CefBrowser _browser;
-    private CefClient _client;
-    private CefApp _app;
-    private Component _browserUI;
-    private JLayeredPane _panel;
+    private CefBrowser browser;
+    private CefClient cefClient;
+    private CefApp cefApp;
+    private Component browserUI;
+    private JLayeredPane panel;
     private boolean isWindows = false;
 
     // field for selenium
-    public WebDriver _driver;
+    public WebDriver driver;
 
     private final Logger logger = LogManager.getLogger(com.bingchat4urapp.EdgeBrowser.class);
     private final String chachePach = Paths.get(System.getProperty("user.home"),  "Documents",  "cefChache").toAbsolutePath().toString();
+    private final Boolean userOSR = true;
 
 
     // proxy - SOCKS5 proxy like 127.0.0.1:1800. empty string if no proxy
     public EdgeBrowser(String proxy, int width, int height, int DebugPort, Boolean hideWindow){
         isWindows = System.getProperty("os.name").contains("Windows");
-        Boolean UseOSR = true;
         // JCEF init
         CefAppBuilder builder = new CefAppBuilder();
         builder.getCefSettings().user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0";
         // in undecarated mode browser won't render anything without it
-        builder.getCefSettings().windowless_rendering_enabled = UseOSR;
+        builder.getCefSettings().windowless_rendering_enabled = userOSR;
         builder.setAppHandler(new MavenCefAppHandlerAdapter() {
             @Override
             public void stateHasChanged(org.cef.CefApp.CefAppState state) {
@@ -83,16 +83,16 @@ public class EdgeBrowser extends JFrame
         }
 
         try{
-            _app = builder.build();
+            cefApp = builder.build();
         }
         catch (Exception e){
             logger.error("Error while initializing JCEF", e);
             System.exit(1);
         }
 
-        _client = _app.createClient();
+        cefClient = cefApp.createClient();
         CefMessageRouter msgRouter = CefMessageRouter.create();
-        _client.addMessageRouter(msgRouter);
+        cefClient.addMessageRouter(msgRouter);
 
         // Now i need to export html file with loader page
         InputStream loaderHtmlStream = getClass().getClassLoader().getResourceAsStream("html/loader.html");
@@ -109,22 +109,22 @@ public class EdgeBrowser extends JFrame
             logger.info("loader.html already exists");
         }
 
-        _browser = _client.createBrowser("file:///"+pathToLoaderHtml.toString(), UseOSR, false);
-        _browserUI = _browser.getUIComponent();
+        browser = cefClient.createBrowser("file:///"+pathToLoaderHtml.toString(), userOSR, false);
+        browserUI = browser.getUIComponent();
 
-        _panel = new JLayeredPane();
-        _panel.setPreferredSize(new Dimension(width, height));
+        panel = new JLayeredPane();
+        panel.setPreferredSize(new Dimension(width, height));
 
-        _browserUI.setBounds(0,0,width, height);
-        _panel.add(_browserUI, JLayeredPane.DEFAULT_LAYER);
+        browserUI.setBounds(0,0,width, height);
+        panel.add(browserUI, JLayeredPane.DEFAULT_LAYER);
 
-        setContentPane(_panel);
+        setContentPane(panel);
 
         pack();
         setTitle("BingChat4UrApp by Egor Viatyzev");
 
         setVisible(true);
-        logger.info("Browser size: " +" Width = "+_browserUI.getWidth() + " Height = "+_browserUI.getHeight());
+        logger.info("Browser size: " +" Width = "+browserUI.getWidth() + " Height = "+browserUI.getHeight());
         logger.info("Craeted window with witdh = " + getWidth() + " height = " + getHeight());
 
         // if windows was closed then we close JCEF
@@ -136,10 +136,7 @@ public class EdgeBrowser extends JFrame
         });
 
         // wait some time to give cef init
-        try{
-            Thread.sleep(2000);
-        }
-        catch (Exception e){}
+        BrowserUtils.sleep(2);
         initSelenium(DebugPort);
         if (hideWindow) setVisible(false);
     }
@@ -163,16 +160,15 @@ public class EdgeBrowser extends JFrame
 
         ChromeOptions options = new ChromeOptions();
         options.setExperimentalOption("debuggerAddress", "127.0.0.1:" + DebugPort);
-        _driver = new ChromeDriver(options);
+        driver = new ChromeDriver(options);
     }
 
-
     public Dimension getBrowserSize(){
-        return _browserUI.getSize();
+        return browserUI.getSize();
     }
 
     public void cleanCookies(){
-        _driver.manage().deleteAllCookies();
+        driver.manage().deleteAllCookies();
     }
 
     private void generateErrorReport(){
@@ -190,12 +186,12 @@ public class EdgeBrowser extends JFrame
     // it return false if it could not load site
     // true if everything is ok
     public boolean loadAndWaitForComplete(String url, java.time.Duration TimeOut, int AdditionalWait){
-        _driver.get(url);
+        driver.get(url);
         return waitForComplete(TimeOut, AdditionalWait);
     }
 
     public boolean waitForComplete(java.time.Duration TimeOut, int AdditionalWait){
-        WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
+        WebDriverWait wait = new WebDriverWait(driver, TimeOut);
         try{
             wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete"));
             if (AdditionalWait>0){
@@ -210,7 +206,7 @@ public class EdgeBrowser extends JFrame
     }
 
     public boolean waitForElement(java.time.Duration TimeOut, By Element){
-        WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
+        WebDriverWait wait = new WebDriverWait(driver, TimeOut);
         try{
             wait.until(ExpectedConditions.elementToBeClickable(Element));
             return true;
@@ -222,9 +218,8 @@ public class EdgeBrowser extends JFrame
         }
     }
 
-    
     public boolean waitForElement(java.time.Duration TimeOut, By Element, SearchContext context){
-        WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
+        WebDriverWait wait = new WebDriverWait(driver, TimeOut);
         try{
             wait.until(new ExpectedCondition<Boolean>() {
                @Override
@@ -248,7 +243,7 @@ public class EdgeBrowser extends JFrame
 
     // method that waits for image to appear in specific place
     public boolean waitForImage(java.time.Duration TimeOut, ImageData ImData){
-        WebDriverWait wait = new WebDriverWait(_driver, TimeOut);
+        WebDriverWait wait = new WebDriverWait(driver, TimeOut);
         try{
             wait.until(new ExpectedCondition<Boolean>() {
                 @Override
@@ -267,7 +262,7 @@ public class EdgeBrowser extends JFrame
 
     // method that get html code of page by JS
     public String getHtml(){
-        JavascriptExecutor js = (JavascriptExecutor)_driver;
+        JavascriptExecutor js = (JavascriptExecutor)driver;
         String pageContent = (String) js.executeScript("return document.documentElement.outerHTML;");
         return pageContent;
     }
@@ -285,7 +280,7 @@ public class EdgeBrowser extends JFrame
     // method that takes screenshot of browser using selenium
     public BufferedImage takeScreenshot(){
         BufferedImage result = null;
-        File screen = ((TakesScreenshot)_driver).getScreenshotAs(OutputType.FILE);
+        File screen = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
         try{
             result = ImageIO.read(screen);
         }
@@ -311,15 +306,11 @@ public class EdgeBrowser extends JFrame
     }
 
     public void exit(){
-        try {
-            Thread.sleep(1000); 
-        } catch (InterruptedException e) {}
-        _driver.quit();
+        BrowserUtils.sleep(1);
+        driver.quit();
         logger.info("Finished driver");
         // we need to give some time for driver
-        try {
-            Thread.sleep(3000); 
-        } catch (InterruptedException e) {}
+        BrowserUtils.sleep(3);
         CefApp.getInstance().dispose();
         logger.info("Dispose cef");
         // for some reason previous line of code do not stop CEF when it use OSR mode 

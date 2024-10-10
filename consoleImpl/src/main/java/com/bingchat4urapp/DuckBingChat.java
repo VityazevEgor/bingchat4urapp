@@ -64,7 +64,7 @@ public class DuckBingChat extends BingChat{
     }
 
     private String tryDuckDuck(String prompt, long timeOutForAnswer) {
-        if (!_browser._driver.getCurrentUrl().contains("duck")){
+        if (!driver.getCurrentUrl().contains("duck")){
             acceptAllDuck();
             if (!createNewDuckChat()) {
                 return null;
@@ -93,21 +93,21 @@ public class DuckBingChat extends BingChat{
     }
 
     public Boolean acceptAllDuck(){
-        if (!_browser.loadAndWaitForComplete("https://duckduckgo.com/?q=DuckDuckGo&ia=chat" , java.time.Duration.ofSeconds(5),0)) return false;
+        if (!loadAndWaitForComplete("https://duckduckgo.com/?q=DuckDuckGo&ia=chat" , java.time.Duration.ofSeconds(5),0)) return false;
         
-        if (_browser.waitForElement(timeOutTime, By.name("user-prompt"))){
+        if (waitForElement(timeOutTime, By.name("user-prompt"))){
             logger.info("There is no need to accept anything");
             return true;
         }
 
-        if (!_browser.waitForElement(timeOutTime, By.xpath("//button[@type='button' and @tabindex='1']"))){
+        if (!waitForElement(timeOutTime, By.xpath("//button[@type='button' and @tabindex='1']"))){
             logger.error("Can't find 'Get started' button");
             return false;
         }
         logger.info("Found button");
-        _browser._driver.findElement(By.xpath("//button[@type='button' and @tabindex='1']")).click();
+        driver.findElement(By.xpath("//button[@type='button' and @tabindex='1']")).click();
 
-        JavascriptExecutor js = (JavascriptExecutor) _browser._driver;
+        JavascriptExecutor js = (JavascriptExecutor) driver;
         try{
             js.executeScript(
                 "Array.from(document.querySelectorAll('button')).find(el => el.textContent === 'Далее' || el.textContent === 'Next').click();"
@@ -125,10 +125,10 @@ public class DuckBingChat extends BingChat{
     }
 
     public Boolean createNewDuckChat() {
-        if (!_browser.loadAndWaitForComplete("https://duckduckgo.com/?q=DuckDuckGo&ia=chat" , java.time.Duration.ofSeconds(5),0)) return false;
+        if (!loadAndWaitForComplete("https://duckduckgo.com/?q=DuckDuckGo&ia=chat" , java.time.Duration.ofSeconds(5),0)) return false;
         try {
-            textArea = _browser._driver.findElement(By.name("user-prompt"));
-            sendButton = _browser._driver.findElement(By.xpath("//button[@type='submit' and (@aria-label='Отправить' or @aria-label='Send')]"));
+            textArea = driver.findElement(By.name("user-prompt"));
+            sendButton = driver.findElement(By.xpath("//button[@type='submit' and (@aria-label='Отправить' or @aria-label='Send')]"));
     
             textArea.sendKeys("Напиши слово \"Lol kek\"");
             sendButton.click();
@@ -154,13 +154,13 @@ public class DuckBingChat extends BingChat{
 
     public Optional<String> askDuckAI(String promt, long timeOutForAnswer){
         promt = promt.replace("\n", " ").replace("\r", " ");
-        new Actions(_browser._driver).moveToElement(textArea, 5, 5).click().sendKeys(promt).build().perform();
+        new Actions(driver).moveToElement(textArea, 5, 5).click().sendKeys(promt).build().perform();
         sendButton.click();
         if (!waitDuckResponse(sendButton, timeOutForAnswer)){
             logger.warn("Could not get answer from DuckDuck in time");
         }
 
-        List<WebElement> elements =  _browser._driver.findElements(By.cssSelector("."+answerDivClassName));
+        List<WebElement> elements =  driver.findElements(By.cssSelector("."+answerDivClassName));
         if (elements.isEmpty()){
             logger.warn("Could not find answer div's");
             return Optional.empty();
@@ -170,9 +170,7 @@ public class DuckBingChat extends BingChat{
     }
     
     private boolean waitDuckResponse(WebElement sendButton, long timeoutInSeconds) {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {}
+        BrowserUtils.sleep(2);
         Instant initTime = Instant.now();
         while (isButtonInStopPhase(sendButton)) {
             if (Duration.between(initTime, Instant.now()).getSeconds() >= timeoutInSeconds) {
@@ -180,9 +178,7 @@ public class DuckBingChat extends BingChat{
             }
         }
         logger.info("Answer is printed");
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {}
+        BrowserUtils.sleep(2);
         return true;
     }    
     
@@ -201,7 +197,7 @@ public class DuckBingChat extends BingChat{
             logger.error("Can't get script from resourses", ex);
             return "не найден";
         }
-        JavascriptExecutor js = (JavascriptExecutor) _browser._driver;
+        JavascriptExecutor js = (JavascriptExecutor) driver;
         return (String) js.executeScript(script);
     }
     

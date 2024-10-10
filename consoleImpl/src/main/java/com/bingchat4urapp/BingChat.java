@@ -3,6 +3,7 @@ package com.bingchat4urapp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import java.awt.image.BufferedImage;
 import org.apache.logging.log4j.LogManager;
@@ -11,180 +12,254 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.Point;
-import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-public class BingChat {
-    public EdgeBrowser _browser;
+public class BingChat extends EdgeBrowser{
     public final Duration timeOutTime = java.time.Duration.ofSeconds(10);
     private Boolean emulateErrors = false;
 
     private final Logger logger = LogManager.getLogger(com.bingchat4urapp.BingChat.class);
 
     public BingChat(String proxy, int width, int height, int DebugPort, Boolean hideWindow){
-        _browser = new EdgeBrowser(proxy, width, height, DebugPort, hideWindow);
+        super(proxy, width, height, DebugPort, hideWindow);
     }
 
     public void setEmulateErrors(boolean isEnabled){
         emulateErrors = isEnabled;
     }
 
-
-    // I need to fix it cuz there is sometime different types of auth
-    public Boolean auth(String login, String password){
-        if (!_browser.loadAndWaitForComplete("https://copilot.microsoft.com/", timeOutTime, 0)) return false;
-
-        if (!_browser.waitForElement(timeOutTime, By.id("id_a"))){
-            // если нету кнопки "Войти" то чекаем не авторизированы ли мы уже
-            if (_browser.waitForElement(timeOutTime, By.id("id_n"))){
-                logger.info("You already logged in as - " + _browser._driver.findElement(By.id("id_n")).getText());
-                return true;
-            }
-            else{
-                return false;
-            }
+    // Update of Bing design 8.10.2024
+    public Boolean auth(String login, String password) {
+        if (!loadPageAndVerify("https://copilot.microsoft.com/", timeOutTime)) {
+            logger.warn("Can't load copilot web page");
+            return false;
         }
-        logger.info("Found 'Login' button");
-        WebElement ariaDiv = _browser._driver.findElement(By.id("id_l"));
-        WebElement ariraSwitchButton = _browser._driver.findElement(By.id("id_a"));
-
-        Instant initTime =  Instant.now();
-        while (!"true".equalsIgnoreCase(ariaDiv.getAttribute("aria-expanded"))) {
-            if (Duration.between(initTime, Instant.now()).toSeconds()>=timeOutTime.getSeconds()){
-                logger.error("Could not open area in time");
-                return false;
-            }
-            new Actions(_browser._driver).moveToElement(ariraSwitchButton).click().perform();
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {}
-        }
-        logger.info("Expanded area");
-        WebElement firstLoginButton = _browser._driver.findElement(By.xpath("//ul[@class='id_accountList_container']//li[1]//a"));
-        new Actions(_browser._driver).moveToElement(firstLoginButton).click().perform();
-
         
-        if (!_browser.waitForComplete(timeOutTime, 4000)) return false;
-        logger.info("Loaded login page");
-        if (!_browser.waitForElement(timeOutTime, By.name("loginfmt"))) return false;
-        _browser._driver.findElement(By.name("loginfmt")).sendKeys(login);
-        _browser._driver.findElement(By.id("idSIButton9")).click();
-        logger.info("Entered login and clicked next button");
-
-        if (!_browser.waitForElement(timeOutTime, By.name("passwd"))) return false;
-        _browser._driver.findElement(By.name("passwd")).sendKeys(password);
-        _browser._driver.findElement(By.id("idSIButton9")).click();
-        logger.info("Entered password");
-
-        if (!_browser.waitForComplete(timeOutTime, 0) || !_browser.waitForElement(timeOutTime, By.id("acceptButton"))) return false;
-        logger.info("Loadded 'Stay signed' page");
-        _browser._driver.findElement(By.id("acceptButton")).click();
-
-        if (!_browser.waitForComplete(timeOutTime, 0)) return false;
-        if (_browser.waitForElement(timeOutTime, By.id("bnp_btn_accept"))){
-            // now it's optinal
-            _browser._driver.findElement(By.id("bnp_btn_accept")).click();
+        Boolean isRussianLanguage = driver.getTitle().contains("ваш ИИ");
+        handleCookies(isRussianLanguage);
+        
+        if (isLoggedIn()) {
+            logger.info("You are already logged in");
+            return true;
         }
-        logger.info("Finished auth!");
+        
+        if (!clickButtonById(":ra:", "Expand sign-in options button")) return false;
+        
+        if (!clickSignInButton(isRussianLanguage)) return false;
+    
+        if (!enterLogin(login)) return false;
+
+        if (driver.getCurrentUrl().startsWith("https://copilot.")) return true;
+        
+        if (!enterPassword(password)) return false;
+    
+        if (!clickStaySignedIn()) return false;
+    
+        if (!waitForComplete(timeOutTime, 0)) {
+            logger.warn("Could not load chat page");
+            return false;
+        }
+    
+        logger.info("Auth is done!");
+        return true;
+    }
+    
+    private boolean loadPageAndVerify(String url, Duration timeOutTime) {
+        if (!loadAndWaitForComplete(url, timeOutTime, 0)) {
+            return false;
+        }
+        logger.info(driver.getCurrentUrl());
+        return true;
+    }
+    
+    private void handleCookies(Boolean isRussianLanguage) {
+        String acceptXPath = isRussianLanguage ? "//button[@title='Принять']" : "//button[@title='Accept']";
+        if (waitForElement(Duration.ofSeconds(1), By.xpath(acceptXPath))) {
+            driver.findElement(By.xpath(acceptXPath)).click();
+            logger.info("Clicked 'Accept' button");
+        }
+    }
+    
+    private boolean isLoggedIn() {
+        if (waitForElement(Duration.ofSeconds(1), By.id(":r8:"))) {
+            logger.info("You already logged in account");
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean clickButtonById(String id, String description) {
+        if (!waitForElement(timeOutTime, By.id(id))) {
+            logger.warn("Can't find '" + description + "' button");
+            return false;
+        }
+        driver.findElement(By.id(id)).click();
+        return true;
+    }
+    
+    private boolean clickSignInButton(Boolean isRussianLanguage) {
+        String signInXPath = isRussianLanguage ? "//button[@title='Войти']" : "//button[@title='Sign in']";
+        if (!waitForElement(timeOutTime, By.xpath(signInXPath))) {
+            logger.warn("Can't find 'Sign in' button");
+            return false;
+        }
+        driver.findElement(By.xpath(signInXPath)).click();
+        BrowserUtils.sleep(1);
+        if (!waitForComplete(timeOutTime, 0)) {
+            logger.warn("Could not load login page in time");
+            return false;
+        }
+        logger.info("Loaded login page");
+        return true;
+    }
+
+    private boolean enterLogin(String login) {
+        if (!waitForElement(timeOutTime, By.name("loginfmt")) || !waitForElement(timeOutTime, By.id("idSIButton9"))) {
+            logger.warn("Could not find login field or login button");
+            return false;
+        }
+        driver.findElement(By.name("loginfmt")).sendKeys(login);
+        driver.findElement(By.id("idSIButton9")).click();
+        BrowserUtils.sleep(1);
+        logger.info("Entered login and clicked next button");
+        if (!waitForComplete(timeOutTime, 0)) {
+            logger.warn("Could not load password page in time");
+            return false;
+        }
+        return true;
+    }
+    
+    private boolean enterPassword(String password) {
+        if (!waitForElement(timeOutTime, By.id("i0118")) || !waitForElement(timeOutTime, By.id("idSIButton9"))) {
+            logger.warn("Could not load password page in time");
+            return false;
+        }
+        driver.findElement(By.id("i0118")).sendKeys(password);
+        driver.findElement(By.id("idSIButton9")).click();
+        BrowserUtils.sleep(1);
+        logger.info("Entered password and clicked on login button");
+        return waitForComplete(timeOutTime, 0);
+    }
+    
+    private boolean clickStaySignedIn() {
+        if (!waitForElement(timeOutTime, By.xpath("//button[@aria-labelledby='kmsiTitle']"))) {
+            logger.warn("Could not load 'Yes' button");
+            return false;
+        }
+        driver.findElement(By.xpath("//button[@aria-labelledby='kmsiTitle']")).click();
+        BrowserUtils.sleep(1);
+        return true;
+    }
+    
+
+    // legacy code
+    public Boolean createNewChat(int modeType){
+        if (!loadAndWaitForComplete("https://copilot.microsoft.com/", timeOutTime, 0)){
+            logger.warn("Could not load chat in time");
+            return false;
+        }
 
         return true;
     }
 
-    // method that opens chat with bing and select specific conversation mode
-    public Boolean createNewChat(int ModeType){
-        if (!_browser.loadAndWaitForComplete("https://copilot.microsoft.com/" , java.time.Duration.ofSeconds(5),0)) return false;
-        logger.info("Loaded chat");
-
-        if (!_browser.waitForElement(timeOutTime, By.cssSelector(".cib-serp-main"))){
-            logger.error("Can't find main");
+    private Boolean enterPromt(String promt){
+        By userInput = By.id("userInput");
+        if (!waitForElement(timeOutTime, userInput)){
+            logger.warn("Can't find user input");
             return false;
         }
-        logger.info("Found main block");
+        promt = promt.replace("\n", " ").replace("\r", " ");
+        driver.findElement(userInput).sendKeys(promt);
+        logger.info("Entered promt");
 
-        SearchContext main = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot();
-        if (!_browser.waitForElement(timeOutTime, By.cssSelector("#cib-conversation-main"), main)){
-            logger.error("Can't find conversation main");
+        By continueButton = By.xpath("//button[@title='Continue']");
+        if (waitForElement(Duration.ofSeconds(1), continueButton)){
+            driver.findElement(continueButton).click();
+        }
+
+        By sendButton = By.xpath("//button[@title='Submit message']");
+        if (!waitForElement(timeOutTime, sendButton)){
+            logger.warn("Can't find 'send button'");
             return false;
         }
-        logger.info("Found conversation block");
-
-        SearchContext ConversationMain = main.findElement(By.cssSelector("#cib-conversation-main")).getShadowRoot();
-        if (!_browser.waitForElement(timeOutTime, By.cssSelector("cib-welcome-container"), ConversationMain)){
-            logger.error("Can't find welcome container");
-            return false;
-        }
-        logger.info("Found welcome container");
-
-        SearchContext WelcomeContainer = ConversationMain.findElement(By.cssSelector("cib-welcome-container")).getShadowRoot();
-        if (!_browser.waitForElement(timeOutTime, By.cssSelector("cib-tone-selector"), WelcomeContainer)){
-            logger.error("Can't find tone selector");
-            return false;
-        }
-        logger.info("Found tone selector block");
-
-        SearchContext ToneSelector = WelcomeContainer.findElement(By.cssSelector("cib-tone-selector")).getShadowRoot();
-        if (!_browser.waitForElement(timeOutTime, By.cssSelector(".tone-precise"), ToneSelector)){
-            logger.error("Can't find tone-precise option");
-            return false;
-        }
-        logger.info("Found options for conversation type");
-        
-        WebElement MorePrecise = ToneSelector.findElement(By.cssSelector(".tone-precise"));
-        WebElement Balanced = ToneSelector.findElement(By.cssSelector(".tone-balanced"));
-        WebElement Creative = ToneSelector.findElement(By.cssSelector(".tone-creative"));
-
-        Instant start = Instant.now();
-        Boolean ElemtsOnTheCorrectPositions = false;
-        
-        // scroll web page down to botoom
-        new Actions(_browser._driver).scrollByAmount(0, 1000);
-
-        while (Duration.between(Instant.now(), start).getSeconds() <= timeOutTime.getSeconds()) {
-            if (checkElemntPosition(Creative) && checkElemntPosition(Balanced) && checkElemntPosition(MorePrecise)){
-                ElemtsOnTheCorrectPositions = true;
-                break;
-            }
-            try{
-                Thread.sleep(500);
-            }
-            catch (InterruptedException e){}
-        }
-
-        if (!ElemtsOnTheCorrectPositions){
-            logger.error("Could not load elements to select chat mode");
-            return false;
-        }
-
-        switch (ModeType) {
-            case 1:
-                new Actions(_browser._driver).moveToElement(Creative).click().build().perform();  
-                break;
-            
-            case 2:
-                new Actions(_browser._driver).moveToElement(Balanced).click().build().perform();
-                break;
-                    
-            default:
-                new Actions(_browser._driver).moveToElement(MorePrecise).click().build().perform();
-                break;
-        }
-
-        logger.info("Clicked on option");
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            logger.error("For some reason i can not stop thread", e);
-        }
-        //_browser.TakeScreenshot("SelectedMode.png");
+        driver.findElement(sendButton).click();
         return true;
+    }
+
+    private Boolean waitForAnswer(long answerTimeOutSeconds) {
+        Instant startTime = Instant.now();
+        Instant lastChangeTime = startTime;
+        String previousHtml = getHtml();
+        long checkIntervalSeconds = 5; // Интервал для проверки изменений
+        Integer sleepDurationSeconds = 1; // Время ожидания между проверками
+    
+        while (Duration.between(startTime, Instant.now()).getSeconds() < answerTimeOutSeconds) {
+            String currentHtml = getHtml();
+    
+            // Если HTML изменился, обновляем время последнего изменения
+            if (!currentHtml.equals(previousHtml)) {
+                lastChangeTime = Instant.now();
+                previousHtml = currentHtml;
+            }
+    
+            // Проверяем, не прошло ли 5 секунд без изменений
+            if (Duration.between(lastChangeTime, Instant.now()).getSeconds() >= checkIntervalSeconds) {
+                logger.info("HTML has not changed for 5 seconds. Answer is probably printed.");
+                return true;
+            }
+    
+            // Ожидаем перед следующей проверкой
+            BrowserUtils.sleep(sleepDurationSeconds);
+        }
+    
+        // Таймаут ожидания ответа
+        logger.warn("Timeout for answer!");
+        return false;
+    }
+
+    private Optional<String> getLastAnswerText(){
+        try {
+            List<WebElement> aiMessages = driver.findElements(By.xpath("//div[@data-content='ai-message']"));
+            if (aiMessages.size() == 0){
+                logger.warn("Can't find ai answer blocks");
+                return Optional.empty();
+            }
+
+            return Optional.ofNullable(aiMessages.get(aiMessages.size()-1).getText());
+        } catch (Exception e) {
+            logger.error("Can't find AI answer", e);
+            return Optional.empty();
+        }
+    }
+    
+
+    public String askBing(String promt, long answerTimeOutSeconds){
+        if (emulateErrors){
+            return null;
+        }
+
+        if (!enterPromt(promt)){
+            return null;
+        }
+        
+        if (!waitForAnswer(answerTimeOutSeconds)){
+            return null;
+        }
+
+        var answer = getLastAnswerText();
+        if (answer.isPresent()){
+            return answer.get();
+        }
+        else{
+            return null;
+        }
     }
 
     // method that checks if element position can be accesed by new Actions
     private Boolean checkElemntPosition(WebElement element){
         Point pos = element.getLocation();
-        java.awt.Dimension BrowserSize = _browser.getBrowserSize();
+        java.awt.Dimension BrowserSize = getBrowserSize();
 
         if (pos.getX()>=0 && pos.getX()<=BrowserSize.getWidth() && pos.getX()>=0 && pos.getX()<=BrowserSize.getHeight()){
             return true;
@@ -195,148 +270,23 @@ public class BingChat {
         }
     }
 
-    // TimeOutForAnswer in seconds. This method must be called only after CreateNewChat
-    public String askBing(String promt, long timeOutForAnswer){
-        // simulate error
-        if (emulateErrors) {
-            return null;
-        }
-
-        SearchContext actionBarContext = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
-            .findElement(By.cssSelector("#cib-action-bar-main")).getShadowRoot();
-
-        if (!_browser.waitForElement(timeOutTime, By.cssSelector("cib-text-input"), actionBarContext)){
-            logger.error("Can't find action bar");
-            return null;
-        }
-
-        WebElement textInput = actionBarContext.findElement(By.cssSelector("cib-text-input")).getShadowRoot().findElement(By.cssSelector("#searchbox"));
-        promt = promt.replace("\n", " ").replace("\r", " ");
-
-        new Actions(_browser._driver).moveToElement(textInput).click().sendKeys(promt+"\n").perform();
-        logger.info("I sent promt");
-
-        // time when we started waiting for answer from bing
-        Instant startTime = Instant.now();
-
-        //simulate error
-
-        // Experiment code
-        WebElement stopTypingButton = _browser._driver.findElement(By.cssSelector(".cib-serp-main")).getShadowRoot()
-            .findElement(By.cssSelector("#cib-action-bar-main")).getShadowRoot()
-            .findElement(By.cssSelector("cib-typing-indicator")).getShadowRoot()
-            .findElement(By.cssSelector("#stop-responding-button"));
-
-        while (!"true".equalsIgnoreCase(stopTypingButton.getAttribute("disabled"))) {
-            if (Duration.between(startTime, Instant.now()).toSeconds()>=timeOutForAnswer){
-                logger.error("Could not get answer in time");
-                _browser.takeScreenshot("cantGetAnswer.png");
-                return null;
-            }
-
-            try{
-                Thread.sleep(500);
-            }
-            catch (Exception e){
-                logger.error("Can't stop thread for some reason", e);
-            }
-        }
-
-        return extractBingAnswer();
-    }
-
     // method that change zoom, takescreen, reset zoom ans scroold page to the end
     public BufferedImage takeScreenOfAsnwer(String path){
         setZoom(70);
         BufferedImage result = null;
         if (path != null){
-            result = _browser.takeScreenshot(path);
+            result = takeScreenshot(path);
         }
         else{
-            result = _browser.takeScreenshot();
+            result = takeScreenshot();
         }
         setZoom(100);
-        new Actions(_browser._driver).keyDown(Keys.CONTROL).sendKeys(Keys.END).keyUp(Keys.CONTROL).perform();
+        new Actions(driver).keyDown(Keys.CONTROL).sendKeys(Keys.END).keyUp(Keys.CONTROL).perform();
         return result;
     }
 
     private void setZoom(Integer percentage){
-        JavascriptExecutor jsexec =  (JavascriptExecutor)_browser._driver;
+        JavascriptExecutor jsexec =  (JavascriptExecutor)driver;
         jsexec.executeScript("document.body.style.zoom = '"+percentage+"%'");
     }
-
-    // да кода больше, но мне так проще потом вспоминать что я делал :)
-    // [7 сентября 2024] Убрал проверки на null ибо в этом нету смысла т.к при отсуствии элемента тут выбрасывается исключения и код просто не доходит до проверки на null
-    public String extractBingAnswer(){
-        try {
-            logger.info("Start extracting Bing answer");
-            
-            // Получение главного контейнера
-            WebElement cibSerpMain = _browser._driver.findElement(By.cssSelector(".cib-serp-main"));
-            logger.info("Found main container '.cib-serp-main'");
-            
-            // Переход к дочерним элементам с использованием Shadow DOM
-            WebElement cibConversationMain = cibSerpMain.getShadowRoot().findElement(By.cssSelector("#cib-conversation-main"));
-            logger.info("Found conversation main '#cib-conversation-main'");
-            
-            // Получение списка всех chat-turn
-            List<WebElement> actionBarContext = cibConversationMain.getShadowRoot().findElements(By.cssSelector("cib-chat-turn"));
-            if (actionBarContext.isEmpty()) {
-                logger.error("Chat turns 'cib-chat-turn' not found");
-                return null;
-            }
-            logger.info("Found chat turns 'cib-chat-turn', total: " + actionBarContext.size());
-            
-            // Получение последнего chat-turn
-            WebElement lastChatTurn = actionBarContext.get(actionBarContext.size() - 1);
-            logger.info("Found last chat turn");
-            
-            // Переход к элементам внутри последнего chat-turn
-            WebElement cibMessage = lastChatTurn.getShadowRoot().findElement(By.cssSelector(".response-message-group"));
-            logger.info("Found .response-message-group in last chat turn");
-            
-            // их может быть больше чем 1 когда у нас бинг произвёл поиск
-            List<WebElement> cibMessagesShadow = cibMessage.getShadowRoot().findElements(By.cssSelector("cib-message"));
-            WebElement cibMessageShadow = null;
-            for (WebElement el : cibMessagesShadow){
-                try{
-                    el.getShadowRoot().findElement(By.cssSelector("cib-shared"));
-                    cibMessageShadow = el;
-                    break;
-                }
-                catch (Exception ex){
-                    logger.info("Wrong cib-message block");
-                }
-            }
-            if (cibMessageShadow == null) {
-                logger.error("cib-message not found in .response-message-group");
-                return null;
-            }
-            logger.info("Found cib-message in .response-message-group");
-            
-            WebElement responseBlock = cibMessageShadow.getShadowRoot().findElement(By.cssSelector("cib-shared"));
-            logger.info("Found cib-shared in cib-message");
-            
-            WebElement responseContent = responseBlock.findElement(By.cssSelector(".content.user-select-text"));
-            logger.info("Found .content.user-select-text in cib-shared");
-            
-            // Получение атрибута aria-label
-            String ariaLabel = responseContent.getAttribute("aria-label");
-            if (ariaLabel != null && ariaLabel.contains("Copilot")) {
-                logger.info("Found answer: " + ariaLabel);
-                return ariaLabel;
-            } else {
-                logger.error("Aria label is null or does not contain 'Copilot'. Can't get answer");
-                return null;
-            }
-        } catch (Exception e) {
-            logger.error("An error occurred: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    public void exit(){
-        _browser.exit();
-    } 
 }
