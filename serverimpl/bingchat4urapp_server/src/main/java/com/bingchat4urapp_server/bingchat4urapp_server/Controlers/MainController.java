@@ -31,7 +31,7 @@ public class MainController {
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(MainController.class);
 
     @PostMapping("/auth")
-    public Integer CreateAuthTask(@Valid @RequestBody RequestsModels.AuthRequest authRequest, BindingResult bindingResult){
+    public Integer createAuthTask(@Valid @RequestBody RequestsModels.AuthRequest authRequest, BindingResult bindingResult){
 
         if (bindingResult.hasErrors()){
             logger.warn("Didn't pass validation in auth task");
@@ -43,7 +43,7 @@ public class MainController {
     }
 
     @PostMapping("/sendpromt")
-    public Integer CreatPromtTask(@Valid @RequestBody RequestsModels.PromtRequest promptRequest, BindingResult bindingResult){
+    public Integer creatPromtTask(@Valid @RequestBody RequestsModels.PromtRequest promptRequest, BindingResult bindingResult){
 
         if (bindingResult.hasErrors()){
             logger.warn("Didn't pass validation in prompt task");
@@ -56,7 +56,7 @@ public class MainController {
     }
 
     @PostMapping("/createchat")
-    public Integer CreatChat(@Valid @RequestBody RequestsModels.ChatRequest chatRequest, BindingResult bindingResult){
+    public Integer creatChat(@Valid @RequestBody RequestsModels.ChatRequest chatRequest, BindingResult bindingResult){
         if (bindingResult.hasErrors()){
             logger.warn("Didn't pass validation in chat task");
             return null;

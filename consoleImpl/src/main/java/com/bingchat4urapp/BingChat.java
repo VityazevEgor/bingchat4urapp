@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -37,14 +38,14 @@ public class BingChat extends EdgeBrowser{
         }
         
         Boolean isRussianLanguage = driver.getTitle().contains("ваш ИИ");
-        handleCookies(isRussianLanguage);
+        handleConfidentialityAgreement(isRussianLanguage);
         
         if (isLoggedIn()) {
             logger.info("You are already logged in");
             return true;
         }
         
-        if (!clickButtonById(":ra:", "Expand sign-in options button")) return false;
+        if (!expandMenu(isRussianLanguage)) return false;
         
         if (!clickSignInButton(isRussianLanguage)) return false;
     
@@ -73,7 +74,7 @@ public class BingChat extends EdgeBrowser{
         return true;
     }
     
-    private void handleCookies(Boolean isRussianLanguage) {
+    private void handleConfidentialityAgreement(Boolean isRussianLanguage) {
         String acceptXPath = isRussianLanguage ? "//button[@title='Принять']" : "//button[@title='Accept']";
         if (waitForElement(Duration.ofSeconds(1), By.xpath(acceptXPath))) {
             driver.findElement(By.xpath(acceptXPath)).click();
@@ -89,22 +90,36 @@ public class BingChat extends EdgeBrowser{
         return false;
     }
     
-    private boolean clickButtonById(String id, String description) {
-        if (!waitForElement(timeOutTime, By.id(id))) {
-            logger.warn("Can't find '" + description + "' button");
-            return false;
-        }
-        driver.findElement(By.id(id)).click();
-        return true;
-    }
-    
-    private boolean clickSignInButton(Boolean isRussianLanguage) {
+    private boolean expandMenu(Boolean isRussianLanguage) {
         String signInXPath = isRussianLanguage ? "//button[@title='Войти']" : "//button[@title='Sign in']";
         if (!waitForElement(timeOutTime, By.xpath(signInXPath))) {
             logger.warn("Can't find 'Sign in' button");
             return false;
         }
         driver.findElement(By.xpath(signInXPath)).click();
+        BrowserUtils.sleep(1);
+        if (!waitForComplete(timeOutTime, 0)) {
+            logger.warn("Could not load login page in time");
+            return false;
+        }
+        logger.info("Expanded menu");
+        return true;
+    }
+
+    private boolean clickSignInButton(Boolean isRussianLanguage) {
+        String signInXPath = isRussianLanguage ? "//button[@title='Войти']" : "//button[@title='Sign in']";
+        try{
+            List<WebElement> buttons = driver.findElements(By.xpath(signInXPath));
+            if (buttons.isEmpty()){
+                logger.warn("Could not find sign in buttons");
+                return false;
+            }
+            buttons.get(buttons.size()-1).click();
+        }
+        catch(Exception ex){
+            logger.error("Can't click on sign in button", ex);
+            return false;
+        }
         BrowserUtils.sleep(1);
         if (!waitForComplete(timeOutTime, 0)) {
             logger.warn("Could not load login page in time");
@@ -169,13 +184,16 @@ public class BingChat extends EdgeBrowser{
             logger.warn("Can't find user input");
             return false;
         }
-        promt = promt.replace("\n", " ").replace("\r", " ");
         driver.findElement(userInput).sendKeys(promt);
         logger.info("Entered promt");
 
         By continueButton = By.xpath("//button[@title='Continue']");
         if (waitForElement(Duration.ofSeconds(1), continueButton)){
             driver.findElement(continueButton).click();
+            logger.info("Found 'Continue button'");
+        }
+        else{
+            logger.info("There is not need to click on 'Continue button'");
         }
 
         By sendButton = By.xpath("//button[@title='Submit message']");
@@ -193,7 +211,6 @@ public class BingChat extends EdgeBrowser{
         String previousHtml = getHtml();
         long checkIntervalSeconds = 5; // Интервал для проверки изменений
         Integer sleepDurationSeconds = 1; // Время ожидания между проверками
-    
         while (Duration.between(startTime, Instant.now()).getSeconds() < answerTimeOutSeconds) {
             String currentHtml = getHtml();
     
@@ -238,7 +255,7 @@ public class BingChat extends EdgeBrowser{
         if (emulateErrors){
             return null;
         }
-
+        promt = promt.replace("\n", " ").replace("\r", " ");
         if (!enterPromt(promt)){
             return null;
         }

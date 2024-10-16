@@ -79,8 +79,5 @@ public class RequestsModels {
             this.type = type;
         }
     }
-    
-
-
 
 }

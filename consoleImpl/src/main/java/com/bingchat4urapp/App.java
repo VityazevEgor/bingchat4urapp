@@ -61,8 +61,8 @@ public class App
         Boolean result = chat.auth(data.get(0),data.get(1));
         if (result){
             chat.createNewChat(0);
-            System.out.println(chat.askBing("Напиши hello world на Java", 60));
-            System.out.println(chat.askBing("Напиши формулы для решеня задача на броски тела под углом к горизонту", 120));
+            //System.out.println(chat.askBing("Напиши hello world на Java", 60));
+            System.out.println(chat.askBing("Можешь показать пример решения задачи по физике на горизонтальный бросок тела?", 120));
         }
         System.out.println(result);
         Thread.sleep(1000);

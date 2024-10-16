@@ -1,7 +1,7 @@
 package com.bingchat4urapp;
 
-import java.awt.Graphics2D;
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -10,18 +10,20 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import net.lingala.zip4j.ZipFile;
 
 import javax.imageio.ImageIO;
 
 import com.jogamp.nativewindow.util.Rectangle;
 
+import net.lingala.zip4j.ZipFile;
+
 public class BrowserUtils {
 
     public static Boolean Debug = false;
 
-    private static final String WinChromeDriverLink = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/win64/chromedriver-win64.zip";
-    private static final String LinuxChromeDriverLink = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/116.0.5845.96/linux64/chromedriver-linux64.zip";
+    private static final String winChromeDriverLink = "https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.100/win64/chromedriver-win64.zip";
+    private static final String linuxChromeDriverLink = "https://storage.googleapis.com/chrome-for-testing-public/127.0.6533.100/linux64/chromedriver-linux64.zip";
+    private static final String driverVersion = "127.0.6533.100";
 
     public static final Path logsDir = Paths.get("logsDir").toAbsolutePath();
 
@@ -95,19 +97,20 @@ public class BrowserUtils {
     // download zip file with chrome driver and extract it
     public static Boolean downloadChromeDriver(){
         Boolean isWindows = System.getProperty("os.name").contains("Windows");
-        String driverLink = isWindows ? WinChromeDriverLink : LinuxChromeDriverLink;
-        String ZipPath = Paths.get(System.getProperty("user.home"), "Documents", "chromedriver.zip").toString();
+        String driverLink = isWindows ? winChromeDriverLink : linuxChromeDriverLink;
+        String zipName = String.format("chromedriver%s.zip", driverVersion);
+        String zipPath = Paths.get(System.getProperty("user.home"), "Documents", zipName).toString();
 
-        if (Files.exists(Paths.get(ZipPath))){
+        if (Files.exists(Paths.get(zipPath))){
             return true;
         }
 
         try{
             InputStream in = new URL(driverLink).openStream();
-            Files.copy(in, Paths.get(ZipPath));
+            Files.copy(in, Paths.get(zipPath));
             print("Downloaded zip file");
 
-            ZipFile zip = new ZipFile(ZipPath);
+            ZipFile zip = new ZipFile(zipPath);
             zip.extractAll(Paths.get(System.getProperty("user.home"), "Documents").toString());
             zip.close();
             print("Extracted zip file");
@@ -149,7 +152,10 @@ public class BrowserUtils {
         try{
             Thread.sleep(seconds * 1000);
         }
-        catch (Exception ex){}
+        catch (Exception ex){
+            System.err.println("I can't sleep for some reason...");
+            ex.printStackTrace();
+        }
     }
 
     private static void print(String text){

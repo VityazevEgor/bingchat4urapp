@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
 import com.bingchat4urapp.BrowserUtils;
 import com.bingchat4urapp.DuckBingChat;
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
@@ -22,24 +21,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class CommandsExecutor {
     
-    private DuckBingChat _chat;
-    private Boolean _DoJob = true;
-    private ObjectMapper _mapper = new ObjectMapper();
+    private DuckBingChat chat;
+    private Boolean doJob = true;
+    private ObjectMapper mapper = new ObjectMapper();
     
     @Autowired
-    private Context _context;
+    private Context context;
 
-    @PostConstruct
-    public void Init(){
-        if (_DoJob){
-            _chat = new DuckBingChat(Shared.proxy, 1920, 1080, 10431, Shared.hideBrowserWindow);
+    public CommandsExecutor(){
+        if (doJob){
+            chat = new DuckBingChat(Shared.proxy, 1920, 1080, 10431, Shared.hideBrowserWindow);
             if (Shared.examMode){
-                _chat.setExamMode(true);
+                chat.setExamMode(true);
                 print("Exam mode is ENABLED!");
             }
             if (Shared.emulateBingErros){
                 print("Emulate erros mode is ENABLED");
-                _chat.setEmulateErrors(true);
+                chat.setEmulateErrors(true);
             }
             print("Created BingChat object with proxy = " + Shared.proxy);
             var t = LogManager.getLogger();
@@ -48,14 +46,14 @@ public class CommandsExecutor {
     }
 
     public void setUseDuckDuck(Boolean value){
-        if (_chat != null){
-            _chat.setUseDuckDuck(value);
+        if (chat != null){
+            chat.setUseDuckDuck(value);
         }
     }
 
     public Boolean getUseDuckDuck(){
-        if (_chat != null){
-            return _chat.getUseDuckDuck();
+        if (chat != null){
+            return chat.getUseDuckDuck();
         }
         else{
             return false;
@@ -68,12 +66,12 @@ public class CommandsExecutor {
 
     @Scheduled(fixedDelay = 1500)
     public void ProcessCommands(){
-        if (!_DoJob) return;
+        if (!doJob) return;
 
-        TaskModel task = _context.findFirstUnfinishedTask();
+        TaskModel task = context.findFirstUnfinishedTask();
         if (task != null) {
             if (task.type == 0){
-                _chat.exit();
+                chat.exit();
                 return;
             }
             Map<String, String> data = convertJsonToMap(task);
@@ -102,19 +100,19 @@ public class CommandsExecutor {
 
     private void processСreateChatTask(TaskModel task, Map<String, String> data){
         print("Got create chat task");
-        Boolean result = _chat.createNewChat(Integer.parseInt(data.get("type")));
+        Boolean result = chat.createNewChat(Integer.parseInt(data.get("type")));
         task.isFinished = true;
         task.gotError = !result;
-        _context.save(task);
+        context.save(task);
         print("Finsihed create chat task");
     }
 
     private void processAuthTask(TaskModel task, Map<String, String> data) {
         print("Got auth task");
-        Boolean result = _chat.auth(data.get("login"), data.get("password"));
+        Boolean result = chat.auth(data.get("login"), data.get("password"));
         task.isFinished = true;
         task.gotError = !result;
-        _context.save(task);
+        context.save(task);
         print("Finished auth task");
     }
 
@@ -123,7 +121,7 @@ public class CommandsExecutor {
         String prompt = data.get("promt");
         Long timeOutForAnswer = Long.parseLong(data.get("timeOutForAnswer"));
         try{
-            String result = _chat.askBing(prompt, timeOutForAnswer);
+            String result = chat.askBing(prompt, timeOutForAnswer);
             task.isFinished = true;
             task.gotError = result == null;
             task.result = result;
@@ -135,7 +133,7 @@ public class CommandsExecutor {
         }
 
         try{
-            var imageResult = _chat._browser.takeScreenshot();
+            var imageResult = chat.takeScreenshot();
             String imageName = BrowserUtils.generateRandomFileName(15)+".png";
             ImageIO.write(imageResult, "png", Paths.get(Shared.imagesPath.toString(), imageName).toFile());
             task.imageResult = imageName;
@@ -145,13 +143,13 @@ public class CommandsExecutor {
             e.printStackTrace();
         }
 
-        _context.save(task);
+        context.save(task);
         print("Finished promt task");
     }
 
     private Map<String, String> convertJsonToMap(TaskModel task) {
         try {
-            return _mapper.readValue(task.data, new TypeReference<Map<String, String>>() {});
+            return mapper.readValue(task.data, new TypeReference<Map<String, String>>() {});
         } catch (Exception e) {
             GotError(task, "Can't convert json to Map");
             e.printStackTrace();
@@ -163,7 +161,7 @@ public class CommandsExecutor {
         task.isFinished = true;
         task.gotError = true;
         task.result = reason;
-        _context.save(task);
+        context.save(task);
         print(reason);
     }
 
