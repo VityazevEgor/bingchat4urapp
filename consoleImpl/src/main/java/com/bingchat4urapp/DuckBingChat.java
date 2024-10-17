@@ -17,6 +17,8 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
+import com.bingchat4urapp.Models.ChatAnswer;
+
 // this class is used for situations when is realy important to get answer from AI. If it fails with bing it will try to use DuckDuckAI instead
 public class DuckBingChat extends BingChat{
 
@@ -44,15 +46,15 @@ public class DuckBingChat extends BingChat{
     }
 
     @Override
-    public String askBing(String prompt, long timeOutForAnswer) {
+    public ChatAnswer askBing(String prompt, long timeOutForAnswer) {
         if (examMode && useDuckDuck) {
             logger.warn("We had problems with bing and exam mode is enabled. Trying to get answers from DuckDuck.");
             return tryDuckDuck(prompt, timeOutForAnswer);
         }
 
-        String result = super.askBing(prompt, timeOutForAnswer);
+        var result = super.askBing(prompt, timeOutForAnswer);
 
-        if (result == null) {
+        if (result.getCleanText() == null) {
             useDuckDuck = true;
             if (examMode) {
                 logger.warn("Exam mode is enabled; Got error from Bing. Trying to get answer from DuckDuck instead.");
@@ -63,16 +65,19 @@ public class DuckBingChat extends BingChat{
         return result;
     }
 
-    private String tryDuckDuck(String prompt, long timeOutForAnswer) {
+    private ChatAnswer tryDuckDuck(String prompt, long timeOutForAnswer) {
         if (!driver.getCurrentUrl().contains("duck")){
             acceptAllDuck();
             if (!createNewDuckChat()) {
-                return null;
+                return new ChatAnswer(null, null);
             }
         }
 
         var response = askDuckAI(prompt, timeOutForAnswer);
-        return response.orElse(null);
+        return new ChatAnswer(
+            response.isPresent() ? response.get() : null, 
+            null
+        );
     }
 
 

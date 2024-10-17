@@ -62,7 +62,9 @@ public class App
         if (result){
             chat.createNewChat(0);
             //System.out.println(chat.askBing("Напиши hello world на Java", 60));
-            System.out.println(chat.askBing("Можешь показать пример решения задачи по физике на горизонтальный бросок тела?", 120));
+            var answer = chat.askBing("Можешь показать пример решения задачи по физике на горизонтальный бросок тела?", 120);
+            System.out.println("Text = " + answer.getCleanText());
+            System.out.println("HTML = " + answer.getHtml());
         }
         System.out.println(result);
         Thread.sleep(1000);

@@ -11,10 +11,11 @@ import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+
+import com.bingchat4urapp.Models.ChatAnswer;
 
 public class BingChat extends EdgeBrowser{
     public final Duration timeOutTime = java.time.Duration.ofSeconds(10);
@@ -235,7 +236,7 @@ public class BingChat extends EdgeBrowser{
         return false;
     }
 
-    private Optional<String> getLastAnswerText(){
+    private Optional<WebElement> getLastAnswerElement(){
         try {
             List<WebElement> aiMessages = driver.findElements(By.xpath("//div[@data-content='ai-message']"));
             if (aiMessages.size() == 0){
@@ -243,37 +244,63 @@ public class BingChat extends EdgeBrowser{
                 return Optional.empty();
             }
 
-            return Optional.ofNullable(aiMessages.get(aiMessages.size()-1).getText());
+            return Optional.ofNullable(aiMessages.get(aiMessages.size()-1));
         } catch (Exception e) {
-            logger.error("Can't find AI answer", e);
+            logger.error("Can't find last answer block", e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> getLastAnswerText(){
+        var answerElement = getLastAnswerElement();
+        if (answerElement.isPresent()){
+            return Optional.ofNullable(answerElement.get().getText());
+        }
+        else{
+            return Optional.empty();
+        }
+    }
+
+    private Optional<String> getLastAnaswerHtml(){
+        var answerElement = getLastAnswerElement();
+        try{
+            if (answerElement.isPresent()){
+                return Optional.ofNullable(answerElement.get().getAttribute("outerHTML"));
+            }
+            else{
+                return Optional.empty();
+            }
+        }
+        catch (Exception ex){
+            logger.error("Can't get outerHtml atribute of answer element", ex);
             return Optional.empty();
         }
     }
     
 
-    public String askBing(String promt, long answerTimeOutSeconds){
+    public ChatAnswer askBing(String promt, long answerTimeOutSeconds){
         if (emulateErrors){
             return null;
         }
         promt = promt.replace("\n", " ").replace("\r", " ");
         if (!enterPromt(promt)){
-            return null;
+            return new ChatAnswer(null, null);
         }
         
         if (!waitForAnswer(answerTimeOutSeconds)){
-            return null;
+            return new ChatAnswer(null, null);
         }
 
-        var answer = getLastAnswerText();
-        if (answer.isPresent()){
-            return answer.get();
-        }
-        else{
-            return null;
-        }
+        var answerText = getLastAnswerText();
+        var answerHtml = getLastAnaswerHtml();
+        return new ChatAnswer(
+            answerText.isPresent() ? answerText.get() : null, 
+            answerHtml.isPresent() ? answerHtml.get() : null
+        );
     }
 
     // method that checks if element position can be accesed by new Actions
+    @SuppressWarnings("unused")
     private Boolean checkElemntPosition(WebElement element){
         Point pos = element.getLocation();
         java.awt.Dimension BrowserSize = getBrowserSize();
