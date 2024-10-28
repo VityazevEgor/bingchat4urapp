@@ -187,6 +187,7 @@ public class EdgeBrowser extends JFrame
     // true if everything is ok
     public boolean loadAndWaitForComplete(String url, java.time.Duration TimeOut, int AdditionalWait){
         driver.get(url);
+        BrowserUtils.sleep(1);
         return waitForComplete(TimeOut, AdditionalWait);
     }
 

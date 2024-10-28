@@ -38,7 +38,7 @@ public class App
         System.out.println(chat.acceptAllDuck());
         var detectResult = chat.createNewDuckChat();
         if (detectResult){
-            System.out.println(chat.askDuckAI("Напиши hello world на java", 120));
+            //System.out.println(chat.askDuckAI("Напиши hello world на java", 120));
             //System.out.println(chat.askDuckAI("Напиши основные формулы в физике, которые используется в механике", 120));
             //Thread.sleep(2000);
         }

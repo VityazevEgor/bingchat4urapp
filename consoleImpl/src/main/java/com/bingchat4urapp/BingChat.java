@@ -48,7 +48,7 @@ public class BingChat extends EdgeBrowser{
         
         if (!expandMenu(isRussianLanguage)) return false;
         
-        if (!clickSignInButton(isRussianLanguage)) return false;
+        clickSignInButton(isRussianLanguage);
     
         if (!enterLogin(login)) return false;
 
@@ -280,7 +280,7 @@ public class BingChat extends EdgeBrowser{
 
     public ChatAnswer askBing(String promt, long answerTimeOutSeconds){
         if (emulateErrors){
-            return null;
+            return new ChatAnswer(null , null);
         }
         promt = promt.replace("\n", " ").replace("\r", " ");
         if (!enterPromt(promt)){

@@ -116,15 +116,17 @@ public class CommandsExecutor {
         print("Finished auth task");
     }
 
+    @SuppressWarnings("null")
     private void processPromptTask(TaskModel task, Map<String, String> data) {
         print("Got promt task");
         String prompt = data.get("promt");
         Long timeOutForAnswer = Long.parseLong(data.get("timeOutForAnswer"));
         try{
-            String result = chat.askBing(prompt, timeOutForAnswer);
+            var chatAnswer = chat.askBing(prompt, timeOutForAnswer);
             task.isFinished = true;
-            task.gotError = result == null;
-            task.result = result;
+            task.gotError = chatAnswer.getCleanText() == null;
+            task.result = chatAnswer.getCleanText() != null ? chatAnswer.getCleanText() : null;
+            task.htmlResult = chatAnswer.getHtml() != null ? chatAnswer.getHtml() : null;
         }catch (Exception ex){
             print("Got unexpected error in promt task");
             ex.printStackTrace();

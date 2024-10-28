@@ -22,6 +22,7 @@ public class TaskModel {
     public Boolean gotError = false;
 
     public String result = null;
+    public String htmlResult = null;
 
     // name of image
     public String imageResult = null;
