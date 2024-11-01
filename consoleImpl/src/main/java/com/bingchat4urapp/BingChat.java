@@ -84,7 +84,7 @@ public class BingChat extends EdgeBrowser{
     }
     
     private boolean isLoggedIn() {
-        if (waitForElement(Duration.ofSeconds(1), By.id(":r8:"))) {
+        if (waitForElement(Duration.ofSeconds(1), By.id(":ra:"))) {
             logger.info("You already logged in account");
             return true;
         }

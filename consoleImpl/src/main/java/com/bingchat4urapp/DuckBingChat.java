@@ -73,11 +73,7 @@ public class DuckBingChat extends BingChat{
             }
         }
 
-        var response = askDuckAI(prompt, timeOutForAnswer);
-        return new ChatAnswer(
-            response.isPresent() ? response.get() : null, 
-            null
-        );
+        return askDuckAI(prompt, timeOutForAnswer);
     }
 
 
@@ -157,7 +153,7 @@ public class DuckBingChat extends BingChat{
         return false;
     }
 
-    public Optional<String> askDuckAI(String promt, long timeOutForAnswer){
+    public ChatAnswer askDuckAI(String promt, long timeOutForAnswer){
         promt = promt.replace("\n", " ").replace("\r", " ");
         new Actions(driver).moveToElement(textArea, 5, 5).click().sendKeys(promt).build().perform();
         sendButton.click();
@@ -168,10 +164,13 @@ public class DuckBingChat extends BingChat{
         List<WebElement> elements =  driver.findElements(By.cssSelector("."+answerDivClassName));
         if (elements.isEmpty()){
             logger.warn("Could not find answer div's");
-            return Optional.empty();
+            return new ChatAnswer(null, null);
         }
-
-        return Optional.ofNullable(elements.get(elements.size()-1).getText());
+        var lastAnswerElement = elements.get(elements.size()-1);
+        return new ChatAnswer(
+            lastAnswerElement.getText(),
+            lastAnswerElement.getAttribute("outerHTML")
+        );
     }
     
     private boolean waitDuckResponse(WebElement sendButton, long timeoutInSeconds) {
