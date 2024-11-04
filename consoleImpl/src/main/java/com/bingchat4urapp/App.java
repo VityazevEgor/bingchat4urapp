@@ -1,18 +1,28 @@
 package com.bingchat4urapp;
 
-import java.util.List;
-
+import com.bingchat4urapp.Logger.CustomLogger;
 import com.jogamp.common.util.InterruptSource.Thread;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.logging.Level;
 
 public class App 
 {
     public static void main( String[] args ) throws InterruptedException, IOException
     {
         testBingChat();
+    }
+    private static void testLogging(){
+        var logger = CustomLogger.getLogger(App.class);
+        logger.warning("Test");
+        logger.severe("Test 2");
+        try {
+            int result = 10 / 0;
+        } catch (ArithmeticException e) {
+            logger.log(Level.SEVERE, "Exception caught", e);
+        }
     }
 
     private static void emulateErrorSituatin() throws IOException{

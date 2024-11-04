@@ -4,19 +4,20 @@ import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
+import com.bingchat4urapp.Logger.CustomLogger;
 import com.bingchat4urapp.Models.ChatAnswer;
 
 // this class is used for situations when is realy important to get answer from AI. If it fails with bing it will try to use DuckDuckAI instead
@@ -24,7 +25,7 @@ public class DuckBingChat extends BingChat{
 
     private Boolean examMode = false;
     private Boolean useDuckDuck = false;
-    private final Logger logger = LogManager.getLogger(com.bingchat4urapp.DuckBingChat.class);
+    private final Logger logger = CustomLogger.getLogger(com.bingchat4urapp.DuckBingChat.class);
     private String answerDivClassName = null;
     private WebElement textArea = null, sendButton = null;
 
@@ -48,7 +49,7 @@ public class DuckBingChat extends BingChat{
     @Override
     public ChatAnswer askBing(String prompt, long timeOutForAnswer) {
         if (examMode && useDuckDuck) {
-            logger.warn("We had problems with bing and exam mode is enabled. Trying to get answers from DuckDuck.");
+            logger.warning("We had problems with bing and exam mode is enabled. Trying to get answers from DuckDuck.");
             return tryDuckDuck(prompt, timeOutForAnswer);
         }
 
@@ -57,7 +58,7 @@ public class DuckBingChat extends BingChat{
         if (result.getCleanText() == null) {
             useDuckDuck = true;
             if (examMode) {
-                logger.warn("Exam mode is enabled; Got error from Bing. Trying to get answer from DuckDuck instead.");
+                logger.warning("Exam mode is enabled; Got error from Bing. Trying to get answer from DuckDuck instead.");
                 return tryDuckDuck(prompt, timeOutForAnswer);
             }
         }
@@ -80,7 +81,7 @@ public class DuckBingChat extends BingChat{
     @Override
     public Boolean createNewChat(int ModeType){
         if (examMode && useDuckDuck){
-            logger.warn("We had problems with bing. Going to create new chat with duck duck");
+            logger.warning("We had problems with bing. Going to create new chat with duck duck");
             acceptAllDuck();
             return createNewDuckChat();
         }
@@ -102,7 +103,7 @@ public class DuckBingChat extends BingChat{
         }
 
         if (!waitForElement(timeOutTime, By.xpath("//button[@type='button' and @tabindex='1']"))){
-            logger.error("Can't find 'Get started' button");
+            logger.log(Level.SEVERE, "Can't find 'Get started' button");
             return false;
         }
         logger.info("Found button");
@@ -118,7 +119,7 @@ public class DuckBingChat extends BingChat{
             );
         }
         catch (Exception ex){
-            logger.error("Can't execute JS", ex);
+            logger.log(Level.SEVERE, "Can't execute JS", ex);
             return false;
         }
 
@@ -135,7 +136,7 @@ public class DuckBingChat extends BingChat{
             sendButton.click();
     
             if (!waitDuckResponse(sendButton, 25)) {
-                logger.error("Could not get answer in time");
+                logger.log(Level.SEVERE, "Could not get answer in time");
                 return false;
             }
     
@@ -146,9 +147,9 @@ public class DuckBingChat extends BingChat{
                 return true;
             }
     
-            logger.warn("Could not find answer class div");
+            logger.warning("Could not find answer class div");
         } catch (NoSuchElementException e) {
-            logger.warn("Can't find elements");
+            logger.warning("Can't find elements");
         }
         return false;
     }
@@ -158,12 +159,12 @@ public class DuckBingChat extends BingChat{
         new Actions(driver).moveToElement(textArea, 5, 5).click().sendKeys(promt).build().perform();
         sendButton.click();
         if (!waitDuckResponse(sendButton, timeOutForAnswer)){
-            logger.warn("Could not get answer from DuckDuck in time");
+            logger.warning("Could not get answer from DuckDuck in time");
         }
 
         List<WebElement> elements =  driver.findElements(By.cssSelector("."+answerDivClassName));
         if (elements.isEmpty()){
-            logger.warn("Could not find answer div's");
+            logger.warning("Could not find answer div's");
             return new ChatAnswer(null, null);
         }
         var lastAnswerElement = elements.get(elements.size()-1);
@@ -198,7 +199,7 @@ public class DuckBingChat extends BingChat{
             BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream, StandardCharsets.UTF_8));
             script = reader.lines().collect(Collectors.joining("\n"));
         } catch (Exception ex){
-            logger.error("Can't get script from resourses", ex);
+            logger.log(Level.SEVERE, "Can't get script from resourses", ex);
             return "не найден";
         }
         JavascriptExecutor js = (JavascriptExecutor) driver;

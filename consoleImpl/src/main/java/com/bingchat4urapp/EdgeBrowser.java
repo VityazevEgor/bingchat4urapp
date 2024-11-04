@@ -5,8 +5,6 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.cef.CefApp;
 import org.cef.CefClient;
 import org.cef.CefApp.CefAppState;
@@ -25,6 +23,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.bingchat4urapp.BrowserUtils.ImageData;
+import com.bingchat4urapp.Logger.CustomLogger;
 
 import me.friwi.jcefmaven.CefAppBuilder;
 import me.friwi.jcefmaven.MavenCefAppHandlerAdapter;
@@ -34,6 +33,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.logging.Level;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -51,7 +51,7 @@ public class EdgeBrowser extends JFrame
     // field for selenium
     public WebDriver driver;
 
-    private final Logger logger = LogManager.getLogger(com.bingchat4urapp.EdgeBrowser.class);
+    private final java.util.logging.Logger logger = CustomLogger.getLogger(com.bingchat4urapp.EdgeBrowser.class);
     private final String chachePach = Paths.get(System.getProperty("user.home"),  "Documents",  "cefChache").toAbsolutePath().toString();
     private final Boolean userOSR = true;
 
@@ -86,7 +86,7 @@ public class EdgeBrowser extends JFrame
             cefApp = builder.build();
         }
         catch (Exception e){
-            logger.error("Error while initializing JCEF", e);
+            logger.log(Level.SEVERE ,"Error while initializing JCEF", e);
             System.exit(1);
         }
 
@@ -101,7 +101,7 @@ public class EdgeBrowser extends JFrame
             try {
                 Files.copy(loaderHtmlStream, pathToLoaderHtml);
             } catch (IOException e) {
-                logger.error("Error while copying loader.html", e);
+                logger.log(Level.SEVERE , "Error while copying loader.html", e);
                 System.exit(1);
             }
         }
@@ -143,7 +143,7 @@ public class EdgeBrowser extends JFrame
 
     private void initSelenium(int DebugPort){
         if (!BrowserUtils.downloadChromeDriver()){
-            logger.error("Can't download chromedriver so /kill");
+            logger.log(Level.SEVERE, "Can't download chromedriver so /kill");
             System.exit(1);
         }
 
@@ -178,8 +178,8 @@ public class EdgeBrowser extends JFrame
 
         getHtml(htmlPageName);
         takeScreenshot(screenShotName);
-        logger.warn("Saved screenshot to "+BrowserUtils.logsDir.toString()+"/"+screenShotName);
-        logger.warn("Saved html page to "+BrowserUtils.logsDir.toString()+"/"+htmlPageName);
+        logger.warning("Saved screenshot to "+BrowserUtils.logsDir.toString()+"/"+screenShotName);
+        logger.warning("Saved html page to "+BrowserUtils.logsDir.toString()+"/"+htmlPageName);
     }
 
     // method that trying to load site and waits for complete document ready state
@@ -201,7 +201,7 @@ public class EdgeBrowser extends JFrame
             return true;
         }
         catch (Exception e){
-            logger.error("Can't load site", e);
+            logger.log(Level.SEVERE ,"Can't load site", e);
             return false;
         }
     }
@@ -213,7 +213,7 @@ public class EdgeBrowser extends JFrame
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){
-            logger.error("Can't find element", e);
+            logger.severe("Can't find element");
             generateErrorReport();
             return false;
         }
@@ -236,7 +236,7 @@ public class EdgeBrowser extends JFrame
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){
-            logger.error("Can't find element", e);
+            logger.severe("Can't find element");
             generateErrorReport();
             return false;
         }
@@ -255,7 +255,7 @@ public class EdgeBrowser extends JFrame
             return true;
         }
         catch (org.openqa.selenium.TimeoutException e){
-            logger.error("Can't find element", e);
+            logger.log(Level.SEVERE, "Can't find element", e);
             generateErrorReport();
             return false;
         }
@@ -274,7 +274,7 @@ public class EdgeBrowser extends JFrame
         try {
             Files.write(Paths.get(BrowserUtils.logsDir.toString(), FilePath), html.getBytes());
         } catch (IOException e) {
-            logger.error("Can't save page to file", e);
+            logger.log(Level.SEVERE, "Can't save page to file", e);
         }
     }
 
@@ -286,7 +286,7 @@ public class EdgeBrowser extends JFrame
             result = ImageIO.read(screen);
         }
         catch (IOException e){
-            logger.error("Failed to copy screen to BufferedImage", e);
+            logger.log(Level.SEVERE, "Failed to copy screen to BufferedImage", e);
         }
         return result;
     }
@@ -300,7 +300,7 @@ public class EdgeBrowser extends JFrame
                 ImageIO.write(image, "png", new File(Paths.get(BrowserUtils.logsDir.toString(), FilePath).toString()));
             }
             catch (IOException e){
-                logger.error("Failed to save screen to file", e);
+                logger.log(Level.SEVERE, "Failed to save screen to file", e);
             }
         }
         return image;
@@ -320,7 +320,7 @@ public class EdgeBrowser extends JFrame
                 Runtime.getRuntime().exec("taskkill /F /IM jcef_helper.exe");
             }
             catch(IOException e){
-                logger.error("Failed to kill jcef_helper.exe", e);
+                logger.log(Level.SEVERE, "Failed to kill jcef_helper.exe", e);
             }
         }
         System.exit(0);

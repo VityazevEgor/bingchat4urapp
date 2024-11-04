@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.bingchat4urapp_server</groupId>
 	<artifactId>bingchat4urapp_server</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.5-SNAPSHOT</version>
 	<name>bingchat4urapp_server</name>
 	<description>Server version of BingChat4urApp</description>
 	<properties>
@@ -61,13 +61,11 @@
 			<artifactId>spring-boot-starter-validation</artifactId> 
 		</dependency>
 
-
-
 		<!-- Всё что нужно для того проекта -->
 		<dependency>
 			<groupId>com.bingchat4urapp</groupId>
 			<artifactId>bingchat4urapp</artifactId>
-			<version>1.6</version>
+			<version>1.7</version>
 		</dependency>
 
 		<dependency>

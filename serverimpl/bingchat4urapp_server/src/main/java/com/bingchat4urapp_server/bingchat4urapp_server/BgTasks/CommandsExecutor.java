@@ -116,7 +116,6 @@ public class CommandsExecutor {
         print("Finished auth task");
     }
 
-    @SuppressWarnings("null")
     private void processPromptTask(TaskModel task, Map<String, String> data) {
         print("Got promt task");
         String prompt = data.get("promt");

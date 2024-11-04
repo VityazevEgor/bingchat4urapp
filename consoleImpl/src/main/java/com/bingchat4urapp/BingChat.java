@@ -4,10 +4,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.awt.image.BufferedImage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -15,13 +14,14 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
+import com.bingchat4urapp.Logger.CustomLogger;
 import com.bingchat4urapp.Models.ChatAnswer;
 
 public class BingChat extends EdgeBrowser{
     public final Duration timeOutTime = java.time.Duration.ofSeconds(10);
     private Boolean emulateErrors = false;
 
-    private final Logger logger = LogManager.getLogger(com.bingchat4urapp.BingChat.class);
+    private final Logger logger = CustomLogger.getLogger(com.bingchat4urapp.BingChat.class);
 
     public BingChat(String proxy, int width, int height, int DebugPort, Boolean hideWindow){
         super(proxy, width, height, DebugPort, hideWindow);
@@ -34,7 +34,7 @@ public class BingChat extends EdgeBrowser{
     // Update of Bing design 8.10.2024
     public Boolean auth(String login, String password) {
         if (!loadPageAndVerify("https://copilot.microsoft.com/", timeOutTime)) {
-            logger.warn("Can't load copilot web page");
+            logger.warning("Can't load copilot web page");
             return false;
         }
         
@@ -59,7 +59,7 @@ public class BingChat extends EdgeBrowser{
         if (!clickStaySignedIn()) return false;
     
         if (!waitForComplete(timeOutTime, 0)) {
-            logger.warn("Could not load chat page");
+            logger.warning("Could not load chat page");
             return false;
         }
     
@@ -94,13 +94,13 @@ public class BingChat extends EdgeBrowser{
     private boolean expandMenu(Boolean isRussianLanguage) {
         String signInXPath = isRussianLanguage ? "//button[@title='Войти']" : "//button[@title='Sign in']";
         if (!waitForElement(timeOutTime, By.xpath(signInXPath))) {
-            logger.warn("Can't find 'Sign in' button");
+            logger.warning("Can't find 'Sign in' button");
             return false;
         }
         driver.findElement(By.xpath(signInXPath)).click();
         BrowserUtils.sleep(1);
         if (!waitForComplete(timeOutTime, 0)) {
-            logger.warn("Could not load login page in time");
+            logger.warning("Could not load login page in time");
             return false;
         }
         logger.info("Expanded menu");
@@ -112,18 +112,18 @@ public class BingChat extends EdgeBrowser{
         try{
             List<WebElement> buttons = driver.findElements(By.xpath(signInXPath));
             if (buttons.isEmpty()){
-                logger.warn("Could not find sign in buttons");
+                logger.warning("Could not find sign in buttons");
                 return false;
             }
             buttons.get(buttons.size()-1).click();
         }
         catch(Exception ex){
-            logger.error("Can't click on sign in button", ex);
+            logger.log(Level.SEVERE, "Can't click on sign in button", ex);
             return false;
         }
         BrowserUtils.sleep(1);
         if (!waitForComplete(timeOutTime, 0)) {
-            logger.warn("Could not load login page in time");
+            logger.warning("Could not load login page in time");
             return false;
         }
         logger.info("Loaded login page");
@@ -132,7 +132,7 @@ public class BingChat extends EdgeBrowser{
 
     private boolean enterLogin(String login) {
         if (!waitForElement(timeOutTime, By.name("loginfmt")) || !waitForElement(timeOutTime, By.id("idSIButton9"))) {
-            logger.warn("Could not find login field or login button");
+            logger.warning("Could not find login field or login button");
             return false;
         }
         driver.findElement(By.name("loginfmt")).sendKeys(login);
@@ -140,7 +140,7 @@ public class BingChat extends EdgeBrowser{
         BrowserUtils.sleep(1);
         logger.info("Entered login and clicked next button");
         if (!waitForComplete(timeOutTime, 0)) {
-            logger.warn("Could not load password page in time");
+            logger.warning("Could not load password page in time");
             return false;
         }
         return true;
@@ -148,7 +148,7 @@ public class BingChat extends EdgeBrowser{
     
     private boolean enterPassword(String password) {
         if (!waitForElement(timeOutTime, By.id("i0118")) || !waitForElement(timeOutTime, By.id("idSIButton9"))) {
-            logger.warn("Could not load password page in time");
+            logger.warning("Could not load password page in time");
             return false;
         }
         driver.findElement(By.id("i0118")).sendKeys(password);
@@ -160,7 +160,7 @@ public class BingChat extends EdgeBrowser{
     
     private boolean clickStaySignedIn() {
         if (!waitForElement(timeOutTime, By.xpath("//button[@aria-labelledby='kmsiTitle']"))) {
-            logger.warn("Could not load 'Yes' button");
+            logger.warning("Could not load 'Yes' button");
             return false;
         }
         driver.findElement(By.xpath("//button[@aria-labelledby='kmsiTitle']")).click();
@@ -172,7 +172,7 @@ public class BingChat extends EdgeBrowser{
     // legacy code
     public Boolean createNewChat(int modeType){
         if (!loadAndWaitForComplete("https://copilot.microsoft.com/", timeOutTime, 0)){
-            logger.warn("Could not load chat in time");
+            logger.warning("Could not load chat in time");
             return false;
         }
 
@@ -182,7 +182,7 @@ public class BingChat extends EdgeBrowser{
     private Boolean enterPromt(String promt){
         By userInput = By.id("userInput");
         if (!waitForElement(timeOutTime, userInput)){
-            logger.warn("Can't find user input");
+            logger.warning("Can't find user input");
             return false;
         }
         driver.findElement(userInput).sendKeys(promt);
@@ -199,7 +199,7 @@ public class BingChat extends EdgeBrowser{
 
         By sendButton = By.xpath("//button[@title='Submit message']");
         if (!waitForElement(timeOutTime, sendButton)){
-            logger.warn("Can't find 'send button'");
+            logger.warning("Can't find 'send button'");
             return false;
         }
         driver.findElement(sendButton).click();
@@ -232,7 +232,7 @@ public class BingChat extends EdgeBrowser{
         }
     
         // Таймаут ожидания ответа
-        logger.warn("Timeout for answer!");
+        logger.warning("Timeout for answer!");
         return false;
     }
 
@@ -240,13 +240,13 @@ public class BingChat extends EdgeBrowser{
         try {
             List<WebElement> aiMessages = driver.findElements(By.xpath("//div[@data-content='ai-message']"));
             if (aiMessages.size() == 0){
-                logger.warn("Can't find ai answer blocks");
+                logger.warning("Can't find ai answer blocks");
                 return Optional.empty();
             }
 
             return Optional.ofNullable(aiMessages.get(aiMessages.size()-1));
         } catch (Exception e) {
-            logger.error("Can't find last answer block", e);
+            logger.log(Level.SEVERE, "Can't find last answer block", e);
             return Optional.empty();
         }
     }
@@ -272,7 +272,7 @@ public class BingChat extends EdgeBrowser{
             }
         }
         catch (Exception ex){
-            logger.error("Can't get outerHtml atribute of answer element", ex);
+            logger.log(Level.SEVERE, "Can't get outerHtml atribute of answer element", ex);
             return Optional.empty();
         }
     }
@@ -309,7 +309,7 @@ public class BingChat extends EdgeBrowser{
             return true;
         }
         else{
-            logger.warn("Elemet out of bounds");
+            logger.warning("Elemet out of bounds");
             return false;
         }
     }
