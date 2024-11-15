@@ -28,3 +28,4 @@ edge_browser_logs.txt
 /serverimpl/bingchat4urapp_server/logsDir
 serverimpl/bingchat4urapp_server/bc4uaDB.db
 *.db
+/llmapi4free_lib/nodriverData
