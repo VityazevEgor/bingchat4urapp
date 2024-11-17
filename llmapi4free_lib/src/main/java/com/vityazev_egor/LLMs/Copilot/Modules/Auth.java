@@ -32,7 +32,7 @@ public class Auth {
     }
 
     private void acceptTerms(){
-        var acceptButton = driver.findElement(By.cssSelector("button[title=\"Accept\"]"));
+        var acceptButton = driver.findElement(By.cssSelector("button[title='Accept']"));
         if (Shared.waitForElements(false, acceptButton)){
             driver.getInput().emulateClick(acceptButton);
         }
@@ -45,7 +45,7 @@ public class Auth {
 
     private Boolean openLoginPage(){
         // Ожидаем и нажимаем на первую кнопку "Sign in"
-        var signInButton = driver.findElement(By.cssSelector("button[title=\"Sign in\"]"));
+        var signInButton = driver.findElement(By.cssSelector("button[title='Sign in']"));
         if (!Shared.waitForElements(false,signInButton)) {
             logger.warning("Can't find sign in button");
             return false;
@@ -53,7 +53,7 @@ public class Auth {
         driver.getInput().emulateClick(signInButton);
 
         // Проверяем наличие второй кнопки "Sign in" после раскрытия меню
-        var signInButtons = driver.findElements(By.cssSelector("button[title=\"Sign in\"]"));
+        var signInButtons = driver.findElements(By.cssSelector("button[title='Sign in']"));
         if (signInButtons.size() < 2) {
             logger.warning("There are less than 2 'Sign in' buttons - " + signInButtons.size());
             if (!Shared.waitForElements(false, driver.findElement(By.name("loginfmt")))){
@@ -99,7 +99,7 @@ public class Auth {
     }
 
     private Boolean staySigned(){
-        var yesButton = driver.findElement(By.cssSelector("button[aria-labelledby=\"kmsiTitle\"]"));
+        var yesButton = driver.findElement(By.cssSelector("button[aria-labelledby='kmsiTitle']"));
         if (!Shared.waitForElements(true, yesButton)){
             logger.warning("Can't find 'yes' button");
             return false;

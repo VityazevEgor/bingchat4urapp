@@ -15,24 +15,40 @@ public class Wrapper {
     @Getter
     private final List<LLM> llms;
 
+    public enum LLMproviders{
+        Copilot,
+        DuckDuck
+    }
+
+    public enum WrapperMode{
+        ExamMode, // we will try to get answer from any AI if selected one fails
+        Normal // we will just return empty answer
+    }
+
     public Wrapper(String socks5Proxy) throws IOException{
         this.driver = new NoDriver(socks5Proxy);
         this.driver.getXdo().calibrate();
         this.llms = Arrays.asList(
-            new LLM(new Copilot(driver), true)
+            new LLM(new Copilot(driver), true, LLMproviders.Copilot)
         );
     }
 
-    public Boolean auth(String LLMname, String login, String password){
-        return llms.stream().filter(l -> l.getChat().getName().equalsIgnoreCase(LLMname)).findFirst().map(l->{
-            return l.getChat().auth(login, password);
+    public Boolean auth(LLMproviders provider, String login, String password){
+        return llms.stream().filter(l -> l.getProvider() == provider).findFirst().map(l->{
+            Boolean result = l.getChat().auth(login, password);
+            l.setAuthDone(result);
+            return result;
         }).orElse(false);
     }
 
-    public ChatAnswer askLLM(String LLMname, String promt, Integer timeOutForAnswer){
-        return llms.stream().filter(l -> l.getChat().getName().equalsIgnoreCase(LLMname)).findFirst().map(l->{
-            return l.getChat().ask(promt, timeOutForAnswer);
-        }).orElse(null);
+    public ChatAnswer askLLM(LLMproviders provider, String promt, Integer timeOutForAnswer){
+        return llms.stream().filter(l -> l.getProvider() == provider).findFirst().map(l->{
+            var answer = l.getChat().ask(promt, timeOutForAnswer);
+            if (!answer.getCleanAnswer().isPresent()){
+                l.setGotError(true);
+            }
+            return answer;
+        }).orElse(new ChatAnswer());
     }
 
     public void exit(){
