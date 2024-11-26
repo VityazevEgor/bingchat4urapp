@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vityazev_egor.LLMs.Copilot.Copilot;
+import com.vityazev_egor.LLMs.DuckDuck.DuckDuck;
 import com.vityazev_egor.Models.ChatAnswer;
 import com.vityazev_egor.Models.LLM;
 
@@ -29,7 +30,8 @@ public class Wrapper {
         this.driver = new NoDriver(socks5Proxy);
         this.driver.getXdo().calibrate();
         this.llms = Arrays.asList(
-            new LLM(new Copilot(driver), true, LLMproviders.Copilot)
+            new LLM(new Copilot(driver), true, LLMproviders.Copilot),
+            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck)
         );
     }
 

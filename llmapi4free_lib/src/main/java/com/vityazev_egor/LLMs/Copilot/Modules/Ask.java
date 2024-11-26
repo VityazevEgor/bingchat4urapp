@@ -32,6 +32,24 @@ public class Ask {
         }
     }
 
+    // TODO переделать расчёт координат для клика используя процентные отношения
+    private Boolean bypassCaptcha(){
+        var captchaDiv = driver.findElement(By.id("cf-turnstile"));
+        if (!captchaDiv.isExists()) return true;
+        logger.warning("Found CloudFlare capctha");
+        
+        var size = captchaDiv.getSize();
+        var position = captchaDiv.getPosition();
+        if (!size.isPresent() || !position.isPresent()){
+            logger.error("Could not get captcha position and size", null);
+            return false;
+        }
+        Double yClick = position.get().getY();
+        Double xClick = position.get().getX() - size.get().getWidth()/2 + 20;
+        driver.getXdo().click(xClick, yClick);
+        return false;
+    }
+
     private Boolean enterPromt(String promt){
         var userInput = driver.findElement(By.id("userInput"));
         var sendButton = driver.findElement(By.cssSelector("button[title='Submit message']"));
@@ -66,6 +84,8 @@ public class Ask {
             public Boolean condition() {
                 // если текущий штмл равен предыдущему то возвращаем да (копайлот перестал печатать)
                 return driver.getHtml().map(currentHtml ->{
+                    // каждый раз проверяем наличие капчи и пробуем обойти её
+                    bypassCaptcha();
                     if (currentHtml.equals(html)){
                         return true;
                     }
