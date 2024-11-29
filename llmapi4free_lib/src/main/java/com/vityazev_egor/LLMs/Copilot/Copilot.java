@@ -10,11 +10,9 @@ import com.vityazev_egor.Models.ChatAnswer;
 public class Copilot implements iChat{
 
     private final NoDriver driver;
-    private final CustomLogger logger;
-
     public Copilot(NoDriver driver){
         this.driver = driver;
-        logger = new CustomLogger(getName());
+        new CustomLogger(getName());
     }
 
     @Override

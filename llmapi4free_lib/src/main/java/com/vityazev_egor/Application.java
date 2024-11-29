@@ -34,6 +34,7 @@ public class Application {
         var wrapper = new Wrapper("127.0.0.1:2080");
         Boolean result = wrapper.auth(LLMproviders.DuckDuck, null, null);
         System.out.println(result);
+        System.out.println(wrapper.createChat(LLMproviders.DuckDuck));
         waitEnter();
         wrapper.exit();
     }

@@ -43,6 +43,14 @@ public class Wrapper {
         }).orElse(false);
     }
 
+    public Boolean createChat(LLMproviders provider){
+        return llms.stream().filter(l -> l.getProvider() == provider).findFirst().map(l->{
+            Boolean result = l.getChat().creatNewChat();
+            if (!result) l.setGotError(true);
+            return result;
+        }).orElse(false);
+    }
+
     public ChatAnswer askLLM(LLMproviders provider, String promt, Integer timeOutForAnswer){
         return llms.stream().filter(l -> l.getProvider() == provider).findFirst().map(l->{
             var answer = l.getChat().ask(promt, timeOutForAnswer);

@@ -8,6 +8,7 @@ import com.vityazev_egor.LLMs.DuckDuck.Modules.*;;
 public class DuckDuck implements iChat{
 
     private final NoDriver driver;
+    public static String answerDivClass = "";
 
     public DuckDuck(NoDriver driver){
         this.driver = driver;
@@ -25,8 +26,7 @@ public class DuckDuck implements iChat{
 
     @Override
     public Boolean creatNewChat() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'creatNewChat'");
+        return new CreateChat(driver).create();
     }
 
     @Override
