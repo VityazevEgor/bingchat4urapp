@@ -38,11 +38,12 @@ public class RequestsModels {
     public static class PromtRequest {
 
         @NotBlank(message = "Prompt is mandatory")
-        @Size(min = 2, max = 4000, message = "Prompt must be less than 4000 characters")
+        @Size(min = 4, max = 4000, message = "Prompt must be less than 4000 characters")
         private String promt;
 
         @NotNull(message = "Timeout for answer is mandatory")
         @Min(value = 30, message = "Timeout for answer must be at least 30 seconds")
+        @Max(value = 300, message = "Timeout for answer must be smaller than 5 minutes")
         private Integer timeOutForAnswer;
 
         // getters
@@ -77,6 +78,20 @@ public class RequestsModels {
         // setters
         public void setType(Integer type) {
             this.type = type;
+        }
+    }
+
+    public static class SwitchAIRequest {
+        @NotNull(message = "You must provide 'value'")
+        private Boolean value;
+
+        // getters
+        public Boolean getValue() {
+            return value;
+        }
+        // setters
+        public void setValue(Boolean value) {
+            this.value = value;
         }
     }
 

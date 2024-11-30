@@ -1,10 +1,15 @@
 package com.bingchat4urapp_server.bingchat4urapp_server.Controlers;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
+import com.bingchat4urapp_server.bingchat4urapp_server.BgTasks.CommandsExecutor;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.RequestsModels;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 import jakarta.validation.Valid;
@@ -23,58 +29,94 @@ import jakarta.validation.Valid;
 public class MainController {
     
     @Autowired
-    private Context _taskRepo;
+    private Context taskRepo;
 
     @Autowired
-    private Utils _utils;
+    private Utils utils;
+
+    @Autowired
+    private CommandsExecutor executor;
 
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(MainController.class);
 
-    @PostMapping("/auth")
-    public Integer createAuthTask(@Valid @RequestBody RequestsModels.AuthRequest authRequest, BindingResult bindingResult){
+    private List<String> extractErrorMessages(List<ObjectError> errors) {
+        return errors.stream()
+                .map(ObjectError::getDefaultMessage)
+                .collect(Collectors.toList());
+    }
 
-        if (bindingResult.hasErrors()){
+    @PostMapping("/auth")
+    public ResponseEntity<?> createAuthTask(@Valid @RequestBody RequestsModels.AuthRequest authRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
             logger.warn("Didn't pass validation in auth task");
-            return null;
+            return ResponseEntity.badRequest()
+                    .body("Validation failed: " + extractErrorMessages(bindingResult.getAllErrors()));
         }
-        var model = _utils.createAuthTask(authRequest);
-        _taskRepo.save(model);
-        return model.id;
+        try {
+            var model = utils.createAuthTask(authRequest);
+            taskRepo.save(model);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(model.id);
+        } catch (Exception e) {
+            logger.error("Error while creating auth task", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create auth task");
+        }
+    }
+
+    @PostMapping("/useDuckDuck")
+    public Boolean useDuckDuck(@Valid @RequestBody RequestsModels.SwitchAIRequest switchAIRequest, BindingResult bindingResult){
+        if (bindingResult.hasErrors()){
+            logger.warn("Didn't pass validation in switch AI task");
+            return false;
+        }
+        executor.setUseDuckDuck(switchAIRequest.getValue());
+        return true;
     }
 
     @PostMapping("/sendpromt")
-    public Integer creatPromtTask(@Valid @RequestBody RequestsModels.PromtRequest promptRequest, BindingResult bindingResult){
-
-        if (bindingResult.hasErrors()){
+    public ResponseEntity<?> createPromptTask(@Valid @RequestBody RequestsModels.PromtRequest promptRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
             logger.warn("Didn't pass validation in prompt task");
-            printValidationError(bindingResult);
-            return null;
+            List<String> errorMessages = extractErrorMessages(bindingResult.getAllErrors());
+            return ResponseEntity.badRequest()
+                    .body("Validation failed: " + errorMessages);
         }
-        var model = _utils.createPromtTask(promptRequest);
-        _taskRepo.save(model);
-        return model.id;
+        try {
+            var model = utils.createPromtTask(promptRequest);
+            taskRepo.save(model);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(model.id);
+        } catch (Exception e) {
+            logger.error("Error while creating prompt task", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create prompt task");
+        }
     }
 
     @PostMapping("/createchat")
-    public Integer creatChat(@Valid @RequestBody RequestsModels.ChatRequest chatRequest, BindingResult bindingResult){
-        if (bindingResult.hasErrors()){
+    public ResponseEntity<?> createChat(@Valid @RequestBody RequestsModels.ChatRequest chatRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
             logger.warn("Didn't pass validation in chat task");
-            return null;
+            List<String> errorMessages = extractErrorMessages(bindingResult.getAllErrors());
+            return ResponseEntity.badRequest()
+                    .body("Validation failed: " + errorMessages);
         }
-        var model = _utils.createChatTask(chatRequest);
-        _taskRepo.save(model);
-        return model.id;
-    }
-
-    private void printValidationError(BindingResult result){
-        for (var error : result.getFieldErrors()){
-            logger.warn(error.getField() + " " + error.getDefaultMessage());
+        try {
+            var model = utils.createChatTask(chatRequest);
+            taskRepo.save(model);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(model.id);
+        } catch (Exception e) {
+            logger.error("Error while creating chat task", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to create chat task");
         }
     }
 
     @RequestMapping(value = "get/{id}", method = RequestMethod.GET)
     public TaskModel GetTask(@PathVariable Integer id){
-        Optional<TaskModel> found = _taskRepo.findById(id);
+        Optional<TaskModel> found = taskRepo.findById(id);
         if (found.isPresent()){
             return found.get();
         }
@@ -87,7 +129,7 @@ public class MainController {
     public String exitTask() {
         var model = new TaskModel();
         model.type = 0;
-        _taskRepo.save(model);
+        taskRepo.save(model);
         return "Server will be down in few seconds";
     }
     

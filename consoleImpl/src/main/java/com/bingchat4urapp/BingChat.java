@@ -45,6 +45,9 @@ public class BingChat extends EdgeBrowser{
             logger.info("You are already logged in");
             return true;
         }
+        else{
+            logger.info("User is not logged in");
+        }
         
         if (!expandMenu(isRussianLanguage)) return false;
         
@@ -81,10 +84,13 @@ public class BingChat extends EdgeBrowser{
             driver.findElement(By.xpath(acceptXPath)).click();
             logger.info("Clicked 'Accept' button");
         }
+        else{
+            logger.info("There is not nned to click on accept button");
+        }
     }
     
     private boolean isLoggedIn() {
-        if (waitForElement(Duration.ofSeconds(1), By.id(":ra:"))) {
+        if (waitForElement(Duration.ofSeconds(3), By.id(":r1:"))) {
             logger.info("You already logged in account");
             return true;
         }
