@@ -3,7 +3,9 @@ package com.vityazev_egor;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
+import com.vityazev_egor.Core.CustomLogger;
 import com.vityazev_egor.LLMs.Copilot.Copilot;
 import com.vityazev_egor.LLMs.DuckDuck.DuckDuck;
 import com.vityazev_egor.Models.ChatAnswer;
@@ -13,6 +15,7 @@ import lombok.Getter;
 
 public class Wrapper {
     private final NoDriver driver;
+    private final CustomLogger logger;
     @Getter
     private final List<LLM> llms;
 
@@ -26,13 +29,21 @@ public class Wrapper {
         Normal // we will just return empty answer
     }
 
-    public Wrapper(String socks5Proxy) throws IOException{
+    // указываем какую ИИ будем использовать по умолчанию
+    private final LLMproviders preferredProvider;
+    // указываем какой режим работы будет
+    private final WrapperMode wrapperMode;
+
+    public Wrapper(String socks5Proxy, LLMproviders preferredProvider, WrapperMode wrapperMode) throws IOException{
         this.driver = new NoDriver(socks5Proxy);
+        this.logger = new CustomLogger(Wrapper.class.getName());
         this.driver.getXdo().calibrate();
         this.llms = Arrays.asList(
             new LLM(new Copilot(driver), true, LLMproviders.Copilot),
             new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck)
         );
+        this.preferredProvider = preferredProvider;
+        this.wrapperMode = wrapperMode;
     }
 
     public Boolean auth(LLMproviders provider, String login, String password){
@@ -59,6 +70,52 @@ public class Wrapper {
             }
             return answer;
         }).orElse(new ChatAnswer());
+    }
+
+    private ChatAnswer askLLM(LLM llm, String promt, Integer timeOutForAnswer){
+        var answer = llm.getChat().ask(promt, timeOutForAnswer);
+        if (!answer.getCleanAnswer().isPresent()){
+            llm.setGotError(true);
+        }
+        return answer;
+    }
+
+    public ChatAnswer askLLM(String promt, Integer timeOutForAnswer){
+        switch (wrapperMode) {
+            case ExamMode:
+                var workingLLM = getWorkingLLM();
+                if (!workingLLM.isPresent()) return new ChatAnswer();
+                ChatAnswer answer = askLLM(workingLLM.get(), promt, timeOutForAnswer);
+                if (!answer.getCleanAnswer().isPresent()){
+                    workingLLM = getWorkingLLM();
+                    answer = askLLM(workingLLM.get(), promt, timeOutForAnswer);
+                    return answer;
+                }
+                else{
+                    return answer;
+                }
+        
+            default:
+                return new ChatAnswer();
+        }
+    }
+
+    private Optional<LLM> getWorkingLLM(){
+        // получаем все ИИшки, у которых требуется авторизация и она пройдена, или авторизация не требуется. И у которых не было ошибок
+        var workingLLMs = llms.stream().filter(llm -> 
+            ((llm.getAuthRequired() && llm.getAuthDone()) || (!llm.getAuthRequired()))
+            && !llm.getGotError()
+        ).toList();
+
+        if (workingLLMs.isEmpty()){
+            logger.error("There is no working LLM", null);
+            return Optional.empty();
+        }
+        
+        return workingLLMs.stream().filter(llm -> llm.getProvider() == preferredProvider).findFirst().map(llm -> {
+            return Optional.ofNullable(llm);
+        }).orElse(Optional.ofNullable(workingLLMs.get(0)));
+
     }
 
     public void exit(){

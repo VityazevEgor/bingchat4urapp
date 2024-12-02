@@ -3,7 +3,7 @@ package com.vityazev_egor.LLMs.DuckDuck;
 import com.vityazev_egor.NoDriver;
 import com.vityazev_egor.iChat;
 import com.vityazev_egor.Models.ChatAnswer;
-import com.vityazev_egor.LLMs.DuckDuck.Modules.*;;
+import com.vityazev_egor.LLMs.DuckDuck.Modules.*;
 
 public class DuckDuck implements iChat{
 
@@ -20,8 +20,7 @@ public class DuckDuck implements iChat{
 
     @Override
     public ChatAnswer ask(String promt, Integer timeOutForAnswer) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'ask'");
+        return new Ask(driver).ask(promt, timeOutForAnswer);
     }
 
     @Override

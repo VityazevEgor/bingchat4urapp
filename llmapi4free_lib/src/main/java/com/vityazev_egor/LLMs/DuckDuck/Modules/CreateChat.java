@@ -2,7 +2,6 @@ package com.vityazev_egor.LLMs.DuckDuck.Modules;
 
 import com.vityazev_egor.NoDriver;
 import com.vityazev_egor.Core.CustomLogger;
-import com.vityazev_egor.Core.WaitTask;
 import com.vityazev_egor.Core.WebElements.By;
 import com.vityazev_egor.LLMs.Shared;
 import com.vityazev_egor.LLMs.DuckDuck.DuckDuck;
@@ -33,7 +32,7 @@ public class CreateChat {
         driver.getInput().enterText(textArea, "Напиши слово \"Lol kek\"");
         driver.getInput().emulateClick(sendButton);
 
-        if (!waitForAnswer(20)){
+        if (!new Ask(driver).waitForAnswer(20)){
             logger.error("Time out while wating for duck duck answer", null);
             return false;
         }
@@ -48,28 +47,5 @@ public class CreateChat {
                 return false;
             }
         }).orElse(false);
-    }
-
-    private Boolean waitForAnswer(Integer timeOutForAnswer){
-        var waitTask = new WaitTask() {
-            private String html = driver.getHtml().map(result -> {return result;}).orElse("");
-
-            @Override
-            public Boolean condition() {
-                // если текущий штмл равен предыдущему то возвращаем да (копайлот перестал печатать)
-                return driver.getHtml().map(currentHtml ->{
-                    if (currentHtml.equals(html)){
-                        return true;
-                    }
-                    else{
-                        html = currentHtml;
-                        return false;
-                    }
-                }).orElse(false);
-            }
-            
-        };
-        com.vityazev_egor.Core.Shared.sleep(1000);
-        return waitTask.execute(timeOutForAnswer, 1 * 1000);
     }
 }
