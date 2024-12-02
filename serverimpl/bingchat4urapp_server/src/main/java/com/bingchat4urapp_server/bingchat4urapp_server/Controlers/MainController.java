@@ -65,14 +65,23 @@ public class MainController {
     }
 
     @PostMapping("/useDuckDuck")
-    public Boolean useDuckDuck(@Valid @RequestBody RequestsModels.SwitchAIRequest switchAIRequest, BindingResult bindingResult){
-        if (bindingResult.hasErrors()){
-            logger.warn("Didn't pass validation in switch AI task");
-            return false;
+    public ResponseEntity<?> useDuckDuck(@Valid @RequestBody RequestsModels.SwitchAIRequest switchAIRequest, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            logger.warn("Validation failed in switch AI task");
+            return ResponseEntity.badRequest()
+                    .body("Validation failed: " + extractErrorMessages(bindingResult.getAllErrors()));
         }
-        executor.setUseDuckDuck(switchAIRequest.getValue());
-        return true;
+
+        try {
+            executor.setUseDuckDuck(switchAIRequest.getValue());
+            return ResponseEntity.ok("DuckDuck switch successfully updated");
+        } catch (Exception e) {
+            logger.error("Error while updating DuckDuck switch", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to update DuckDuck switch");
+        }
     }
+
 
     @PostMapping("/sendpromt")
     public ResponseEntity<?> createPromptTask(@Valid @RequestBody RequestsModels.PromtRequest promptRequest, BindingResult bindingResult) {
@@ -115,15 +124,23 @@ public class MainController {
     }
 
     @RequestMapping(value = "get/{id}", method = RequestMethod.GET)
-    public TaskModel GetTask(@PathVariable Integer id){
-        Optional<TaskModel> found = taskRepo.findById(id);
-        if (found.isPresent()){
-            return found.get();
-        }
-        else{
-            return null;
+    public ResponseEntity<?> GetTask(@PathVariable Integer id) {
+        try {
+            Optional<TaskModel> found = taskRepo.findById(id);
+            if (found.isPresent()) {
+                return ResponseEntity.ok(found.get());
+            } else {
+                logger.warn("Task with ID " + id + " not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Task with ID " + id + " not found.");
+            }
+        } catch (Exception e) {
+            logger.error("Error occurred while retrieving task with ID " + id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while retrieving the task.");
         }
     }
+
 
     @GetMapping("/exit")
     public String exitTask() {
