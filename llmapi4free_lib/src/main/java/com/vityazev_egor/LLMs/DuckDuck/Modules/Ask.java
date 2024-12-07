@@ -22,6 +22,15 @@ public class Ask {
     }
 
     public ChatAnswer ask(String promt, Integer timeOutAnswer){
+        // We need to check if we are on Copilot page before asking LLM
+        var pageTitel = driver.getTitle();
+        if (pageTitel.isPresent() && !pageTitel.get().contains("AI Chat")){
+            logger.warning("Not on Duck Duck page");
+            if (!new Auth(driver).auth() || !new CreateChat(driver).create()){
+                return new ChatAnswer();
+            }
+        }
+
         if (enterPromt(promt) && waitForAnswer(timeOutAnswer)){
             return new ChatAnswer(getTextAnswer(), getHtmlAnswer(), driver.getMisc().captureScreenshot());
         }

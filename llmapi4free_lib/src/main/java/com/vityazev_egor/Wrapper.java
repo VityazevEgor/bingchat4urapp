@@ -63,12 +63,8 @@ public class Wrapper {
     }
 
     public ChatAnswer askLLM(LLMproviders provider, String promt, Integer timeOutForAnswer){
-        return llms.stream().filter(l -> l.getProvider() == provider).findFirst().map(l->{
-            var answer = l.getChat().ask(promt, timeOutForAnswer);
-            if (!answer.getCleanAnswer().isPresent()){
-                l.setGotError(true);
-            }
-            return answer;
+        return llms.stream().filter(l -> l.getProvider() == provider).findFirst().map(llm->{
+            return askLLM(llm, promt, timeOutForAnswer);
         }).orElse(new ChatAnswer());
     }
 
@@ -83,24 +79,28 @@ public class Wrapper {
     public ChatAnswer askLLM(String promt, Integer timeOutForAnswer){
         switch (wrapperMode) {
             case ExamMode:
-                var workingLLM = getWorkingLLM();
-                if (!workingLLM.isPresent()) return new ChatAnswer();
-                ChatAnswer answer = askLLM(workingLLM.get(), promt, timeOutForAnswer);
-                if (!answer.getCleanAnswer().isPresent()){
-                    workingLLM = getWorkingLLM();
-                    answer = askLLM(workingLLM.get(), promt, timeOutForAnswer);
-                    return answer;
-                }
-                else{
+                for (int i=0; i<2; i++){
+                    var workingLLM = getWorkingLLM();
+                    if (!workingLLM.isPresent()) {
+                        logger.error("There is no working providers avaible", null);
+                        return new ChatAnswer();
+                    }
+                    ChatAnswer answer = askLLM(workingLLM.get(), promt, timeOutForAnswer);
+                    if (!answer.getCleanAnswer().isPresent()) {
+                        logger.error("LLM " + workingLLM.get().getProvider().name() + " didn't answer", null);
+                        continue;
+                    }
                     return answer;
                 }
         
             default:
-                return new ChatAnswer();
+                return getWorkingLLM().map(llm ->{
+                    return askLLM(llm, promt, timeOutForAnswer);
+                }).orElse(new ChatAnswer());
         }
     }
 
-    private Optional<LLM> getWorkingLLM(){
+    public Optional<LLM> getWorkingLLM(){
         // получаем все ИИшки, у которых требуется авторизация и она пройдена, или авторизация не требуется. И у которых не было ошибок
         var workingLLMs = llms.stream().filter(llm -> 
             ((llm.getAuthRequired() && llm.getAuthDone()) || (!llm.getAuthRequired()))
@@ -116,6 +116,11 @@ public class Wrapper {
             return Optional.ofNullable(llm);
         }).orElse(Optional.ofNullable(workingLLMs.get(0)));
 
+    }
+
+    public void reset(){
+        llms.forEach(llm -> llm.setGotError(false));
+        driver.getMisc().clearCookies();
     }
 
     public void exit(){

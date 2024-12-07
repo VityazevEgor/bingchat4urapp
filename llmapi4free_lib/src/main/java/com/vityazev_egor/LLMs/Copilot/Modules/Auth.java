@@ -23,7 +23,7 @@ public class Auth {
             return true;
         }
 
-        if (openLoginPage() && enterLogin(login) && enterPassword(password) && staySigned()){
+        if (openLoginPage() && enterLogin(login) && enterPassword(password) && staySigned() && isLoggedIn()) {
             return true;
         }
         else{

@@ -21,6 +21,15 @@ public class Ask {
     }
 
     public ChatAnswer askCopilot(String promt, Integer timeOutForAnswer){
+        // We need to check if we are on Copilot page before asking LLM
+        var pageTitel = driver.getTitle();
+        if (pageTitel.isPresent() && !pageTitel.get().contains("Copilot")){
+            logger.warning("Not on Copilot page");
+            if (!driver.getNavigation().loadUrlAndWait("https://copilot.microsoft.com/", 10)){
+                return new ChatAnswer();
+            }
+        }
+
         if (enterPromt(promt) && waitForAnswer(timeOutForAnswer)){
             return new ChatAnswer(
                 getLastAnswerText(), 
