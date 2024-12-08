@@ -34,6 +34,8 @@ public class Wrapper {
     // указываем какой режим работы будет
     private final WrapperMode wrapperMode;
 
+    public static Boolean emulateError = false;
+
     public Wrapper(String socks5Proxy, LLMproviders preferredProvider, WrapperMode wrapperMode) throws IOException{
         this.driver = new NoDriver(socks5Proxy);
         this.logger = new CustomLogger(Wrapper.class.getName());

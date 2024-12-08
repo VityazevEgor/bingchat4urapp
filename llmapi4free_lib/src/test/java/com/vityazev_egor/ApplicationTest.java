@@ -25,6 +25,8 @@ class ApplicationTest {
         var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.DuckDuck, WrapperMode.ExamMode);
         var answer = wrapper.askLLM("How are you today?",40);
         assertTrue(answer.getCleanAnswer().isPresent());
+        answer = wrapper.askLLM("Write hello world in java", 40);
+        assertTrue(answer.getCleanAnswer().isPresent());
         wrapper.exit();
     }
 
@@ -49,12 +51,14 @@ class ApplicationTest {
         String password = data.get(1);
         var result = wrapper.auth(LLMproviders.Copilot, loging, password);
         assertTrue(result);
-        var answer = wrapper.askLLM("How are you today?",40);
+        var answer = wrapper.askLLM("Can you show me how to use for loop in Go?",60);
 
         var firstAnswer = answer.getCleanAnswer();
         assertTrue(firstAnswer.isPresent());
         System.out.println(firstAnswer);
         answer = wrapper.askLLM("Can you write hello world in java?",60);
+        assertTrue(answer.getCleanAnswer().isPresent() && !answer.getCleanAnswer().get().equalsIgnoreCase(firstAnswer.get()));
+        answer = wrapper.askLLM("Can you show me how to use for loop in java?",60);
         assertTrue(answer.getCleanAnswer().isPresent() && !answer.getCleanAnswer().get().equalsIgnoreCase(firstAnswer.get()));
         System.out.println(answer.getCleanAnswer());
         wrapper.exit();

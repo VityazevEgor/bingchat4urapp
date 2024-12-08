@@ -63,9 +63,9 @@
 
 		<!-- Всё что нужно для того проекта -->
 		<dependency>
-			<groupId>com.bingchat4urapp</groupId>
-			<artifactId>bingchat4urapp</artifactId>
-			<version>1.7</version>
+			<groupId>com.vityazev_egor</groupId>
+			<artifactId>llmapi4free</artifactId>
+			<version>1.0</version>
 		</dependency>
 
 		<dependency>
