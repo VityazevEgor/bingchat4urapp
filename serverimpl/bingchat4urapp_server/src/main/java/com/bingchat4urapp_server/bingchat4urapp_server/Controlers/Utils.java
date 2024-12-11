@@ -7,26 +7,13 @@ import org.springframework.stereotype.Component;
 
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.RequestsModels;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class Utils {
-    private ObjectMapper mapper = new ObjectMapper();
+    @SuppressWarnings("unused")
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(Utils.class);
 
-    private String writeValueAsString(Map<String, String> data){
-        String result = null;
-        try{
-            result = mapper.writeValueAsString(data);
-        } catch (Exception ex){
-            logger.error("Can't serialize data", ex);
-        }
-
-        return result;
-    }
-
     public TaskModel createPromtTask(String promt, String timeOutForAnswer){
-        // create String String Map that conatins promt and timeoutForAnswer
         Map<String, String> promtTask = Map.of("promt", promt, "timeOutForAnswer", timeOutForAnswer);
 
         var newTask = new TaskModel();
@@ -38,9 +25,6 @@ public class Utils {
 
     public TaskModel createAuthTask(String login, String password){
         Map<String, String> authTask = Map.of("login", login, "password", password);
-
-        String jsonString = writeValueAsString(authTask);
-
         var newTask = new TaskModel();
         newTask.type = 1;
         newTask.data = authTask;

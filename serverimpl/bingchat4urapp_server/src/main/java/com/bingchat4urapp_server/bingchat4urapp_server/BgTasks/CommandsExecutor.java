@@ -28,7 +28,7 @@ import lombok.Getter;
 public class CommandsExecutor {
     @Getter
     private Wrapper wrapper;
-    private Boolean doJob = true;
+    private Boolean doJob = false;
     private final Logger logger = LoggerFactory.getLogger(CommandsExecutor.class);
     private final AtomicBoolean isTaskRunning = new AtomicBoolean(false);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();

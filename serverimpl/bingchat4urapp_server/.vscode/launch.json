@@ -15,8 +15,7 @@
             "projectName": "bingchat4urapp_server",
             "vmArgs": "--add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED",
             "args": "--proxy 127.0.0.1:2080 --examMode true --hideBrowser false"
-        }
-
+        },
         {
             "type": "java",
             "name": "Debug App",

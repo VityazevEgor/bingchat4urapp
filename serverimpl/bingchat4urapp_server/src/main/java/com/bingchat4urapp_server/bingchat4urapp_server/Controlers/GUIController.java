@@ -48,7 +48,7 @@ public class GUIController {
     public ModelAndView authGui() {
         // we need to provide list of avaibel models
         var authRequired = executor.getWrapper().getLlms().stream().filter(llm-> llm.getAuthRequired() && !llm.getAuthDone()).toList();
-        return new ModelAndView("auth");
+        return new ModelAndView("auth", "authRequired", authRequired);
     }
 
     @GetMapping("/switchai")

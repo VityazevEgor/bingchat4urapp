@@ -9,7 +9,7 @@ import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 @Component
 public class ForTesting implements CommandLineRunner{
 
-    private final Boolean isDebug = false;
+    private final Boolean isDebug = true;
 
     @Autowired
     private Context context;

@@ -10,7 +10,6 @@ import com.bingchat4urapp_server.bingchat4urapp_server.Filters.NoChatFilter;
 
 @Configuration
 public class FiltersCfg {
-    
     @Bean
     @Autowired
     public FilterRegistrationBean<AuthFilter> registerAuthFilter(AuthFilter filter) {

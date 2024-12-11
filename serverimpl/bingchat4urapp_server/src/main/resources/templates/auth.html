@@ -1,69 +1,51 @@
-<!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>llmapi4free - Auth</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{~/custom.css}">
+</head>
+<body>
+    <div id="stars"></div>
+    <div class="container min-vh-100 d-flex align-items-center justify-content-center">
+        <form class="text-center p-5 double-border" th:action="@{/sendauthgui}" method="post" style="width: 500px; background-color: #0a0a0a; border: 1px solid #1a1a1a;">
+            <h1 class="mb-5 fw-bold">Create auth task</h1>
+            
+            <!-- Email -->
+            <div class="mb-4">
+                <input type="email" 
+                       name="login" 
+                       class="form-control input-custom" 
+                       placeholder="Login">
+            </div>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+            <!-- Password -->
+            <div class="mb-4">
+                <input type="password" 
+                       name="password" 
+                       class="form-control input-custom" 
+                       placeholder="Password">
+            </div>
 
-    <style>
-        body {
-            background-color: #212121;
-            color: #fff;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .dark-textarea {
-            background-color: #424242;
-            border-radius: 0;
-            color: #fff;
-            border-color: #424242; /* same as .btn-outline-secondary */
-            border-left: none;
-            border-right: none;
-        }
-        .dark-textarea:focus {
-            background-color: #343a40;
-            color: #fff;
-            border-color: #6c757d; /* same as .btn-outline-secondary */
-            border-left: none;
-            border-right: none;
-            outline: none;
-            box-shadow: none;
-        }
-        .custom-border{
-          border: 1px solid #616161;
-          border-radius: 10px;
-        }
-    </style>
+            <!-- Select -->
+            <div class="mb-4">
+                <select class="form-select input-custom">
+                    <option selected>Sign in with</option>
+                    <option value="1">Standard Authentication</option>
+                    <option value="2">Two-Factor Authentication</option>
+                </select>
+            </div>
 
-    <title>Login Page</title>
-  </head>
-  <body>
-    <div class="container">
-      <center>
-        <form class="text-center custom-border p-5" th:action="@{/sendauthgui}" method="post" style="width: 50%;">
-          <p class="h4 mb-4">Sign in</p>
-
-          <!-- Email -->
-          <input type="email" name="login"  class="form-control mb-4 dark-textarea" placeholder="E-mail">
-
-          <!-- Password -->
-          <input type="password" name="password" class="form-control mb-4 dark-textarea" placeholder="Password">
-
-          <!-- Sign in button -->
-          <button class="btn btn-outline-secondary btn-block" type="submit" style="width: 100%;">Sign in</button>
+            <!-- Sign in button -->
+            <button class="btn btn-outline-custom w-100" type="submit">
+                Sign in
+            </button>
         </form>
-      </center>
     </div>
 
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-  </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{~/stars.js}"></script>
+</body>
 </html>
