@@ -20,66 +20,68 @@ import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 public class GUIController {
 
     @Autowired
-    private Context _context;
+    private Context context;
 
     @Autowired
-    private Utils _utils;
+    private Utils utils;
 
     @Autowired
-    private CommandsExecutor cmdExecutor;
+    private CommandsExecutor executor;
 
     @GetMapping("/")
     public ModelAndView main(){
         var model = new ModelAndView("main");
 
-        var promtModels = _context.findLatestFinishedPromtTasks();
+        var promtModels = context.findLatestFinishedPromtTasks();
         for (TaskModel currentPromt : promtModels) {
             if (currentPromt.result != null && currentPromt.result.length() >60){
                 currentPromt.result = currentPromt.result.substring(0,60);
             }
         }
         model.addObject("latestPromts", promtModels);
-        String aiInUse = cmdExecutor.getUseDuckDuck() ? "Using DuckDuck" : "Using Copilot";
+        String aiInUse = executor.getUseDuckDuck() ? "Using DuckDuck" : "Using Copilot";
         model.addObject("aiInUse", aiInUse);
         return model;
     }
 
     @GetMapping("/authgui")
     public ModelAndView authGui() {
+        // we need to provide list of avaibel models
+        var authRequired = executor.getWrapper().getLlms().stream().filter(llm-> llm.getAuthRequired() && !llm.getAuthDone()).toList();
         return new ModelAndView("auth");
     }
 
     @GetMapping("/switchai")
     public String switchAi(){
-        cmdExecutor.setUseDuckDuck(!cmdExecutor.getUseDuckDuck());
+        executor.setUseDuckDuck(!executor.getUseDuckDuck());
         return "redirect:/";
     }
 
     @GetMapping("/newchatgui")
     public String newChatGui(){
-        var newTask = _utils.createNewChatTask("3");
-        _context.save(newTask); 
+        var newTask = utils.createNewChatTask("3");
+        context.save(newTask); 
         return "redirect:/task/" + newTask.id;
     }
 
     @PostMapping("/sendgui")
     public String sendGui(@RequestParam String promt){
-        var newTask = _utils.createPromtTask(promt, "120");
-        _context.save(newTask);
+        var newTask = utils.createPromtTask(promt, "120");
+        context.save(newTask);
         return "redirect:/task/" + newTask.id;
     }
 
     @PostMapping("/sendauthgui")
     public String postMethodName(@RequestParam String login, @RequestParam String password) {
-        var newTask = _utils.createAuthTask(login, password);
-        _context.save(newTask);
+        var newTask = utils.createAuthTask(login, password);
+        context.save(newTask);
         return "redirect:/task/" + newTask.id;
     }
     
 
     @RequestMapping(value = "/task/{taskid}", method = RequestMethod.GET)
     public ModelAndView waitTask(@PathVariable("taskid") Integer taskId) {
-        var taskModel = _context.findById(taskId).orElse(null);
+        var taskModel = context.findById(taskId).orElse(null);
 
         // если авторизация или создание чата прошло успешна то сразу редериктим на страницу для отправки запросов
         if ((taskModel.type == 1 || taskModel.type == 3) && !taskModel.gotError && taskModel.isFinished){

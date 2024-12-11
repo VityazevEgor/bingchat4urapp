@@ -2,7 +2,6 @@ package com.bingchat4urapp_server.bingchat4urapp_server.BgTasks;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,21 +16,19 @@ import org.springframework.stereotype.Component;
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
 import com.bingchat4urapp_server.bingchat4urapp_server.Shared;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vityazev_egor.Wrapper;
 import com.vityazev_egor.Wrapper.LLMproviders;
 import com.vityazev_egor.Wrapper.WrapperMode;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.Getter;
 
 @Component
 public class CommandsExecutor {
-    
-    private Wrapper chat;
+    @Getter
+    private Wrapper wrapper;
     private Boolean doJob = true;
-    private ObjectMapper mapper = new ObjectMapper();
     private final Logger logger = LoggerFactory.getLogger(CommandsExecutor.class);
     private final AtomicBoolean isTaskRunning = new AtomicBoolean(false);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -41,7 +38,7 @@ public class CommandsExecutor {
 
     public CommandsExecutor(){
         try{
-            chat = new Wrapper(Shared.proxy, LLMproviders.Copilot, Shared.examMode ? WrapperMode.ExamMode : WrapperMode.Normal);
+            wrapper = new Wrapper(Shared.proxy, LLMproviders.Copilot, Shared.examMode ? WrapperMode.ExamMode : WrapperMode.Normal);
             logger.info("Created Wrapper object with proxy = " + Shared.proxy);
             //chat.emulateError = true;
         } catch (Exception e){
@@ -51,14 +48,14 @@ public class CommandsExecutor {
     }
 
     public void setUseDuckDuck(Boolean value){
-        if (chat != null){
+        if (wrapper != null){
             //chat.setUseDuckDuck(value);
             // TODO implement this
         }
     }
 
     public Boolean getUseDuckDuck(){
-        if (chat != null){
+        if (wrapper != null){
             //return chat.getUseDuckDuck();
             // TODO implement this
             return false;
@@ -73,25 +70,30 @@ public class CommandsExecutor {
     // 3 - создание чата
     public void commandsProcessor(){
         if (!doJob) return;
-        
+        try{
         TaskModel task = context.findFirstUnfinishedTask();
-        if (task == null) return;
+        if (task == null) {
+            logger.info("There is nothing to do");
+            return;
+        }
+        else{
+            logger.info("I got task to do with this data = " + task.data);
+        }
         if (task.type == 0){
-            chat.exit();
+            wrapper.exit();
             System.exit(0);
             return;
         }
-        Map<String, String> data = convertJsonToMap(task);
-        if (data != null) {
+        if (task.data.size() > 0) {
             switch (task.type) {
                 case 1:
-                    processAuthTask(task, data);
+                    processAuthTask(task);
                     break;
                 case 2:
-                    processPromptTask(task, data);
+                    processPromptTask(task);
                     break;
                 case 3:
-                    processСreateChatTask(task, data);
+                    processСreateChatTask(task);
                     break;
                 default:
                     gotError(task, "Got task with unknow type");
@@ -99,7 +101,11 @@ public class CommandsExecutor {
             }
         }
         else{
+            System.out.print(task.data);
             gotError(task, "Could not get data from task (Maybe is null or in wrong JSON format)");
+        }
+        } catch (Exception ex){
+            logger.error("Error in main loop", ex);
         }
     }
 
@@ -121,11 +127,11 @@ public class CommandsExecutor {
         isTaskRunning.set(false);
     }
 
-    private void processСreateChatTask(TaskModel task, Map<String, String> data){
+    private void processСreateChatTask(TaskModel task){
         logger.info("Got create chat task");
-        var workingLLM = chat.getWorkingLLM();
+        var workingLLM = wrapper.getWorkingLLM();
         if (workingLLM.isPresent()){
-            Boolean result = chat.createChat(workingLLM.get().getProvider());
+            Boolean result = wrapper.createChat(workingLLM.get().getProvider());
             task.isFinished = true;
             task.gotError = !result;
             context.save(task);
@@ -136,22 +142,22 @@ public class CommandsExecutor {
         logger.info("Finsihed create chat task");
     }
 
-    private void processAuthTask(TaskModel task, Map<String, String> data) {
+    private void processAuthTask(TaskModel task) {
         logger.info("Got auth task");
-        Boolean result = chat.auth(LLMproviders.Copilot, data.get("login"), data.get("password"));
+        Boolean result = wrapper.auth(LLMproviders.Copilot, task.data.get("login"), task.data.get("password"));
         task.isFinished = true;
         task.gotError = !result;
         context.save(task);
         logger.info("Finished auth task");
     }
 
-    private void processPromptTask(TaskModel task, Map<String, String> data) {
+    private void processPromptTask(TaskModel task) {
         logger.info("Got promt task");
-        String prompt = data.get("promt");
-        Integer timeOutForAnswer = Integer.parseInt(data.get("timeOutForAnswer"));
+        String prompt = task.data.get("promt");
+        Integer timeOutForAnswer = Integer.parseInt(task.data.get("timeOutForAnswer"));
         try{
             // var chatAnswer = chat.askLLM(prompt, timeOutForAnswer);
-            var chatAnswer = chat.askLLM(prompt, 40);
+            var chatAnswer = wrapper.askLLM(prompt, timeOutForAnswer);
             task.isFinished = true;
             task.gotError = !chatAnswer.getCleanAnswer().isPresent();
             task.result = chatAnswer.getCleanAnswer().isPresent() ? chatAnswer.getCleanAnswer().get() : null;
@@ -175,15 +181,15 @@ public class CommandsExecutor {
         logger.info("Finished promt task");
     }
 
-    private Map<String, String> convertJsonToMap(TaskModel task) {
-        try {
-            return mapper.readValue(task.data, new TypeReference<Map<String, String>>() {});
-        } catch (Exception e) {
-            gotError(task, "Can't convert json to Map");
-            e.printStackTrace();
-            return null;
-        }
-    }
+    // private Map<String, String> convertJsonToMap(TaskModel task) {
+    //     try {
+    //         return mapper.readValue(task.data, new TypeReference<Map<String, String>>() {});
+    //     } catch (Exception e) {
+    //         gotError(task, "Can't convert json to Map");
+    //         e.printStackTrace();
+    //         return null;
+    //     }
+    // }
 
     private void gotError(TaskModel task, String reason){
         task.isFinished = true;

@@ -28,12 +28,10 @@ public class Utils {
     public TaskModel createPromtTask(String promt, String timeOutForAnswer){
         // create String String Map that conatins promt and timeoutForAnswer
         Map<String, String> promtTask = Map.of("promt", promt, "timeOutForAnswer", timeOutForAnswer);
-        // convert map to json string
-        String jsonString = writeValueAsString(promtTask);
 
         var newTask = new TaskModel();
         newTask.type = 2;
-        newTask.data = jsonString;
+        newTask.data = promtTask;
 
         return newTask;
     }
@@ -45,19 +43,15 @@ public class Utils {
 
         var newTask = new TaskModel();
         newTask.type = 1;
-        newTask.data = jsonString;
+        newTask.data = authTask;
 
         return newTask;
     }
 
     public TaskModel createNewChatTask(String type){
-        Map<String, String> newChatTask = Map.of("type", type);
-
-        String jsonString = writeValueAsString(newChatTask);
-
         var newTask = new TaskModel();
         newTask.type = 3;
-        newTask.data = jsonString;
+        newTask.data = Map.of("type", type);
 
         return newTask;
     }
