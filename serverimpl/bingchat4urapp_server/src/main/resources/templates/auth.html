@@ -10,7 +10,7 @@
 <body>
     <div id="stars"></div>
     <div class="container min-vh-100 d-flex align-items-center justify-content-center">
-        <form class="text-center p-5 double-border" th:action="@{/sendauthgui}" method="post" style="width: 500px; background-color: #0a0a0a; border: 1px solid #1a1a1a;">
+        <form class="text-center p-5 double-border" th:action="@{/auth}" method="post" style="width: 500px; background-color: #0a0a0a; border: 1px solid #1a1a1a;">
             <h1 class="mb-5 fw-bold">Create auth task</h1>
             
             <!-- Email -->
@@ -31,10 +31,8 @@
 
             <!-- Select -->
             <div class="mb-4">
-                <select class="form-select input-custom">
-                    <option selected>Sign in with</option>
-                    <option value="1">Standard Authentication</option>
-                    <option value="2">Two-Factor Authentication</option>
+                <select class="form-select input-custom" name="provider">
+                    <option th:each="llm: ${authRequired}" th:text="${llm.provider}" th:value="${llm.provider}"></option>
                 </select>
             </div>
 

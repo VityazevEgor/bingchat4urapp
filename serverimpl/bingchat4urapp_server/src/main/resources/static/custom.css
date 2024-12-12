@@ -6,8 +6,8 @@ body {
 .btn-custom {
     font-size: 1rem;
     padding: 0.375rem 0.75rem;
-    color: #000000;
-    background-color: #02FF04;
+    color: white;
+    background-color: #010D01;
     border-color: #02FF04;
 }
 .btn-custom:hover {
@@ -33,7 +33,7 @@ body {
     font-size: 1.2rem;
     resize: none;
     background-color: #010D01 !important;
-    color: #02FF04 !important;
+    color: white !important;
     border-color: #02FF04 !important;
 }
 

@@ -28,7 +28,7 @@ import lombok.Getter;
 public class CommandsExecutor {
     @Getter
     private Wrapper wrapper;
-    private Boolean doJob = false;
+    private Boolean doJob = true;
     private final Logger logger = LoggerFactory.getLogger(CommandsExecutor.class);
     private final AtomicBoolean isTaskRunning = new AtomicBoolean(false);
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -73,7 +73,7 @@ public class CommandsExecutor {
         try{
         TaskModel task = context.findFirstUnfinishedTask();
         if (task == null) {
-            logger.info("There is nothing to do");
+            //logger.info("There is nothing to do");
             return;
         }
         else{
@@ -125,6 +125,7 @@ public class CommandsExecutor {
     @PreDestroy
     public void stopTask(){
         isTaskRunning.set(false);
+        wrapper.exit();
     }
 
     private void processСreateChatTask(TaskModel task){
@@ -180,16 +181,6 @@ public class CommandsExecutor {
         context.save(task);
         logger.info("Finished promt task");
     }
-
-    // private Map<String, String> convertJsonToMap(TaskModel task) {
-    //     try {
-    //         return mapper.readValue(task.data, new TypeReference<Map<String, String>>() {});
-    //     } catch (Exception e) {
-    //         gotError(task, "Can't convert json to Map");
-    //         e.printStackTrace();
-    //         return null;
-    //     }
-    // }
 
     private void gotError(TaskModel task, String reason){
         task.isFinished = true;

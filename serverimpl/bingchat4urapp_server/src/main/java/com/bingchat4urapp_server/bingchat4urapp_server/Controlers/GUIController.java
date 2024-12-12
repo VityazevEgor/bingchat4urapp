@@ -39,13 +39,13 @@ public class GUIController {
             }
         }
         model.addObject("latestPromts", promtModels);
-        String aiInUse = executor.getUseDuckDuck() ? "Using DuckDuck" : "Using Copilot";
+        String aiInUse = executor.getWrapper().getWorkingLLM().map(llm -> { return llm.getChat().getName();}).orElse("None");
         model.addObject("aiInUse", aiInUse);
         return model;
     }
 
-    @GetMapping("/authgui")
-    public ModelAndView authGui() {
+    @GetMapping("/auth")
+    public ModelAndView auth() {
         // we need to provide list of avaibel models
         var authRequired = executor.getWrapper().getLlms().stream().filter(llm-> llm.getAuthRequired() && !llm.getAuthDone()).toList();
         return new ModelAndView("auth", "authRequired", authRequired);
@@ -71,7 +71,7 @@ public class GUIController {
         return "redirect:/task/" + newTask.id;
     }
 
-    @PostMapping("/sendauthgui")
+    @PostMapping("/auth")
     public String postMethodName(@RequestParam String login, @RequestParam String password) {
         var newTask = utils.createAuthTask(login, password);
         context.save(newTask);

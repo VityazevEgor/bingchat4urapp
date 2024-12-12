@@ -16,7 +16,8 @@
                 <div class="container-fluid px-0">
                     <a class="navbar-brand fw-bold fs-4" style="color: #02FF04;" href="#">llmapi4free</a>
                     <div class="d-flex flex-column flex-sm-row">
-                        <a class="btn btn-outline-custom mb-2 mb-sm-0 me-sm-2" th:href="@{~/newchatgui}">Create auth task</a>
+                        <a th:text="${aiInUse}" style="padding-right: 10px; color: yellow;" class="fw-bold fs-5">Provider name</a>
+                        <a class="btn btn-outline-custom mb-2 mb-sm-0 me-sm-2" th:href="@{~/auth}">Create auth task</a>
                         <button class="btn btn-outline-custom">View providers stat</button>
                     </div>
                 </div>

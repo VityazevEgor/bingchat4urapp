@@ -23,7 +23,16 @@ public class Auth {
             return true;
         }
 
-        if (openLoginPage() && enterLogin(login) && enterPassword(password) && staySigned() && isLoggedIn()) {
+        if (!openLoginPage() || !enterLogin(login)) {
+            return false;
+        }
+        // sometimes copilot will auth you after you enter only your email
+        if (isLoggedIn()){
+            logger.info("Auth is done after entering email");
+            return true;
+        }
+
+        if (enterPassword(password) && staySigned() && isLoggedIn()){
             return true;
         }
         else{
