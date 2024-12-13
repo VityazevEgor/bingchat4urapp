@@ -38,9 +38,7 @@ public class AuthFilter extends OncePerRequestFilter {
     private void antiSoftLock(){
         if (executor.getWrapper().getLlms().stream().allMatch(llm->llm.getGotError() == true)){
             logger.warn("Detected soft lock! Resetting all LLM error states.");
-            executor.getWrapper().getLlms().forEach(llm ->{
-                llm.setGotError(false);
-            });
+            executor.getWrapper().resetErrorStates();
         }
     }
     

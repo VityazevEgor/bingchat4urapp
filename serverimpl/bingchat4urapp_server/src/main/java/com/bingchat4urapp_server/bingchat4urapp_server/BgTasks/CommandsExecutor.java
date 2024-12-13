@@ -40,7 +40,13 @@ public class CommandsExecutor {
         try{
             wrapper = new Wrapper(Shared.proxy, LLMproviders.Copilot, Shared.examMode ? WrapperMode.ExamMode : WrapperMode.Normal);
             logger.info("Created Wrapper object with proxy = " + Shared.proxy);
-            //chat.emulateError = true;
+            if (Shared.emulateBingErros){
+                logger.warn("emulateErrors mode is enabled. Copilot will alway return errors");
+                Wrapper.emulateError = true;
+            }
+            if (Shared.examMode){
+                logger.warn("examMode mode is enabled. Server will try to get answer from other LLM provider is current one failed!");
+            }
         } catch (Exception e){
             logger.error("Could not create Wrapper object", e);
             System.exit(1);

@@ -1,5 +1,7 @@
 package com.bingchat4urapp_server.bingchat4urapp_server.Controlers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.bingchat4urapp_server.bingchat4urapp_server.Context;
 import com.bingchat4urapp_server.bingchat4urapp_server.BgTasks.CommandsExecutor;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
+import com.vityazev_egor.Wrapper.LLMproviders;
 
 
 
@@ -27,6 +30,8 @@ public class GUIController {
 
     @Autowired
     private CommandsExecutor executor;
+
+    private final Logger logger = LoggerFactory.getLogger(GUIController.class);
 
     @GetMapping("/")
     public ModelAndView main(){
@@ -51,13 +56,20 @@ public class GUIController {
         return new ModelAndView("auth", "authRequired", authRequired);
     }
 
+    @PostMapping("/auth")
+    public String postMethodName(@RequestParam String login, @RequestParam String password) {
+        var newTask = utils.createAuthTask(login, password);
+        context.save(newTask);
+        return "redirect:/task/" + newTask.id;
+    }
+
     @GetMapping("/switchai")
     public String switchAi(){
         executor.setUseDuckDuck(!executor.getUseDuckDuck());
         return "redirect:/";
     }
 
-    @GetMapping("/newchatgui")
+    @GetMapping("/newchat")
     public String newChatGui(){
         var newTask = utils.createNewChatTask("3");
         context.save(newTask); 
@@ -67,13 +79,6 @@ public class GUIController {
     @PostMapping("/sendgui")
     public String sendGui(@RequestParam String promt){
         var newTask = utils.createPromtTask(promt, "120");
-        context.save(newTask);
-        return "redirect:/task/" + newTask.id;
-    }
-
-    @PostMapping("/auth")
-    public String postMethodName(@RequestParam String login, @RequestParam String password) {
-        var newTask = utils.createAuthTask(login, password);
         context.save(newTask);
         return "redirect:/task/" + newTask.id;
     }
@@ -97,5 +102,27 @@ public class GUIController {
         }
         return view;
     }
-        
+
+    @GetMapping("providers")
+    public ModelAndView getProviders() {
+        var model = new ModelAndView("providers", "providers", executor.getWrapper().getLlms());
+        String aiInUse = executor.getWrapper().getWorkingLLM().map(llm -> { return llm.getChat().getName();}).orElse("None");
+        model.addObject("aiInUse", aiInUse);
+        return model;
+    }
+
+    @GetMapping("providers/resetStates")
+    public ModelAndView resetProvidersStates() {
+        executor.getWrapper().resetErrorStates();
+        return new ModelAndView("redirect:/providers");
+    }
+
+    @RequestMapping(value = "providers/setPrefered/{providerName}", method=RequestMethod.GET)
+    public ModelAndView requestMethodName(@PathVariable("providerName") LLMproviders provider) {
+        executor.getWrapper().setPreferredProvider(provider);
+        logger.info("Updated provider: " + provider);
+        return new ModelAndView("redirect:/providers");
+    }
+    
+    
 }

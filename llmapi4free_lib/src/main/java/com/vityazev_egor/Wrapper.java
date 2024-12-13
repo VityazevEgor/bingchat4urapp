@@ -12,6 +12,7 @@ import com.vityazev_egor.Models.ChatAnswer;
 import com.vityazev_egor.Models.LLM;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class Wrapper {
     private final NoDriver driver;
@@ -30,7 +31,9 @@ public class Wrapper {
     }
 
     // указываем какую ИИ будем использовать по умолчанию
-    private final LLMproviders preferredProvider;
+    @Getter
+    @Setter
+    private LLMproviders preferredProvider;
     // указываем какой режим работы будет
     private final WrapperMode wrapperMode;
 
@@ -71,10 +74,18 @@ public class Wrapper {
     }
 
     private ChatAnswer askLLM(LLM llm, String promt, Integer timeOutForAnswer){
+        promt = promt.replaceAll("[\r\n]+", " ");
         var answer = llm.getChat().ask(promt, timeOutForAnswer);
         if (!answer.getCleanAnswer().isPresent()){
             llm.setGotError(true);
         }
+        // if current answer is equals to previous answer then we can say that something went wrong
+        if (answer.getCleanAnswer().isPresent() && answer.getCleanAnswer().get().equals(llm.getLastAnswer())){
+            llm.setGotError(true);
+            logger.error(llm.getChat().getName() + " returned the same answer as last answer", null);
+            return new ChatAnswer();
+        }
+        answer.getCleanAnswer().ifPresent(llm::setLastAnswer);
         return answer;
     }
 
@@ -120,9 +131,8 @@ public class Wrapper {
 
     }
 
-    public void reset(){
+    public void resetErrorStates(){
         llms.forEach(llm -> llm.setGotError(false));
-        driver.getMisc().clearCookies();
     }
 
     public void exit(){
