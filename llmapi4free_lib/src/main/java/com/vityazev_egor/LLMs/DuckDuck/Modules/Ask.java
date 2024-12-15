@@ -33,15 +33,15 @@ public class Ask {
         }
 
         if (enterPromt(promt) && waitForAnswer(timeOutAnswer)){
-            return new ChatAnswer(getTextAnswer(), getHtmlAnswer(), driver.getMisc().captureScreenshot());
+            return new ChatAnswer(
+                getTextAnswer(), 
+                getHtmlAnswer(), 
+                driver.getMisc().captureScreenshot()
+            );
         }
         else{
             return new ChatAnswer();
         }
-    }
-
-    private Optional<String> tryToGetTitel(){
-        return null;
     }
 
     private Boolean enterPromt(String promt){
@@ -63,24 +63,22 @@ public class Ask {
         return driver.findElements(By.cssSelector("." + DuckDuck.answerDivClass));
     }
 
-    private Optional<String> getTextAnswer(){
+    private Optional<WebElement> getLastAnswerElement(){
         var answerDivs = getAnswerDivs();
         if (answerDivs.isEmpty()){
             logger.error("Could not find answers divs", null);
             return Optional.empty();
         }
 
-        return answerDivs.get(answerDivs.size() - 1).getText();
+        return Optional.of(answerDivs.get(answerDivs.size() - 1));
+    }
+
+    private Optional<String> getTextAnswer(){
+        return getLastAnswerElement().map(element -> element.getText()).orElse(Optional.empty());
     }
 
     private Optional<String> getHtmlAnswer(){
-        var answerDivs = getAnswerDivs();
-        if (answerDivs.isEmpty()){
-            logger.error("Could not find answers divs", null);
-            return Optional.empty();
-        }
-
-        return answerDivs.get(answerDivs.size() - 1).getHTMLContent();
+        return getLastAnswerElement().map(element -> element.getHTMLContent()).orElse(Optional.empty());
     }
 
     public Boolean waitForAnswer(Integer timeOutForAnswer){

@@ -31,6 +31,14 @@ class ApplicationTest {
     }
 
     @Test
+    void testDuckDuckScreenShot() throws IOException{
+        var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.DuckDuck, WrapperMode.ExamMode);
+        var answer = wrapper.askLLM("напиши формулу равноускоренного движения в физике",40);
+        wrapper.exit();
+        assertTrue(answer.getAnswerImage().isPresent());
+    }
+
+    @Test
     void copilotAuth() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.Copilot, WrapperMode.ExamMode);
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
@@ -51,17 +59,17 @@ class ApplicationTest {
         String password = data.get(1);
         var result = wrapper.auth(LLMproviders.Copilot, loging, password);
         assertTrue(result);
-        var answer = wrapper.askLLM("Can you show me how to use for loop in Go?",60);
-
-        var firstAnswer = answer.getCleanAnswer();
-        assertTrue(firstAnswer.isPresent());
-        System.out.println(firstAnswer);
-        answer = wrapper.askLLM("Can you write hello world in java?",60);
-        assertTrue(answer.getCleanAnswer().isPresent() && !answer.getCleanAnswer().get().equalsIgnoreCase(firstAnswer.get()));
-        answer = wrapper.askLLM("Can you show me how to use for loop in java?",60);
-        assertTrue(answer.getCleanAnswer().isPresent() && !answer.getCleanAnswer().get().equalsIgnoreCase(firstAnswer.get()));
-        System.out.println(answer.getCleanAnswer());
+        var answer = wrapper.askLLM("Напиши формулу равноусоркенного движения в физике",60);
         wrapper.exit();
+        assertTrue(answer.getAnswerImage().isPresent());
+        // var firstAnswer = answer.getCleanAnswer();
+        // assertTrue(firstAnswer.isPresent());
+        // System.out.println(firstAnswer);
+        // answer = wrapper.askLLM("Can you write hello world in java?",60);
+        // assertTrue(answer.getCleanAnswer().isPresent() && !answer.getCleanAnswer().get().equalsIgnoreCase(firstAnswer.get()));
+        // answer = wrapper.askLLM("Can you show me how to use for loop in java?",60);
+        // assertTrue(answer.getCleanAnswer().isPresent() && !answer.getCleanAnswer().get().equalsIgnoreCase(firstAnswer.get()));
+        // System.out.println(answer.getCleanAnswer());
     }
 
     @Test

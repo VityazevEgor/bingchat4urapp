@@ -57,7 +57,7 @@ public class GUIController {
     }
 
     @PostMapping("/auth")
-    public String postMethodName(@RequestParam String login, @RequestParam String password) {
+    public String createAuthTask(@RequestParam String login, @RequestParam String password) {
         var newTask = utils.createAuthTask(login, password);
         context.save(newTask);
         return "redirect:/task/" + newTask.id;
@@ -78,6 +78,7 @@ public class GUIController {
 
     @PostMapping("/sendgui")
     public String sendGui(@RequestParam String promt){
+        promt = promt + "При ответе на этот вопрос записывай формулы в обычном текстовом виде, без использования разметки, такой как LaTeX. Например, дробь следует записывать так: (a+b)/(a-b). Переменную с индексом 0 записывай так: a_0.";
         var newTask = utils.createPromtTask(promt, "120");
         context.save(newTask);
         return "redirect:/task/" + newTask.id;

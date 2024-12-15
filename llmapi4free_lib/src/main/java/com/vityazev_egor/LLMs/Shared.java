@@ -20,6 +20,6 @@ public class Shared {
             
         };
 
-        return waitTask.execute(5, 400);
+        return waitTask.execute(8, 400);
     }
 }
