@@ -108,7 +108,7 @@ public class Auth {
     }
 
     private Boolean staySigned(){
-        var yesButton = driver.findElement(By.cssSelector("button[aria-labelledby='kmsiTitle']"));
+        var yesButton = driver.findElement(By.id("acceptButton"));
         if (!Shared.waitForElements(true, yesButton)){
             logger.warning("Can't find 'yes' button");
             return false;
