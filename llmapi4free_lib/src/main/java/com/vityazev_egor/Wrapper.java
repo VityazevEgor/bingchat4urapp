@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.vityazev_egor.Core.CustomLogger;
 import com.vityazev_egor.LLMs.Copilot.Copilot;
 import com.vityazev_egor.LLMs.DuckDuck.DuckDuck;
+import com.vityazev_egor.LLMs.OpenAI.OpenAI;
 import com.vityazev_egor.Models.ChatAnswer;
 import com.vityazev_egor.Models.LLM;
 
@@ -22,7 +23,8 @@ public class Wrapper {
 
     public enum LLMproviders{
         Copilot,
-        DuckDuck
+        DuckDuck,
+        OpenAI
     }
 
     public enum WrapperMode{
@@ -45,7 +47,8 @@ public class Wrapper {
         this.driver.getXdo().calibrate();
         this.llms = Arrays.asList(
             new LLM(new Copilot(driver), true, LLMproviders.Copilot),
-            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck)
+            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck),
+            new LLM(new OpenAI(driver),false, LLMproviders.OpenAI)
         );
         this.preferredProvider = preferredProvider;
         this.wrapperMode = wrapperMode;

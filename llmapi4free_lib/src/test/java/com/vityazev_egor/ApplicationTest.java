@@ -2,6 +2,7 @@ package com.vityazev_egor;
 
 import org.junit.jupiter.api.Test;
 
+import com.vityazev_egor.Core.Shared;
 import com.vityazev_egor.Wrapper.LLMproviders;
 import com.vityazev_egor.Wrapper.WrapperMode;
 
@@ -12,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Scanner;
 
 class ApplicationTest {
 
@@ -70,6 +72,24 @@ class ApplicationTest {
         // answer = wrapper.askLLM("Can you show me how to use for loop in java?",60);
         // assertTrue(answer.getCleanAnswer().isPresent() && !answer.getCleanAnswer().get().equalsIgnoreCase(firstAnswer.get()));
         // System.out.println(answer.getCleanAnswer());
+    }
+
+    @Test
+    void testOpenAIAuth() throws IOException{
+        var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.OpenAI, WrapperMode.ExamMode);
+        var result = wrapper.auth(LLMproviders.OpenAI, "", "");
+        Shared.sleep(5000);
+        wrapper.exit();
+        assertTrue(result);
+    }
+
+    @Test
+    void testOpanAIChat() throws IOException{
+        var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.OpenAI, WrapperMode.Normal);
+        var answer = wrapper.askLLM("Can you write hello world in java?",40);
+        wrapper.exit();
+        System.out.println(answer.getCleanAnswer());
+        assertTrue(answer.getCleanAnswer().isPresent());    
     }
 
     @Test
