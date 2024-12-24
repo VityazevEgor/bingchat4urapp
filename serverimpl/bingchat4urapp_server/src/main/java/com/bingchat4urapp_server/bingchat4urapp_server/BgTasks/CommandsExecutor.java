@@ -13,8 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.bingchat4urapp_server.bingchat4urapp_server.Context;
+
 import com.bingchat4urapp_server.bingchat4urapp_server.Shared;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskRepo;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 import com.vityazev_egor.Wrapper;
 import com.vityazev_egor.Wrapper.LLMproviders;
@@ -34,7 +35,7 @@ public class CommandsExecutor {
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     
     @Autowired
-    private Context context;
+    private TaskRepo context;
 
     public CommandsExecutor(){
         try{
@@ -50,24 +51,6 @@ public class CommandsExecutor {
         } catch (Exception e){
             logger.error("Could not create Wrapper object", e);
             System.exit(1);
-        }
-    }
-
-    public void setUseDuckDuck(Boolean value){
-        if (wrapper != null){
-            //chat.setUseDuckDuck(value);
-            // TODO implement this
-        }
-    }
-
-    public Boolean getUseDuckDuck(){
-        if (wrapper != null){
-            //return chat.getUseDuckDuck();
-            // TODO implement this
-            return false;
-        }
-        else{
-            return false;
         }
     }
 
@@ -151,7 +134,14 @@ public class CommandsExecutor {
 
     private void processAuthTask(TaskModel task) {
         logger.info("Got auth task");
-        Boolean result = wrapper.auth(LLMproviders.Copilot, task.data.get("login"), task.data.get("password"));
+        Boolean result = false;
+        try{
+            LLMproviders provider = LLMproviders.valueOf(task.data.get("provider"));
+            result = wrapper.auth(provider, task.data.get("login"), task.data.get("password"));
+        }
+        catch (Exception ex){
+            logger.error("Got error in auth task", ex);
+        }
         task.isFinished = true;
         task.gotError = !result;
         context.save(task);

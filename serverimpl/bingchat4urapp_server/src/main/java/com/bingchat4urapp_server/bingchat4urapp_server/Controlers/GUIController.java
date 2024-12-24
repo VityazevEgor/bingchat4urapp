@@ -12,18 +12,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.bingchat4urapp_server.bingchat4urapp_server.Context;
+import com.bingchat4urapp_server.bingchat4urapp_server.Shared;
 import com.bingchat4urapp_server.bingchat4urapp_server.BgTasks.CommandsExecutor;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskRepo;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.PromtCacheRepo;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 import com.vityazev_egor.Wrapper.LLMproviders;
-
-
 
 @Controller
 public class GUIController {
 
     @Autowired
-    private Context context;
+    private TaskRepo context;
+
+    @Autowired
+    private PromtCacheRepo promtCacheRepo;
 
     @Autowired
     private Utils utils;
@@ -46,39 +49,37 @@ public class GUIController {
         model.addObject("latestPromts", promtModels);
         String aiInUse = executor.getWrapper().getWorkingLLM().map(llm -> { return llm.getChat().getName();}).orElse("None");
         model.addObject("aiInUse", aiInUse);
+
+        model.addObject("promtChache", promtCacheRepo.count() == 0 ? "" : promtCacheRepo.findAll().get(0).getPromt());
         return model;
     }
 
     @GetMapping("/auth")
     public ModelAndView auth() {
-        // we need to provide list of avaibel models
+        // we need to provide list of avaibel providers
         var authRequired = executor.getWrapper().getLlms().stream().filter(llm-> llm.getAuthRequired() && !llm.getAuthDone()).toList();
         return new ModelAndView("auth", "authRequired", authRequired);
     }
 
     @PostMapping("/auth")
-    public String createAuthTask(@RequestParam String login, @RequestParam String password) {
-        var newTask = utils.createAuthTask(login, password);
+    public String createAuthTask(@RequestParam String login, @RequestParam String password, @RequestParam String provider) {
+        var newTask = utils.createAuthTask(login, password, provider);
         context.save(newTask);
         return "redirect:/task/" + newTask.id;
     }
 
-    @GetMapping("/switchai")
-    public String switchAi(){
-        executor.setUseDuckDuck(!executor.getUseDuckDuck());
-        return "redirect:/";
-    }
-
     @GetMapping("/newchat")
-    public String newChatGui(){
+    public String createNewChat(){
         var newTask = utils.createNewChatTask("3");
         context.save(newTask); 
         return "redirect:/task/" + newTask.id;
     }
 
-    @PostMapping("/sendgui")
-    public String sendGui(@RequestParam String promt){
-        promt = promt + "При ответе на этот вопрос записывай формулы в обычном текстовом виде, без использования разметки, такой как LaTeX. Например, дробь следует записывать так: (a+b)/(a-b). Переменную с индексом 0 записывай так: a_0.";
+    @PostMapping("/send")
+    public String sendPromt(@RequestParam String promt){
+        if (Shared.examMode){
+            promt = promt + " При ответе на этот вопрос записывай формулы в обычном текстовом виде, без использования разметки, такой как LaTeX. Например, дробь следует записывать так: (a+b)/(a-b). Переменную с индексом 0 записывай так: a_0.";
+        }
         var newTask = utils.createPromtTask(promt, "120");
         context.save(newTask);
         return "redirect:/task/" + newTask.id;
@@ -107,7 +108,7 @@ public class GUIController {
     @GetMapping("providers")
     public ModelAndView getProviders() {
         var model = new ModelAndView("providers", "providers", executor.getWrapper().getLlms());
-        String aiInUse = executor.getWrapper().getWorkingLLM().map(llm -> { return llm.getChat().getName();}).orElse("None");
+        String aiInUse = executor.getWrapper().getWorkingLLM().map(llm -> llm.getChat().getName()).orElse("None");
         model.addObject("aiInUse", aiInUse);
         return model;
     }

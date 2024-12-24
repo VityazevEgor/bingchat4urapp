@@ -15,12 +15,12 @@
             <nav th:replace="~{fragments/mainMenu :: navigation}"></nav>
 
             <!-- Основной контент -->
-            <form th:action="@{/sendgui}" method="post" class="row g-0 mx-0 mb-3 mt-3">
+            <form th:action="@{/send}" method="post" class="row g-0 mx-0 mb-3 mt-3">
                 <div class="col-12 col-md-1 mb-2 mb-md-0">
                     <a th:href="@{~/newchat}" style="text-align: center;" class="btn btn-custom side-button w-100 rounded-end-0">Create new chat</a>
                 </div>
                 <div class="col-12 col-md-10 mb-2 mb-md-0">
-                    <textarea class="form-control textarea-custom w-100 rounded-0" name="promt" placeholder="Enter your message here..."></textarea>
+                    <textarea th:text="${promtChache}" class="form-control textarea-custom w-100 rounded-0" name="promt" id="promtArea" placeholder="Enter your message here..." style="min-height: 200px;"></textarea>
                 </div>
                 <div class="col-12 col-md-1">
                     <button class="btn btn-custom side-button w-100 rounded-start-0" type="submit">Send</button>
@@ -49,5 +49,26 @@
 
     <script th:src="@{~/bootstrap.bundle.min.js}"></script>
     <script th:src="@{~/stars.js}"></script>
+    <script>
+        document.getElementById('promtArea').addEventListener('input', () => {
+            const text = document.getElementById('promtArea').value;
+            saveText(text);
+        });
+
+        function saveText(text) {
+            fetch('/api/promtChache/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    promt: text
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('Text saved:', data))
+            .catch((error) => console.error('Error:', error));
+        }
+    </script>
 </body>
 </html>

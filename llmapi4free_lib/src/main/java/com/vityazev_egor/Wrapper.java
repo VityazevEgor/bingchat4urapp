@@ -48,7 +48,7 @@ public class Wrapper {
         this.llms = Arrays.asList(
             new LLM(new Copilot(driver), true, LLMproviders.Copilot),
             new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck),
-            new LLM(new OpenAI(driver),false, LLMproviders.OpenAI)
+            new LLM(new OpenAI(driver),true, LLMproviders.OpenAI)
         );
         this.preferredProvider = preferredProvider;
         this.wrapperMode = wrapperMode;

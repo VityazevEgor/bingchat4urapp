@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bingchat4urapp_server.bingchat4urapp_server.Context;
 import com.bingchat4urapp_server.bingchat4urapp_server.BgTasks.CommandsExecutor;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskRepo;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.RequestsModels;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 import jakarta.validation.Valid;
@@ -29,7 +29,7 @@ import jakarta.validation.Valid;
 public class MainController {
     
     @Autowired
-    private Context taskRepo;
+    private TaskRepo taskRepo;
 
     @Autowired
     private Utils utils;
@@ -63,26 +63,7 @@ public class MainController {
                     .body("Failed to create auth task");
         }
     }
-
-    @PostMapping("/useDuckDuck")
-    public ResponseEntity<?> useDuckDuck(@Valid @RequestBody RequestsModels.SwitchAIRequest switchAIRequest, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            logger.warn("Validation failed in switch AI task");
-            return ResponseEntity.badRequest()
-                    .body("Validation failed: " + extractErrorMessages(bindingResult.getAllErrors()));
-        }
-
-        try {
-            executor.setUseDuckDuck(switchAIRequest.getValue());
-            return ResponseEntity.ok("DuckDuck switch successfully updated");
-        } catch (Exception e) {
-            logger.error("Error while updating DuckDuck switch", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to update DuckDuck switch");
-        }
-    }
-
-
+    
     @PostMapping("/sendpromt")
     public ResponseEntity<?> createPromptTask(@Valid @RequestBody RequestsModels.PromtRequest promptRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {

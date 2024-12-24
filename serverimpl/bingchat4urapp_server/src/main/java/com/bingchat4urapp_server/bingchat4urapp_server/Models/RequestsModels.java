@@ -1,12 +1,20 @@
 package com.bingchat4urapp_server.bingchat4urapp_server.Models;
 
+import com.vityazev_egor.Wrapper.LLMproviders;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class RequestsModels {
+    @Getter
+    @Setter
+    @NoArgsConstructor
     public static class AuthRequest {
 
         @NotBlank(message = "Login is mandatory")
@@ -17,22 +25,8 @@ public class RequestsModels {
         @Size(min = 8, max = 50, message = "Password must be at least 8 characters")
         private String password;
 
-        // getters
-        public String getLogin() {
-            return login;
-        }
-        public String getPassword()  {
-            return password;
-        
-        }
-
-        // setters
-        public void setLogin(String login) {
-            this.login = login;
-        }
-        public void setPassword(String password)  {
-            this.password = password;
-        }
+        @NotBlank(message = "Provider is mandatory")
+        private LLMproviders provider;
     }
 
     public static class PromtRequest {
