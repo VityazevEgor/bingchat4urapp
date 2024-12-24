@@ -4,6 +4,7 @@ import com.vityazev_egor.NoDriver;
 import com.vityazev_egor.iChat;
 import com.vityazev_egor.LLMs.OpenAI.Modules.Ask;
 import com.vityazev_egor.LLMs.OpenAI.Modules.Auth;
+import com.vityazev_egor.LLMs.OpenAI.Modules.CreateChat;
 import com.vityazev_egor.Models.ChatAnswer;
 
 public class OpenAI implements iChat{
@@ -27,7 +28,7 @@ public class OpenAI implements iChat{
 
     @Override
     public Boolean creatNewChat() {
-        return driver.getNavigation().loadUrlAndWait(OpenAI.url, 10);
+        return new CreateChat(driver).loadSite();
     }
 
     @Override

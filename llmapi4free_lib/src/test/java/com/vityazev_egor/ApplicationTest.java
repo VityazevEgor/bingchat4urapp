@@ -77,7 +77,8 @@ class ApplicationTest {
     @Test
     void testOpenAIAuth() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.OpenAI, WrapperMode.ExamMode);
-        var result = wrapper.auth(LLMproviders.OpenAI, "", "");
+        Boolean result = wrapper.createChat(LLMproviders.OpenAI);
+        if (result) result = wrapper.auth(LLMproviders.OpenAI, "", "");
         Shared.sleep(5000);
         wrapper.exit();
         assertTrue(result);

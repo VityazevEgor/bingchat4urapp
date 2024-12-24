@@ -4,7 +4,6 @@ import com.vityazev_egor.NoDriver;
 import com.vityazev_egor.Core.CustomLogger;
 import com.vityazev_egor.Core.WebElements.By;
 import com.vityazev_egor.LLMs.Shared;
-import com.vityazev_egor.LLMs.OpenAI.OpenAI;
 
 public class Auth {
     private final NoDriver driver;
@@ -16,7 +15,7 @@ public class Auth {
 
     // you have to be logged in Google to use this method
     public Boolean auth(){
-        if (!driver.getNavigation().loadUrlAndWait(OpenAI.url, 10)){
+        if (!new CreateChat(driver).loadSite()){
             logger.error("Could not load site", null);
             return false;
         }
@@ -32,6 +31,13 @@ public class Auth {
         }
         else {
             logger.error("Could not find login button", null);
+            return false;
+        }
+        
+        // Sometimes there is cf challenge
+        com.vityazev_egor.Core.Shared.sleep(2000); 
+        if (!driver.getNavigation().waitFullLoad(10) || !driver.getNavigation().loadUrlAndBypassCFXDO(null, null, 20)){
+            logger.error("Could not bypass CF chalenge", null);
             return false;
         }
 
