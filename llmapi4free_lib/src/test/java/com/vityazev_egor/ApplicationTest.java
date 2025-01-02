@@ -48,8 +48,8 @@ class ApplicationTest {
         String loging = data.get(0);
         String password = data.get(1);
         var result = wrapper.auth(LLMproviders.Copilot, loging, password);
-        assertTrue(result);
         wrapper.exit();
+        assertTrue(result);
     }
 
     @Test
@@ -63,6 +63,8 @@ class ApplicationTest {
         assertTrue(result);
         var answer = wrapper.askLLM("Напиши формулу равноусоркенного движения в физике",60);
         wrapper.exit();
+        assertTrue(answer.getCleanAnswer().isPresent());
+        System.out.println(answer.getCleanAnswer());
         assertTrue(answer.getAnswerImage().isPresent());
         // var firstAnswer = answer.getCleanAnswer();
         // assertTrue(firstAnswer.isPresent());
@@ -87,6 +89,7 @@ class ApplicationTest {
     @Test
     void testOpanAIChat() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.OpenAI, WrapperMode.Normal);
+        wrapper.auth(LLMproviders.OpenAI, "null", "null");
         var answer = wrapper.askLLM("Can you write hello world in java?",40);
         wrapper.exit();
         System.out.println(answer.getCleanAnswer());

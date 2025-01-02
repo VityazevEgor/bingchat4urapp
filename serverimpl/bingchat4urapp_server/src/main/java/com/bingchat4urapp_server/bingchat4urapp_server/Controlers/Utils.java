@@ -54,20 +54,14 @@ public class Utils {
         return newTask;
     }
 
-    public TaskModel createNewChatTask(String type){
+    public TaskModel createNewChatTask(){
         var newTask = new TaskModel();
         newTask.type = 3;
-        newTask.data = Map.of("type", type);
-
         return newTask;
     }
 
     public TaskModel createPromtTask(RequestsModels.PromtRequest promptRequest) {
         return createPromtTask(promptRequest.getPromt(), promptRequest.getTimeOutForAnswer().toString());
-    }
-
-    public TaskModel createChatTask(RequestsModels.ChatRequest chatRequest) {
-        return createNewChatTask(chatRequest.getType().toString());
     }
 
     public TaskModel createAuthTask(RequestsModels.AuthRequest authRequest){

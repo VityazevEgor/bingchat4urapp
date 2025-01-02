@@ -48,7 +48,7 @@ public class Auth {
     }
 
     private Boolean isLoggedIn(){
-        var profileButton = driver.findElement(By.id(":r2:"));
+        var profileButton = driver.findElement(By.id(":r1:"));
         return Shared.waitForElements(false,profileButton);
     }
 

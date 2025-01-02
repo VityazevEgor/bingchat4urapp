@@ -3,10 +3,9 @@ package com.bingchat4urapp_server.bingchat4urapp_server.BgTasks;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
@@ -31,8 +30,7 @@ public class CommandsExecutor {
     private Wrapper wrapper;
     private Boolean doJob = true;
     private final Logger logger = LoggerFactory.getLogger(CommandsExecutor.class);
-    private final AtomicBoolean isTaskRunning = new AtomicBoolean(false);
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     
     @Autowired
     private TaskRepo context;
@@ -54,81 +52,77 @@ public class CommandsExecutor {
         }
     }
 
+    // 0 - завершение работы
     // 1 - авторизация
     // 2 - вопрос
     // 3 - создание чата
-    public void commandsProcessor(){
-        if (!doJob) return;
-        try{
-        TaskModel task = context.findFirstUnfinishedTask();
-        if (task == null) {
-            //logger.info("There is nothing to do");
-            return;
-        }
-        else{
-            logger.info("I got task to do with this data = " + task.data);
-        }
-        if (task.type == 0){
-            wrapper.exit();
-            System.exit(0);
-            return;
-        }
-        if (task.data.size() > 0) {
-            switch (task.type) {
-                case 1:
-                    processAuthTask(task);
-                    break;
-                case 2:
-                    processPromptTask(task);
-                    break;
-                case 3:
-                    processСreateChatTask(task);
-                    break;
-                default:
-                    gotError(task, "Got task with unknow type");
-                    break;
+    private class commandsProcessor implements Runnable {
+
+        @Override
+        public void run() {
+            if (!doJob) return;
+            TaskModel task = context.findFirstUnfinishedTask();
+            if (task == null) {
+                return;
+            }
+            else{
+                logger.info("I got task to do with this data = " + task.data);
+            }
+            try{
+                if (task.type == 0){
+                    System.exit(0);
+                    return;
+                }
+                if (task.data.size() == 0 && task.type != 3){
+                    gotError(task, "There is not data for task");
+                    return;
+                }
+                switch (task.type) {
+                    case 1:
+                        processAuthTask(task);
+                        break;
+                    case 2:
+                        processPromptTask(task);
+                        break;
+                    case 3:
+                        processСreateChatTask(task);
+                        break;
+                    default:
+                        gotError(task, "Got task with unknow type");
+                        break;
+                }
+            } catch (Exception ex){
+                logger.error("Error in main loop", ex);
+                gotError(task, "Internal error");
             }
         }
-        else{
-            System.out.print(task.data);
-            gotError(task, "Could not get data from task (Maybe is null or in wrong JSON format)");
-        }
-        } catch (Exception ex){
-            logger.error("Error in main loop", ex);
-        }
+            
     }
 
     @PostConstruct
     public void startTask(){
-        isTaskRunning.set(true);
-        executorService.submit(()->{
-            while (isTaskRunning.get()){
-                commandsProcessor();
-                try {
-                    Thread.sleep(1000);
-                } catch (Exception e) {}
-            }
-        });
+        scheduledExecutorService.scheduleWithFixedDelay(
+            new commandsProcessor(), 
+            2, 
+            2, 
+            TimeUnit.SECONDS
+        );
     }
 
     @PreDestroy
     public void stopTask(){
-        isTaskRunning.set(false);
+        scheduledExecutorService.shutdown();
         wrapper.exit();
     }
 
     private void processСreateChatTask(TaskModel task){
         logger.info("Got create chat task");
-        var workingLLM = wrapper.getWorkingLLM();
-        if (workingLLM.isPresent()){
-            Boolean result = wrapper.createChat(workingLLM.get().getProvider());
+        wrapper.getWorkingLLM().ifPresentOrElse(workingLLM -> {
+            Boolean result = wrapper.createChat(workingLLM.getProvider());
             task.isFinished = true;
             task.gotError = !result;
             context.save(task);
-        }
-        else{
-            gotError(task, "No working LLM");
-        }
+        }, ()-> gotError(task, "No working LLM"));
         logger.info("Finsihed create chat task");
     }
 

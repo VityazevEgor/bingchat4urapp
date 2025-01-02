@@ -70,7 +70,7 @@ public class GUIController {
 
     @GetMapping("/newchat")
     public String createNewChat(){
-        var newTask = utils.createNewChatTask("3");
+        var newTask = utils.createNewChatTask();
         context.save(newTask); 
         return "redirect:/task/" + newTask.id;
     }

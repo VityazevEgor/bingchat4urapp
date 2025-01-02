@@ -49,7 +49,7 @@ public class Bingchat4urappServerApplication {
 					System.exit(1);
 			}
 		}
-		//proxy = "127.0.0.1:2080";
+		proxy = "127.0.0.1:2080";
 		// Если указан proxy и он валидный
 		if (proxy != null && isValidProxy(proxy)) {
 			System.out.println("Using proxy: " + proxy);
