@@ -133,6 +133,10 @@ public class MainController {
         return ResponseEntity.ok(executor.getWrapper().getWorkingLLM());
     }
 
+    @GetMapping("/")
+    public ResponseEntity<String> base(){
+        return ResponseEntity.ok("I'm working!");
+    }
 
     @GetMapping("/exit")
     public ResponseEntity<String> exitTask() {
