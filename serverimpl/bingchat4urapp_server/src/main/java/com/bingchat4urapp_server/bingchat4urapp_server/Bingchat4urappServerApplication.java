@@ -26,15 +26,6 @@ public class Bingchat4urappServerApplication {
 						System.exit(1);
 					}
 					break;
-				case "--hideBrowser":
-					if (i + 1 < args.length) {
-						Shared.hideBrowserWindow = Boolean.parseBoolean(args[i + 1]);
-						i++;
-					} else {
-						System.out.println("Error: no value is specified for --hideBrowser");
-						System.exit(1);
-					}
-					break;
 				case "--examMode":
 					if (i + 1 < args.length) {
 						Shared.examMode = Boolean.parseBoolean(args[i + 1]);
@@ -58,7 +49,7 @@ public class Bingchat4urappServerApplication {
 					System.exit(1);
 			}
 		}
-
+		//proxy = "127.0.0.1:2080";
 		// Если указан proxy и он валидный
 		if (proxy != null && isValidProxy(proxy)) {
 			System.out.println("Using proxy: " + proxy);

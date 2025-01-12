@@ -6,7 +6,9 @@ import java.util.Scanner;
 public class Application {
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        System.out.println("Ooops...");
+        var driver = new NoDriver("127.0.0.1:2080");
+        waitEnter();
+        driver.exit();
     }
 
     @SuppressWarnings("unused")

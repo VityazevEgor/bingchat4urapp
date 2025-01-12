@@ -1,12 +1,20 @@
 package com.bingchat4urapp_server.bingchat4urapp_server.Models;
 
+import com.vityazev_egor.Wrapper.LLMproviders;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class RequestsModels {
+    @Getter
+    @Setter
+    @NoArgsConstructor
     public static class AuthRequest {
 
         @NotBlank(message = "Login is mandatory")
@@ -17,24 +25,12 @@ public class RequestsModels {
         @Size(min = 8, max = 50, message = "Password must be at least 8 characters")
         private String password;
 
-        // getters
-        public String getLogin() {
-            return login;
-        }
-        public String getPassword()  {
-            return password;
-        
-        }
-
-        // setters
-        public void setLogin(String login) {
-            this.login = login;
-        }
-        public void setPassword(String password)  {
-            this.password = password;
-        }
+        @NotNull(message = "Provider is mandatory")
+        private LLMproviders provider;
     }
 
+    @Getter
+    @Setter
     public static class PromtRequest {
 
         @NotBlank(message = "Prompt is mandatory")
@@ -45,54 +41,12 @@ public class RequestsModels {
         @Min(value = 30, message = "Timeout for answer must be at least 30 seconds")
         @Max(value = 300, message = "Timeout for answer must be smaller than 5 minutes")
         private Integer timeOutForAnswer;
-
-        // getters
-        public String getPromt() {
-            return promt;
-        }
-        public Integer getTimeOutForAnswer() {
-            return timeOutForAnswer;
-        }
-
-        // setters
-        public void setPromt(String prompt) {
-            this.promt = prompt;
-        }
-        public void setTimeOutForAnswer(Integer timeOutForAnswer) {
-            this.timeOutForAnswer = timeOutForAnswer;
-        }
     }
 
-    public static class ChatRequest {
-
-        @NotNull(message = "Type is mandatory")
-        @Min(value = 1, message = "Type must be a positive integer")
-        @Max(value = 3, message =  "Type must be less than 3")
-        private Integer type;
-    
-        // getters
-        public Integer getType() {
-            return type;
-        }
-    
-        // setters
-        public void setType(Integer type) {
-            this.type = type;
-        }
+    @Getter
+    @Setter
+    public static class SetPreferedRequest {
+        @NotNull(message = "You must provide value for field 'provider'")
+        private LLMproviders provider;
     }
-
-    public static class SwitchAIRequest {
-        @NotNull(message = "You must provide 'value'")
-        private Boolean value;
-
-        // getters
-        public Boolean getValue() {
-            return value;
-        }
-        // setters
-        public void setValue(Boolean value) {
-            this.value = value;
-        }
-    }
-
 }

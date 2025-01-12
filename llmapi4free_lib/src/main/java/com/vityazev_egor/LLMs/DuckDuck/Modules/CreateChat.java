@@ -30,6 +30,7 @@ public class CreateChat {
         }
 
         driver.getInput().enterText(textArea, "Напиши слово \"Lol kek\"");
+        com.vityazev_egor.Core.Shared.sleep(1000);
         driver.getInput().emulateClick(sendButton);
 
         if (!new Ask(driver).waitForAnswer(20)){

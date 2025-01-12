@@ -61,11 +61,18 @@
 			<artifactId>spring-boot-starter-validation</artifactId> 
 		</dependency>
 
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.34</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Всё что нужно для того проекта -->
 		<dependency>
-			<groupId>com.bingchat4urapp</groupId>
-			<artifactId>bingchat4urapp</artifactId>
-			<version>1.7</version>
+			<groupId>com.vityazev_egor</groupId>
+			<artifactId>llmapi4free</artifactId>
+			<version>1.0</version>
 		</dependency>
 
 		<dependency>

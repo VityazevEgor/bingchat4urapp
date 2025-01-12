@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>llmapi4free - Providers</title>
+    <link rel="stylesheet" th:href="@{~/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{~/custom.css}">
+</head>
+<body>
+    <div id="stars"></div>
+    <div class="container-fluid p-0">
+        <div class="content-wrapper">
+            <!-- Навигационное меню -->
+            <nav th:replace="~{fragments/mainMenu :: navigation}"></nav>
+
+            <!-- Таблица с предыдущими вопросами -->
+            <div class="table-responsive px-2">
+                <table class="table table-borderless double-border">
+                    <thead>
+                        <tr class="border-bottom" style="border-color: #02FF04 !important;">
+                            <th>Provider name</th>
+                            <th>Auth required</th>
+                            <th>Auth state</th>
+                            <th>Gor error</th>
+                            <!-- <th class="text-end">Action</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${providers != null}" th:each="provider: ${providers}">
+                            <td th:text="${provider.provider}">Question 1</td>
+                            <td th:text="${provider.authRequired}">Question 1</td>
+                            <td th:text="${provider.authDone}">Question 1</td>
+                            <td th:text="${provider.gotError}">Question 1</td>
+                            <td class="text-end"><a class="btn btn-outline-custom w-100" th:href="@{'~/providers/setPrefered/' + ${provider.provider}}">Set as prefered</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <a class="btn btn-outline-custom" th:href="@{~/providers/resetStates}" style="width: 100%;">Reset providers states</a>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{~/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{~/stars.js}"></script>
+</body>
+</html>

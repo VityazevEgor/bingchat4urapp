@@ -12,6 +12,7 @@ public class LLM {
     private Boolean gotError;
     private Boolean authDone;
     private Boolean authRequired;
+    private String lastAnswer = "";
 
     public LLM(iChat chat, Boolean authRequired, LLMproviders provider){
         this.chat = chat;

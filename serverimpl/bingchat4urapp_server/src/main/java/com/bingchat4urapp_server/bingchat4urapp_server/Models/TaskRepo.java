@@ -1,12 +1,10 @@
-package com.bingchat4urapp_server.bingchat4urapp_server;
+package com.bingchat4urapp_server.bingchat4urapp_server.Models;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import java.util.*;
 
-import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
-
-public interface Context extends JpaRepository<TaskModel, Integer> {
+public interface TaskRepo extends JpaRepository<TaskModel, Integer> {
     @Query("SELECT t FROM TaskModel t WHERE t.isFinished = false ORDER BY t.id ASC LIMIT 1")
     TaskModel findFirstUnfinishedTask();
 

@@ -8,10 +8,12 @@ import java.util.Optional;
 import com.vityazev_egor.Core.CustomLogger;
 import com.vityazev_egor.LLMs.Copilot.Copilot;
 import com.vityazev_egor.LLMs.DuckDuck.DuckDuck;
+import com.vityazev_egor.LLMs.OpenAI.OpenAI;
 import com.vityazev_egor.Models.ChatAnswer;
 import com.vityazev_egor.Models.LLM;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class Wrapper {
     private final NoDriver driver;
@@ -21,7 +23,8 @@ public class Wrapper {
 
     public enum LLMproviders{
         Copilot,
-        DuckDuck
+        DuckDuck,
+        OpenAI
     }
 
     public enum WrapperMode{
@@ -30,9 +33,13 @@ public class Wrapper {
     }
 
     // указываем какую ИИ будем использовать по умолчанию
-    private final LLMproviders preferredProvider;
+    @Getter
+    @Setter
+    private LLMproviders preferredProvider;
     // указываем какой режим работы будет
     private final WrapperMode wrapperMode;
+
+    public static Boolean emulateError = false;
 
     public Wrapper(String socks5Proxy, LLMproviders preferredProvider, WrapperMode wrapperMode) throws IOException{
         this.driver = new NoDriver(socks5Proxy);
@@ -40,7 +47,8 @@ public class Wrapper {
         this.driver.getXdo().calibrate();
         this.llms = Arrays.asList(
             new LLM(new Copilot(driver), true, LLMproviders.Copilot),
-            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck)
+            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck),
+            new LLM(new OpenAI(driver),true, LLMproviders.OpenAI)
         );
         this.preferredProvider = preferredProvider;
         this.wrapperMode = wrapperMode;
@@ -69,10 +77,18 @@ public class Wrapper {
     }
 
     private ChatAnswer askLLM(LLM llm, String promt, Integer timeOutForAnswer){
+        promt = promt.replaceAll("[\r\n]+", " ");
         var answer = llm.getChat().ask(promt, timeOutForAnswer);
         if (!answer.getCleanAnswer().isPresent()){
             llm.setGotError(true);
         }
+        // if current answer is equals to previous answer then we can say that something went wrong
+        if (answer.getCleanAnswer().isPresent() && answer.getCleanAnswer().get().equals(llm.getLastAnswer())){
+            llm.setGotError(true);
+            logger.error(llm.getChat().getName() + " returned the same answer as last answer", null);
+            return new ChatAnswer();
+        }
+        answer.getCleanAnswer().ifPresent(llm::setLastAnswer);
         return answer;
     }
 
@@ -118,9 +134,8 @@ public class Wrapper {
 
     }
 
-    public void reset(){
+    public void resetErrorStates(){
         llms.forEach(llm -> llm.setGotError(false));
-        driver.getMisc().clearCookies();
     }
 
     public void exit(){

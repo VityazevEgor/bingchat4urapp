@@ -23,7 +23,16 @@ public class Auth {
             return true;
         }
 
-        if (openLoginPage() && enterLogin(login) && enterPassword(password) && staySigned() && isLoggedIn()) {
+        if (!openLoginPage() || !enterLogin(login)) {
+            return false;
+        }
+        // sometimes copilot will auth you after you enter only your email
+        if (isLoggedIn()){
+            logger.info("Auth is done after entering email");
+            return true;
+        }
+
+        if (enterPassword(password) && staySigned() && isLoggedIn()){
             return true;
         }
         else{
@@ -39,7 +48,7 @@ public class Auth {
     }
 
     private Boolean isLoggedIn(){
-        var profileButton = driver.findElement(By.id(":r2:"));
+        var profileButton = driver.findElement(By.id(":r1:"));
         return Shared.waitForElements(false,profileButton);
     }
 
@@ -99,7 +108,7 @@ public class Auth {
     }
 
     private Boolean staySigned(){
-        var yesButton = driver.findElement(By.cssSelector("button[aria-labelledby='kmsiTitle']"));
+        var yesButton = driver.findElement(By.id("acceptButton"));
         if (!Shared.waitForElements(true, yesButton)){
             logger.warning("Can't find 'yes' button");
             return false;

@@ -1,102 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Refresh page every 3 seconds if task is not finished -->
     <meta th:if="${not currentTask.isFinished}" http-equiv="refresh" content="3">
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            renderMathInElement(document.body);
-        });
-    </script>
-
+    <title>llmapi4free - Task</title>
+    <link rel="stylesheet" th:href="@{~/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{~/custom.css}">
     <style>
-        body {
-            background-color: #212121; /* Основной цвет страницы */
-            color: #e0e0e0; /* Цвет текста, сочетающийся с новым основным цветом */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .answer-div {
-            background-color: #424242; /* Цвет фона блока, сочетающийся с основным цветом */
-            color: #e0e0e0; /* Цвет текста в блоке */
-            border: 1px solid #616161; /* Цвет рамки блока */
-            overflow: auto;
-            max-height: 80vh;
-            width: 95%;
-            word-wrap: break-word;
-            /* white-space: pre-wrap; */
-            margin-bottom: 20px;
-            margin: auto;
-            max-width: 100%;
-            padding: 20px; /* Отступы внутри блока */
-            border-radius: 10px; /* Скругление углов блока */
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* Тень блока */
-        }
-
-        .home-button {
-            background-color: #616161; /* Цвет фона кнопки */
-            color: #e0e0e0; /* Цвет текста кнопки */
-            border-color: #757575; /* Цвет рамки кнопки */
-            width: 60%; /* Ширина кнопки, соответствующая ширине блока pre */
-            margin: auto; /* Центрирование кнопки */
-        }
-
-        .center-div {
-            text-align: center;
-            border: 1px solid #616161;
-            border-radius: 10px;
-            color: #e0e0e0;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            animation: pulse 2s infinite;
-        }
         @keyframes pulse {
-            0% { box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-            50% { box-shadow: 0 0 20px rgba(0,0,0,1), 0 0 30px rgba(0,0,0,1); }
-            100% { box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .task-progress {
+            text-align: center;
+            animation: pulse 3s infinite;
+            padding: 20px;
+            background-color: #010D01;
+            margin-top: 20px;
+        }
+        .task-progress h1 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        .task-progress p {
+            color: #ddd;
         }
     </style>
+</head>
+<body>
+    <div id="stars"></div>
+    <div class="container-fluid p-0">
+        <div class="content-wrapper">
+            <!-- Навигационное меню -->
+            <nav th:replace="~{fragments/mainMenu :: navigation}"></nav>
 
-    <title>Task Progress Page</title>
-  </head>
-  <body>
-    <div class="center-div" th:if="${not currentTask.isFinished}">
-      <h1>Task is still in progress</h1>
-      <p th:text="'Type: ' + ${currentTask.type}"></p>
+            <div th:if="${not currentTask.isFinished}" class="task-progress double-border">
+              <h1>Task is still in progress</h1>
+              <p th:text="'Type: ' + ${currentTask.type}"></p>
+            </div>
+        
+            <div th:if="${currentTask.isFinished and currentTask.gotError}">
+                <h2 class="text-danger">An error has occurred! Check console for details</h2>
+                <a href="/" class="btn btn-outline-custom">Go to Main Page</a>
+            </div>
+        
+            <div th:if="${currentTask.isFinished and not currentTask.gotError}">
+              <div th:if="${answerLines != null and currentTask.htmlResult == null}" class="answer-div p-3 mb-2 text-light rounded small">
+                <p th:each="line: ${answerLines}" th:text="${line}"></p>
+              </div>
+              <div th:if="${currentTask.htmlResult != null}" th:utext="${currentTask.htmlResult}" class="answer-div p-3 mb-2 text-light rounded small"></div>
+              <h2 class="text-danger" th:if="${answerLines == null}" >There is no lines from answer...</h2>
+        
+              <div class="d-flex justify-content-center">
+                <a href="/" class="btn btn-outline-custom btn-lg" >Go to Main Page</a>
+                <a th:if="${currentTask.imageResult != null}" th:href="@{/image/{imageName}(imageName=${currentTask.imageResult})}" class="btn btn-outline-custom btn-lg" style="margin-left: 5%;">Open photo answer</a>
+              </div>
+            </div>
+        </div>
     </div>
 
-    <div class="center-div" th:if="${currentTask.isFinished and currentTask.gotError}">
-        <h2 class="text-danger">An error has occurred! Check console for details</h2>
-        <a href="/" class="btn btn-primary">Go to Main Page</a>
-    </div>
-
-    <div th:if="${currentTask.isFinished and not currentTask.gotError}">
-      <div th:if="${answerLines != null and currentTask.htmlResult == null}" class="answer-div p-3 mb-2 text-light rounded small">
-        <p th:each="line: ${answerLines}" th:text="${line}"></p>
-      </div>
-      <div th:if="${currentTask.htmlResult != null}" th:utext="${currentTask.htmlResult}" class="answer-div p-3 mb-2 text-light rounded small"></div>
-      <h2 class="text-danger" th:if="${answerLines == null}" >There is no lines from answer...</h2>
-
-      <div class="d-flex justify-content-center">
-        <a href="/" class="btn btn-primary btn-lg" >Go to Main Page</a>
-        <a th:if="${currentTask.imageResult != null}" th:href="@{/image/{imageName}(imageName=${currentTask.imageResult})}" class="btn btn-secondary btn-lg" style="margin-left: 5%;">Open photo answer</a>
-      </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
+    <script th:src="@{~/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{~/stars.js}"></script>
+</body>
 </html>

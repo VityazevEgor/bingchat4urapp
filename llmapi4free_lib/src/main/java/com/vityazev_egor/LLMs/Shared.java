@@ -5,6 +5,10 @@ import com.vityazev_egor.Core.WebElements.WebElement;
 
 public class Shared {
     public static Boolean waitForElements(Boolean checkForClicable, WebElement... elements){
+        return waitForElements(checkForClicable, 8, elements);
+    }
+
+    public static Boolean waitForElements(Boolean checkForClicable, Integer timeOutSeconds, WebElement... elements){
         var waitTask = new WaitTask() {
 
             @Override
@@ -20,6 +24,6 @@ public class Shared {
             
         };
 
-        return waitTask.execute(5, 400);
+        return waitTask.execute(timeOutSeconds, 400);
     }
 }

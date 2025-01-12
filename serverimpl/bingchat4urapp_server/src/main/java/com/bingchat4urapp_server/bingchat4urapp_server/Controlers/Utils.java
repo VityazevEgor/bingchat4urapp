@@ -1,64 +1,62 @@
 package com.bingchat4urapp_server.bingchat4urapp_server.Controlers;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.RequestsModels;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class Utils {
-    private ObjectMapper mapper = new ObjectMapper();
+    @SuppressWarnings("unused")
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(Utils.class);
 
-    private String writeValueAsString(Map<String, String> data){
-        String result = null;
-        try{
-            result = mapper.writeValueAsString(data);
-        } catch (Exception ex){
-            logger.error("Can't serialize data", ex);
-        }
+    @Autowired
+    private ResourceLoader resourceLoader;
 
-        return result;
+    public String readFile(String filePath) throws IOException {
+        Resource resource = resourceLoader.getResource("classpath:" + filePath);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+            StringBuilder content = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                content.append(line).append("\n");
+            }
+            return content.toString();
+        }
     }
 
     public TaskModel createPromtTask(String promt, String timeOutForAnswer){
-        // create String String Map that conatins promt and timeoutForAnswer
         Map<String, String> promtTask = Map.of("promt", promt, "timeOutForAnswer", timeOutForAnswer);
-        // convert map to json string
-        String jsonString = writeValueAsString(promtTask);
 
         var newTask = new TaskModel();
         newTask.type = 2;
-        newTask.data = jsonString;
+        newTask.data = promtTask;
 
         return newTask;
     }
 
-    public TaskModel createAuthTask(String login, String password){
-        Map<String, String> authTask = Map.of("login", login, "password", password);
-
-        String jsonString = writeValueAsString(authTask);
-
+    public TaskModel createAuthTask(String login, String password, String provider){
+        Map<String, String> authTask = Map.of("login", login, "password", password, "provider", provider);
         var newTask = new TaskModel();
         newTask.type = 1;
-        newTask.data = jsonString;
+        newTask.data = authTask;
 
         return newTask;
     }
 
-    public TaskModel createNewChatTask(String type){
-        Map<String, String> newChatTask = Map.of("type", type);
-
-        String jsonString = writeValueAsString(newChatTask);
-
+    public TaskModel createNewChatTask(){
         var newTask = new TaskModel();
         newTask.type = 3;
-        newTask.data = jsonString;
-
         return newTask;
     }
 
@@ -66,11 +64,7 @@ public class Utils {
         return createPromtTask(promptRequest.getPromt(), promptRequest.getTimeOutForAnswer().toString());
     }
 
-    public TaskModel createChatTask(RequestsModels.ChatRequest chatRequest) {
-        return createNewChatTask(chatRequest.getType().toString());
-    }
-
     public TaskModel createAuthTask(RequestsModels.AuthRequest authRequest){
-        return createAuthTask(authRequest.getLogin(), authRequest.getPassword());
+        return createAuthTask(authRequest.getLogin(), authRequest.getPassword(), authRequest.getProvider().toString());
     }
 }

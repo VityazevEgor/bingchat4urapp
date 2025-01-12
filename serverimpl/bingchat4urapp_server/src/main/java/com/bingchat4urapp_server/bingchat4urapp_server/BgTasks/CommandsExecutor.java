@@ -1,174 +1,182 @@
 package com.bingchat4urapp_server.bingchat4urapp_server.BgTasks;
 
+import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Map;
-
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.bingchat4urapp.BrowserUtils;
-import com.bingchat4urapp.DuckBingChat;
-import com.bingchat4urapp_server.bingchat4urapp_server.Context;
 import com.bingchat4urapp_server.bingchat4urapp_server.Shared;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskRepo;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vityazev_egor.Wrapper;
+import com.vityazev_egor.Wrapper.LLMproviders;
+import com.vityazev_egor.Wrapper.WrapperMode;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import lombok.Getter;
 
 @Component
 public class CommandsExecutor {
-    
-    private DuckBingChat chat;
+    @Getter
+    private Wrapper wrapper;
     private Boolean doJob = true;
-    private ObjectMapper mapper = new ObjectMapper();
+    private final Logger logger = LoggerFactory.getLogger(CommandsExecutor.class);
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     
     @Autowired
-    private Context context;
+    private TaskRepo context;
 
     public CommandsExecutor(){
-        if (doJob){
-            chat = new DuckBingChat(Shared.proxy, 1920, 1080, 10431, Shared.hideBrowserWindow);
-            if (Shared.examMode){
-                chat.setExamMode(true);
-                print("Exam mode is ENABLED!");
-            }
+        try{
+            wrapper = new Wrapper(Shared.proxy, LLMproviders.Copilot, Shared.examMode ? WrapperMode.ExamMode : WrapperMode.Normal);
+            logger.info("Created Wrapper object with proxy = " + Shared.proxy);
             if (Shared.emulateBingErros){
-                print("Emulate erros mode is ENABLED");
-                chat.setEmulateErrors(true);
+                logger.warn("emulateErrors mode is enabled. Copilot will alway return errors");
+                Wrapper.emulateError = true;
             }
-            print("Created BingChat object with proxy = " + Shared.proxy);
-            var t = LogManager.getLogger();
-            t.info("test");
+            if (Shared.examMode){
+                logger.warn("examMode mode is enabled. Server will try to get answer from other LLM provider is current one failed!");
+            }
+        } catch (Exception e){
+            logger.error("Could not create Wrapper object", e);
+            System.exit(1);
         }
     }
 
-    public void setUseDuckDuck(Boolean value){
-        if (chat != null){
-            chat.setUseDuckDuck(value);
-        }
-    }
-
-    public Boolean getUseDuckDuck(){
-        if (chat != null){
-            return chat.getUseDuckDuck();
-        }
-        else{
-            return false;
-        }
-    }
-
+    // 0 - завершение работы
     // 1 - авторизация
     // 2 - вопрос
     // 3 - создание чата
+    private class commandsProcessor implements Runnable {
 
-    @Scheduled(fixedDelay = 1500)
-    public void ProcessCommands(){
-        if (!doJob) return;
-
-        TaskModel task = context.findFirstUnfinishedTask();
-        if (task != null) {
-            if (task.type == 0){
-                chat.exit();
+        @Override
+        public void run() {
+            if (!doJob) return;
+            TaskModel task = context.findFirstUnfinishedTask();
+            if (task == null) {
                 return;
             }
-            Map<String, String> data = convertJsonToMap(task);
-            if (data != null) {
+            else{
+                logger.info("I got task to do with this data = " + task.data);
+            }
+            try{
+                if (task.type == 0){
+                    System.exit(0);
+                    return;
+                }
+                if (task.data.size() == 0 && task.type != 3){
+                    gotError(task, "There is not data for task");
+                    return;
+                }
                 switch (task.type) {
                     case 1:
-                        processAuthTask(task, data);
+                        processAuthTask(task);
                         break;
                     case 2:
-                        processPromptTask(task, data);
+                        processPromptTask(task);
                         break;
                     case 3:
-                        processСreateChatTask(task, data);
+                        processСreateChatTask(task);
                         break;
-
                     default:
-                        GotError(task, "Got task with unknow type");
+                        gotError(task, "Got task with unknow type");
                         break;
                 }
-            }
-            else{
-                GotError(task, "Could not get data from task (Maybe is null or in wrong JSON format)");
+            } catch (Exception ex){
+                logger.error("Error in main loop", ex);
+                gotError(task, "Internal error");
             }
         }
+            
     }
 
-    private void processСreateChatTask(TaskModel task, Map<String, String> data){
-        print("Got create chat task");
-        Boolean result = chat.createNewChat(Integer.parseInt(data.get("type")));
-        task.isFinished = true;
-        task.gotError = !result;
-        context.save(task);
-        print("Finsihed create chat task");
+    @PostConstruct
+    public void startTask(){
+        scheduledExecutorService.scheduleWithFixedDelay(
+            new commandsProcessor(), 
+            2, 
+            2, 
+            TimeUnit.SECONDS
+        );
     }
 
-    private void processAuthTask(TaskModel task, Map<String, String> data) {
-        print("Got auth task");
-        Boolean result = chat.auth(data.get("login"), data.get("password"));
-        task.isFinished = true;
-        task.gotError = !result;
-        context.save(task);
-        print("Finished auth task");
+    @PreDestroy
+    public void stopTask(){
+        scheduledExecutorService.shutdown();
+        wrapper.exit();
     }
 
-    private void processPromptTask(TaskModel task, Map<String, String> data) {
-        print("Got promt task");
-        String prompt = data.get("promt");
-        Long timeOutForAnswer = Long.parseLong(data.get("timeOutForAnswer"));
-        try{
-            var chatAnswer = chat.askBing(prompt, timeOutForAnswer);
+    private void processСreateChatTask(TaskModel task){
+        logger.info("Got create chat task");
+        wrapper.getWorkingLLM().ifPresentOrElse(workingLLM -> {
+            Boolean result = wrapper.createChat(workingLLM.getProvider());
             task.isFinished = true;
-            task.gotError = chatAnswer.getCleanText() == null;
-            task.result = chatAnswer.getCleanText() != null ? chatAnswer.getCleanText() : null;
-            task.htmlResult = chatAnswer.getHtml() != null ? chatAnswer.getHtml() : null;
-        }catch (Exception ex){
-            print("Got unexpected error in promt task");
-            ex.printStackTrace();
+            task.gotError = !result;
+            context.save(task);
+        }, ()-> gotError(task, "No working LLM"));
+        logger.info("Finsihed create chat task");
+    }
+
+    private void processAuthTask(TaskModel task) {
+        logger.info("Got auth task");
+        Boolean result = false;
+        try{
+            LLMproviders provider = LLMproviders.valueOf(task.data.get("provider"));
+            result = wrapper.auth(provider, task.data.get("login"), task.data.get("password"));
+        }
+        catch (Exception ex){
+            logger.error("Got error in auth task", ex);
+        }
+        task.isFinished = true;
+        task.gotError = !result;
+        context.save(task);
+        logger.info("Finished auth task");
+    }
+
+    private void processPromptTask(TaskModel task) {
+        logger.info("Got promt task");
+        String prompt = task.data.get("promt");
+        Integer timeOutForAnswer = Integer.parseInt(task.data.get("timeOutForAnswer"));
+        try{
+            // var chatAnswer = chat.askLLM(prompt, timeOutForAnswer);
+            var chatAnswer = wrapper.askLLM(prompt, timeOutForAnswer);
+            task.isFinished = true;
+            task.gotError = !chatAnswer.getCleanAnswer().isPresent();
+            task.result = chatAnswer.getCleanAnswer().isPresent() ? chatAnswer.getCleanAnswer().get() : null;
+            task.htmlResult = chatAnswer.getHtmlAnswer().isPresent() ? chatAnswer.getHtmlAnswer().get() : null;
+
+            // save answer image
+            if (chatAnswer.getAnswerImage().isPresent()){
+                String imageName = UUID.randomUUID().toString()+".png";
+                ImageIO.write(chatAnswer.getAnswerImage().get(), "png", Paths.get(Shared.imagesPath.toString(), imageName).toFile());
+                task.imageResult = imageName;
+            }
+        } catch (IOException ex){
+            logger.error("Can't save image of answer, but i ignore it, i still will save answer from AI", ex);
+        }
+        catch (Exception ex){
+            logger.error("Got unexpected error in promt task", ex);
             task.isFinished = true;
             task.gotError = true;
         }
-
-        try{
-            var imageResult = chat.takeScreenshot();
-            String imageName = BrowserUtils.generateRandomFileName(15)+".png";
-            ImageIO.write(imageResult, "png", Paths.get(Shared.imagesPath.toString(), imageName).toFile());
-            task.imageResult = imageName;
-        }
-        catch (Exception e)  {
-            print("Can't save image of answer!");
-            e.printStackTrace();
-        }
-
         context.save(task);
-        print("Finished promt task");
+        logger.info("Finished promt task");
     }
 
-    private Map<String, String> convertJsonToMap(TaskModel task) {
-        try {
-            return mapper.readValue(task.data, new TypeReference<Map<String, String>>() {});
-        } catch (Exception e) {
-            GotError(task, "Can't convert json to Map");
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private void GotError(TaskModel task, String reason){
+    private void gotError(TaskModel task, String reason){
         task.isFinished = true;
         task.gotError = true;
         task.result = reason;
         context.save(task);
-        print(reason);
-    }
-
-    private void print(String text){
-        String ANSI_YELLOW = "\u001B[33m";
-        String ANSI_RESET = "\u001B[0m";
-        System.out.println(ANSI_YELLOW + "[CommandsExecutor] " + text + ANSI_RESET);
-    }    
+        logger.error(reason);
+    } 
 }

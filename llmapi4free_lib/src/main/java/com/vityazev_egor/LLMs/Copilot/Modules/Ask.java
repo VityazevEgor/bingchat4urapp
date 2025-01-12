@@ -21,6 +21,7 @@ public class Ask {
     }
 
     public ChatAnswer askCopilot(String promt, Integer timeOutForAnswer){
+        if (com.vityazev_egor.Wrapper.emulateError) return new ChatAnswer();
         // We need to check if we are on Copilot page before asking LLM
         var pageTitel = driver.getTitle();
         if (pageTitel.isPresent() && !pageTitel.get().contains("Copilot")){

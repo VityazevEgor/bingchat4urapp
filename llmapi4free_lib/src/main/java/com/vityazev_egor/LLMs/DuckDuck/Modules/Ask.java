@@ -24,6 +24,7 @@ public class Ask {
     public ChatAnswer ask(String promt, Integer timeOutAnswer){
         // We need to check if we are on Copilot page before asking LLM
         var pageTitel = driver.getTitle();
+        System.out.println(pageTitel);
         if (pageTitel.isPresent() && !pageTitel.get().contains("AI Chat")){
             logger.warning("Not on Duck Duck page");
             if (!new Auth(driver).auth() || !new CreateChat(driver).create()){
@@ -32,7 +33,11 @@ public class Ask {
         }
 
         if (enterPromt(promt) && waitForAnswer(timeOutAnswer)){
-            return new ChatAnswer(getTextAnswer(), getHtmlAnswer(), driver.getMisc().captureScreenshot());
+            return new ChatAnswer(
+                getTextAnswer(), 
+                getHtmlAnswer(), 
+                driver.getMisc().captureScreenshot()
+            );
         }
         else{
             return new ChatAnswer();
@@ -49,6 +54,7 @@ public class Ask {
         }
 
         driver.getInput().enterText(textArea, promt);
+        com.vityazev_egor.Core.Shared.sleep(1000);
         driver.getInput().emulateClick(sendButton);
         return true;
     }
@@ -57,24 +63,22 @@ public class Ask {
         return driver.findElements(By.cssSelector("." + DuckDuck.answerDivClass));
     }
 
-    private Optional<String> getTextAnswer(){
+    private Optional<WebElement> getLastAnswerElement(){
         var answerDivs = getAnswerDivs();
         if (answerDivs.isEmpty()){
             logger.error("Could not find answers divs", null);
             return Optional.empty();
         }
 
-        return answerDivs.get(answerDivs.size() - 1).getText();
+        return Optional.of(answerDivs.get(answerDivs.size() - 1));
+    }
+
+    private Optional<String> getTextAnswer(){
+        return getLastAnswerElement().map(element -> element.getText()).orElse(Optional.empty());
     }
 
     private Optional<String> getHtmlAnswer(){
-        var answerDivs = getAnswerDivs();
-        if (answerDivs.isEmpty()){
-            logger.error("Could not find answers divs", null);
-            return Optional.empty();
-        }
-
-        return answerDivs.get(answerDivs.size() - 1).getHTMLContent();
+        return getLastAnswerElement().map(element -> element.getHTMLContent()).orElse(Optional.empty());
     }
 
     public Boolean waitForAnswer(Integer timeOutForAnswer){
