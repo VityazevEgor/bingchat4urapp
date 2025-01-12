@@ -1,20 +1,22 @@
 # LLMapi4free
 LLMapi4free - это сервис, предоставляющий унифицированный доступ к различным LLM провайдерам через API. Сервис работает путем автоматизации действий в браузере, что позволяет получить бесплатный доступ к различным языковым моделям в виде API для ваших приложений.
-[Video demonstration](https://youtu.be/lHJaL333qAE)
 
-## How to run
-1. Download OpenJDK version 17 or higher from the official Oracle website.
-2. Download xdotool (sudo apt install xdotool)
-3. Download chrome browser
-4. Download the .jar file from the Releases section.
-5. Run .jar file using following command: `java -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar` 
-6. The application will be launched on port 8080.
+[Демонстрация работы (старая версия)](https://youtu.be/lHJaL333qAE)
 
-## Proxy Support
-If you want to use a proxy, you need to pass the proxy address as a parameter to the .jar file. Please note that only SOCKS5 proxies are supported. For example, you can pass the proxy to the application through the console like this:
+## Как запустить (Linux)?
+1. Скачать OpenJDK минимум 17-ой версии `sudo apt install openjdk-17-jdk`
+2. Установить xdotool `sudo apt install xdotool`
+3. Установить браузер chrome
+4. Скачать и запустить .jar файл из раздела "Release": `java -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar` 
+5. Приложение будет запущено на порту 8080.
+
+>Если вы хотите запустить это приложение на сервере, то вам **обязательно** надо развернуть на нём VNC сервер с графическим окружением и менджером окон X11
+
+## Поддержка прокси
+Если вы хотите использовать прокси-сервер, вам необходимо передать адрес прокси-сервера в качестве параметра в файл .jar. Обратите внимание, что поддерживаются только прокси-серверы SOCKS5 **без авторизации**. Например, вы можете передать прокси-сервер приложению через консоль следующим образом:
 
 ```bash
-java -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar --proxy 127.0.0.1:8521
+java -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar --proxy 127.0.0.1:2080
 ```
 
 # Как использовать?
@@ -27,15 +29,24 @@ java -jar bingchat4urapp_server-0.0.1-SNAPSHOT.jar --proxy 127.0.0.1:8521
 2. Сервер возвращает ID созданной задачи
 3. Клиент периодически опрашивает endpoint `/get/{id}` для получения статуса задачи, пока она не будет завершена (`isFinished = true`)
 
-## Base URL
+## Веб-интерфейс
+Вам также доступен веб-интерфейс по пути `127.0.0.1:8080/` который позволит вам проверить работу приложения и разобраться в его работу
+![Main page](images/webInterface.png "Main page")
+![Asnwer page](images/webInterface2.png "Answer page")
+![Providers page](images/webInterface3.png "Providers page")
+
+## API Base URL
 ```
 /api
 ```
 
-## Endpoints
+## API Endpoints
 
 ### Аутентификация
 #### Создание задачи аутентификации
+>**Важно:** авторизация в Copilot происходит по логину и паролю от вашего Microsoft аккаунта. На вашем аккаунте должна быть выключен двухфакторная авторизация.
+
+>**Важно:** авторизация в OpenAI(ChatGPT) происходит используя Google аккаунт. Вы должны самостоятельно войти в свой Google аккаунт в окне браузера, которое открывается при запуске сервера, и только потом использовать этот endpoint для создания задачи на авторизацию в OpenAI, передавая в качестве логина и пароля любые строки.
 ```http
 POST /auth
 ```
@@ -69,7 +80,7 @@ POST /createchat
 ```
 
 **Response:**
-- `201 Created`: ID созданной задачи чата
+- `201 Created`: ID созданной задачи на открытие нового чата
 ```json
 43
 ```
@@ -98,7 +109,7 @@ POST /sendpromt
 44
 ```
 - `400 Bad Request`: ошибка валидации
-- `500 Internal Server Error`: внутренняя ошибка при создании задачи
+- `500 Internal Server Error`: внутренняя ошибка на стороне сервера
 
 ### Управление провайдерами
 #### Получение информации о доступных провайдерах
@@ -111,13 +122,13 @@ GET /getProvidersInfo
 ```json
 [
     {
-        "provider": "Copilot",
+        "provider": "Copilot", // enum LLMproviders
         "chat": {
             "Copilot": "copilot"
         },
-        "gotError": false,
-        "authDone": true,
-        "authRequired": true,
+        "gotError": false, // была ли ошибка при использовании этого провайдера
+        "authDone": true, // была ли выполнена авторизация
+        "authRequired": true, // обязательна ли авторизация
         "lastAnswer": "Последний ответ от модели"
     },
     {
@@ -134,6 +145,7 @@ GET /getProvidersInfo
 ```
 
 #### Установка предпочтительного провайдера
+С помощью данного endpoint вы можете выбрать от какого провайдера вы предпочитаете получить ответ.
 ```http
 POST /setPreferedProvider
 ```
@@ -148,9 +160,10 @@ POST /setPreferedProvider
 **Response:**
 - `200 OK`: "Done!"
 - `400 Bad Request`: ошибка валидации
-- `500 Internal Server Error`: "Failed to set provider. Check server console for details"
+- `500 Internal Server Error`: Внутренняя ошибка сервера
 
 #### Получение текущего рабочего LLM
+Возращает информацию о провайдере, который будет использоваться для следующей обработки промта.
 ```http
 GET /getWorkingLLM
 ```
@@ -217,7 +230,7 @@ GET /exit
 При получении ответа от языковой модели, сервер всегда возвращает три поля:
 - `result`: чистый текстовый ответ
 - `htmlResult`: ответ в формате HTML с форматированием
-- `imageResult`: имя файла изображения, если модель сгенерировала изображение
+- `imageResult`: имя файла изображения, скриншота ответа от модели
 
 В случае возникновения ошибки:
 - `gotError`: становится `true`

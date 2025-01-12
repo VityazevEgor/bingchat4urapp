@@ -47,7 +47,7 @@ public class GUIController {
             }
         }
         model.addObject("latestPromts", promtModels);
-        String aiInUse = executor.getWrapper().getWorkingLLM().map(llm -> { return llm.getChat().getName();}).orElse("None");
+        String aiInUse = executor.getWrapper().getWorkingLLM().map(llm -> llm.getChat().getName()).orElse("None");
         model.addObject("aiInUse", aiInUse);
 
         model.addObject("promtChache", promtCacheRepo.count() == 0 ? "" : promtCacheRepo.findAll().get(0).getPromt());
@@ -124,7 +124,5 @@ public class GUIController {
         executor.getWrapper().setPreferredProvider(provider);
         logger.info("Updated provider: " + provider);
         return new ModelAndView("redirect:/providers");
-    }
-    
-    
+    }    
 }
