@@ -66,7 +66,7 @@ public class Ask {
         var continueButton = driver.findElement(By.cssSelector("button[title='Continue']"));
 
         if (!Shared.waitForElements(false, userInput)){
-            logger.warning("Can't find user input!");
+            logger.error("Can't find user input!", null);
             return false;
         }
 
@@ -74,10 +74,11 @@ public class Ask {
             driver.getInput().emulateClick(continueButton);
         }
         driver.getInput().emulateClick(userInput);
-        driver.getInput().enterText(userInput, promt);
+        driver.getInput().insertText(userInput, promt);
+        com.vityazev_egor.Core.Shared.sleep(1000);
 
         if (!Shared.waitForElements(false, sendButton)){
-            logger.warning("Can't find send button");
+            logger.error("Can't find send button", null);
             return false;
         }
         // надо немного подождать, а то просто не успевает кнопочка отобразиться

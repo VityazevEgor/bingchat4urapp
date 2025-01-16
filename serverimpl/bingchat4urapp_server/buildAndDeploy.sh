@@ -1,5 +1,7 @@
 #!/bin/bash
-
+cd ../../llmapi4free_lib
+bash build.sh
+cd ../serverimpl/bingchat4urapp_server/
 # Execute Maven clean package command
 mvn clean package -DskipTests
 
@@ -14,7 +16,7 @@ if [ $? -eq 0 ]; then
   DESTINATION_PATH="/home/egor/Downloads"  # Destination path on the server
 
   # Copy the .jar file to the server, replacing if it already exists
-  scp -o StrictHostKeyChecking=no "$JAR_FILE" "$SERVER_USER@$SERVER_IP:$DESTINATION_PATH"
+  rsync -avz "$JAR_FILE" "$SERVER_USER@$SERVER_IP:$DESTINATION_PATH"
 
   if [ $? -eq 0 ]; then
     echo "Файл .jar успешно скопирован на сервер в ~/Downloads."

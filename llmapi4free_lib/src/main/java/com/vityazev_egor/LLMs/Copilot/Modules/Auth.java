@@ -32,12 +32,7 @@ public class Auth {
             return true;
         }
 
-        if (enterPassword(password) && staySigned() && isLoggedIn()){
-            return true;
-        }
-        else{
-            return false;
-        }
+        return enterPassword(password) && staySigned() && isLoggedIn();
     }
 
     private void acceptTerms(){
@@ -49,7 +44,12 @@ public class Auth {
 
     private Boolean isLoggedIn(){
         var profileButton = driver.findElement(By.id(":r1:"));
-        return Shared.waitForElements(false,profileButton);
+        if (Shared.waitForElements(false,profileButton)){
+            return true;
+        }
+        else{
+            return driver.findElement(By.id(":r2:")).isExists();
+        }
     }
 
     private Boolean openLoginPage(){

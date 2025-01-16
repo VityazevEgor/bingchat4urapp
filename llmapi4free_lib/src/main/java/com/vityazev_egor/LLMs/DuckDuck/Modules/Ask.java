@@ -53,8 +53,9 @@ public class Ask {
             return false;
         }
 
-        driver.getInput().enterText(textArea, promt);
+        driver.getInput().insertText(textArea, promt);
         com.vityazev_egor.Core.Shared.sleep(1000);
+        
         driver.getInput().emulateClick(sendButton);
         return true;
     }

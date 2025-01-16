@@ -17,7 +17,7 @@ public class Ask {
     }
 
     public ChatAnswer ask(String promt, Integer timoutAnswerSeconds){
-        if (!isChatOpened()) return new ChatAnswer();
+        if (!openChatIfNotOpened()) return new ChatAnswer();
         if (enterPromt(promt) && new com.vityazev_egor.LLMs.DuckDuck.Modules.Ask(driver).waitForAnswer(timoutAnswerSeconds)){
             return new ChatAnswer(
                 getTextAnswer(), 
@@ -31,7 +31,7 @@ public class Ask {
         }
     }
 
-    private Boolean isChatOpened(){
+    private Boolean openChatIfNotOpened(){
         Boolean chatIsOpened = driver.getHtml().map(html->html.contains("ChatGPT")).orElse(false);
         if (chatIsOpened) return true;
 
@@ -45,7 +45,7 @@ public class Ask {
             return false;
         }
         driver.getInput().emulateClick(input);
-        driver.getInput().enterText(input, promt);
+        driver.getInput().insertText(input, promt);
         com.vityazev_egor.Core.Shared.sleep(1000);
 
         var sendButton = driver.findElement(By.cssSelector("button[data-testid='send-button']"));

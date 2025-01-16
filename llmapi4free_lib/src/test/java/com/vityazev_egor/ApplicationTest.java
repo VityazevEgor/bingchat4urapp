@@ -54,7 +54,7 @@ class ApplicationTest {
 
     @Test
     void copilotAnswer() throws IOException{
-        var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.Copilot, WrapperMode.ExamMode);
+        var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.Copilot, WrapperMode.Normal);
         Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
         List<String> data = Files.readAllLines(pwdPath);
         String loging = data.get(0);

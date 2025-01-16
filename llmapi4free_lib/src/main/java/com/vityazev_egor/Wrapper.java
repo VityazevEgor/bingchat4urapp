@@ -47,8 +47,9 @@ public class Wrapper {
         this.driver.getXdo().calibrate();
         this.llms = Arrays.asList(
             new LLM(new Copilot(driver), true, LLMproviders.Copilot),
-            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck),
-            new LLM(new OpenAI(driver),true, LLMproviders.OpenAI)
+            // auth required == false for OpenAI only means that you do not need to call "auth" method. You still have to login in into your Google account
+            new LLM(new OpenAI(driver),false, LLMproviders.OpenAI),
+            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck)
         );
         this.preferredProvider = preferredProvider;
         this.wrapperMode = wrapperMode;
@@ -95,7 +96,7 @@ public class Wrapper {
     public ChatAnswer askLLM(String promt, Integer timeOutForAnswer){
         switch (wrapperMode) {
             case ExamMode:
-                for (int i=0; i<2; i++){
+                for (int i=0; i<llms.size(); i++){
                     var workingLLM = getWorkingLLM();
                     if (!workingLLM.isPresent()) {
                         logger.error("There is no working providers avaible", null);
