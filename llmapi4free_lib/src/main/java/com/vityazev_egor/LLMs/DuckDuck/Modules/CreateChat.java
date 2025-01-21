@@ -33,7 +33,7 @@ public class CreateChat {
         com.vityazev_egor.Core.Shared.sleep(1000);
         driver.getInput().emulateClick(sendButton);
 
-        if (!new Ask(driver).waitForAnswer(20)){
+        if (!Shared.waitForAnswer(driver, 40, 2000)){
             logger.error("Time out while wating for duck duck answer", null);
             return false;
         }

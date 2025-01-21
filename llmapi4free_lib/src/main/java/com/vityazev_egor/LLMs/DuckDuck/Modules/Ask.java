@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import com.vityazev_egor.NoDriver;
 import com.vityazev_egor.Core.CustomLogger;
-import com.vityazev_egor.Core.WaitTask;
 import com.vityazev_egor.Core.WebElements.By;
 import com.vityazev_egor.Core.WebElements.WebElement;
 import com.vityazev_egor.LLMs.Shared;
@@ -23,16 +22,15 @@ public class Ask {
 
     public ChatAnswer ask(String promt, Integer timeOutAnswer){
         // We need to check if we are on Copilot page before asking LLM
-        var pageTitel = driver.getTitle();
-        System.out.println(pageTitel);
-        if (pageTitel.isPresent() && !pageTitel.get().contains("AI Chat")){
+        Boolean isChatOpened = driver.getTitle().map(titel -> titel.contains("AI Chat")).orElse(false);
+        if (!isChatOpened){
             logger.warning("Not on Duck Duck page");
             if (!new Auth(driver).auth() || !new CreateChat(driver).create()){
                 return new ChatAnswer();
             }
         }
 
-        if (enterPromt(promt) && waitForAnswer(timeOutAnswer)){
+        if (sendPromt(promt) && Shared.waitForAnswer(driver, timeOutAnswer, 2000)){
             return new ChatAnswer(
                 getTextAnswer(), 
                 getHtmlAnswer(), 
@@ -44,7 +42,7 @@ public class Ask {
         }
     }
 
-    private Boolean enterPromt(String promt){
+    private Boolean sendPromt(String promt){
         var textArea = driver.findElement(By.name("user-prompt"));
         var sendButton = driver.findElement(By.cssSelector("button[type='submit'][aria-label='Отправить'], button[type='submit'][aria-label='Send']"));
 
@@ -80,28 +78,5 @@ public class Ask {
 
     private Optional<String> getHtmlAnswer(){
         return getLastAnswerElement().map(element -> element.getHTMLContent()).orElse(Optional.empty());
-    }
-
-    public Boolean waitForAnswer(Integer timeOutForAnswer){
-        var waitTask = new WaitTask() {
-            private String html = driver.getHtml().map(result -> {return result;}).orElse("");
-
-            @Override
-            public Boolean condition() {
-                // если текущий штмл равен предыдущему то возвращаем да (копайлот перестал печатать)
-                return driver.getHtml().map(currentHtml ->{
-                    if (currentHtml.equals(html)){
-                        return true;
-                    }
-                    else{
-                        html = currentHtml;
-                        return false;
-                    }
-                }).orElse(false);
-            }
-            
-        };
-        com.vityazev_egor.Core.Shared.sleep(1000);
-        return waitTask.execute(timeOutForAnswer, 1 * 1000);
     }
 }

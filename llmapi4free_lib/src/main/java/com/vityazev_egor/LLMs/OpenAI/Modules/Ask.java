@@ -10,15 +10,17 @@ import com.vityazev_egor.LLMs.Shared;
 import com.vityazev_egor.Models.ChatAnswer;
 
 public class Ask {
+    
     private final NoDriver driver;
     private final CustomLogger logger = new CustomLogger(Ask.class.getName());
+
     public Ask(NoDriver driver) {
         this.driver = driver;
     }
 
     public ChatAnswer ask(String promt, Integer timoutAnswerSeconds){
         if (!openChatIfNotOpened()) return new ChatAnswer();
-        if (enterPromt(promt) && new com.vityazev_egor.LLMs.DuckDuck.Modules.Ask(driver).waitForAnswer(timoutAnswerSeconds)){
+        if (sendPromt(promt) && Shared.waitForAnswer(driver, timoutAnswerSeconds, 2000)){
             return new ChatAnswer(
                 getTextAnswer(), 
                 getHTMLAnswer(), 
@@ -38,7 +40,7 @@ public class Ask {
         return new Auth(driver).auth();
     }
 
-    private Boolean enterPromt(String promt){
+    private Boolean sendPromt(String promt){
         var input = driver.findElement(By.id("prompt-textarea"));
         if (!Shared.waitForElements(false, input)){
             logger.error("Can't find promt input", null);

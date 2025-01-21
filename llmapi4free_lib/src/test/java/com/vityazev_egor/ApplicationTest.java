@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
 
 class ApplicationTest {
 
@@ -110,5 +109,15 @@ class ApplicationTest {
         assertTrue(result);
         assertTrue(wrapper.getWorkingLLM().isPresent() && wrapper.getWorkingLLM().get().getProvider() == LLMproviders.Copilot);
         wrapper.exit();
+    }
+
+    @Test
+    void testDeepSeek() throws IOException, InterruptedException{
+        var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.DeepSeek, WrapperMode.ExamMode);
+        var answer = wrapper.askLLM("Напиши hello world \n на Java",60);
+        //answer = wrapper.askLLM("Большое тебе спасибо!", 60);
+        wrapper.exit();
+        System.out.println(answer.getCleanAnswer());
+        assertTrue(answer.getCleanAnswer().isPresent());
     }
 }

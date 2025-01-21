@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.vityazev_egor.Core.CustomLogger;
 import com.vityazev_egor.LLMs.Copilot.Copilot;
+import com.vityazev_egor.LLMs.DeepSeek.DeepSeek;
 import com.vityazev_egor.LLMs.DuckDuck.DuckDuck;
 import com.vityazev_egor.LLMs.OpenAI.OpenAI;
 import com.vityazev_egor.Models.ChatAnswer;
@@ -16,6 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class Wrapper {
+    @Getter
     private final NoDriver driver;
     private final CustomLogger logger;
     @Getter
@@ -24,7 +26,8 @@ public class Wrapper {
     public enum LLMproviders{
         Copilot,
         DuckDuck,
-        OpenAI
+        OpenAI,
+        DeepSeek
     }
 
     public enum WrapperMode{
@@ -49,7 +52,8 @@ public class Wrapper {
             new LLM(new Copilot(driver), true, LLMproviders.Copilot),
             // auth required == false for OpenAI only means that you do not need to call "auth" method. You still have to login in into your Google account
             new LLM(new OpenAI(driver),false, LLMproviders.OpenAI),
-            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck)
+            new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck),
+            new LLM(new DeepSeek(driver), false, LLMproviders.DeepSeek)
         );
         this.preferredProvider = preferredProvider;
         this.wrapperMode = wrapperMode;
@@ -78,7 +82,8 @@ public class Wrapper {
     }
 
     private ChatAnswer askLLM(LLM llm, String promt, Integer timeOutForAnswer){
-        promt = promt.replaceAll("[\r\n]+", " ");
+        // now it support \n cuz we use insertText instead of enterText
+        //promt = promt.replaceAll("[\r\n]+", " ");
         var answer = llm.getChat().ask(promt, timeOutForAnswer);
         if (!answer.getCleanAnswer().isPresent()){
             llm.setGotError(true);
@@ -107,13 +112,12 @@ public class Wrapper {
                         logger.error("LLM " + workingLLM.get().getProvider().name() + " didn't answer", null);
                         continue;
                     }
+                    answer.addPrefixToCleanAnswer(String.format("[Answer from %s provider]\n", workingLLM.get().getProvider().name()));
                     return answer;
                 }
         
             default:
-                return getWorkingLLM().map(llm ->{
-                    return askLLM(llm, promt, timeOutForAnswer);
-                }).orElse(new ChatAnswer());
+                return getWorkingLLM().map(llm -> askLLM(llm, promt, timeOutForAnswer)).orElse(new ChatAnswer());
         }
     }
 

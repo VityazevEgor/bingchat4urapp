@@ -18,4 +18,10 @@ public class ChatAnswer {
         htmlAnswer = Optional.empty();
         answerImage = Optional.empty();
     }
+
+    public void addPrefixToCleanAnswer(String prefix){
+        cleanAnswer.ifPresentOrElse(answer ->{
+            cleanAnswer = Optional.of(prefix + answer);
+        }, () -> System.err.println("Clean answer is empty"));
+    }
 }
