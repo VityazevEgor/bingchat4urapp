@@ -128,6 +128,13 @@ public class MainController {
         });
     }
 
+    @GetMapping("/resetProvidersState")
+    public ResponseEntity<?> resetProvidersState(){
+        executor.getWrapper().resetErrorStates();
+        logger.info("Reset providers state has been calles");
+        return ResponseEntity.ok("Providers state has been reset");
+    }
+
     @GetMapping("/getWorkingLLM")
     public ResponseEntity<?> getWorkingLLM(){
         return ResponseEntity.ok(executor.getWrapper().getWorkingLLM());
