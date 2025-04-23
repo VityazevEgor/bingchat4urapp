@@ -62,7 +62,7 @@ public class GUIController {
 
     @GetMapping("/auth")
     public ModelAndView auth() {
-        // we need to provide list of avaibel providers
+        // we need to provide list of available providers
         var authRequired = executor.getWrapper().getLlms().stream().filter(llm-> llm.getAuthRequired() && !llm.getAuthDone()).toList();
         return new ModelAndView("auth", "authRequired", authRequired);
     }

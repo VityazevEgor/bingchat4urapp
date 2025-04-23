@@ -38,14 +38,13 @@ public class CommandsExecutor {
     public CommandsExecutor(){
         try{
             wrapper = new Wrapper(Shared.proxy, LLMproviders.Copilot, Shared.examMode ? WrapperMode.ExamMode : WrapperMode.Normal);
-            logger.info("Created Wrapper object with proxy = " + Shared.proxy);
+            logger.info("Created Wrapper object with proxy = {}", Shared.proxy);
             if (Shared.emulateBingErros){
-                logger.warn("emulateErrors mode is enabled. Copilot will alway return errors");
+                logger.warn("emulateErrors mode is enabled. Copilot will always return errors");
                 Wrapper.emulateError = true;
             }
-            if (Shared.examMode){
+            if (Shared.examMode)
                 logger.warn("examMode mode is enabled. Server will try to get answer from other LLM provider is current one failed!");
-            }
         } catch (Exception e){
             logger.error("Could not create Wrapper object", e);
             System.exit(1);
@@ -62,18 +61,15 @@ public class CommandsExecutor {
         public void run() {
             if (!doJob) return;
             TaskModel task = context.findFirstUnfinishedTask();
-            if (task == null) {
+            if (task == null)
                 return;
-            }
-            else{
-                logger.info("I got task to do with this data = " + task.data);
-            }
+            logger.info("I got task to do with this data = {}", task.data);
             try{
                 if (task.type == 0){
                     System.exit(0);
                     return;
                 }
-                if (task.data.size() == 0 && task.type != 3){
+                if (task.data.isEmpty() && task.type != 3){
                     gotError(task, "There is not data for task");
                     return;
                 }
@@ -123,7 +119,7 @@ public class CommandsExecutor {
             task.gotError = !result;
             context.save(task);
         }, ()-> gotError(task, "No working LLM"));
-        logger.info("Finsihed create chat task");
+        logger.info("Finished create chat task");
     }
 
     private void processAuthTask(TaskModel task) {
@@ -143,7 +139,7 @@ public class CommandsExecutor {
     }
 
     private void processPromptTask(TaskModel task) {
-        logger.info("Got promt task");
+        logger.info("Got prompt task");
         String prompt = task.data.get("promt");
         Integer timeOutForAnswer = Integer.parseInt(task.data.get("timeOutForAnswer"));
         try{
@@ -164,12 +160,12 @@ public class CommandsExecutor {
             logger.error("Can't save image of answer, but i ignore it, i still will save answer from AI", ex);
         }
         catch (Exception ex){
-            logger.error("Got unexpected error in promt task", ex);
+            logger.error("Got unexpected error in prompt task", ex);
             task.isFinished = true;
             task.gotError = true;
         }
         context.save(task);
-        logger.info("Finished promt task");
+        logger.info("Finished prompt task");
     }
 
     private void gotError(TaskModel task, String reason){

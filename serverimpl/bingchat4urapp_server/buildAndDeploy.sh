@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ../../llmapi4free_lib
-bash build.sh
+bash install.sh
 cd ../serverimpl/bingchat4urapp_server/
 # Execute Maven clean package command
 mvn clean package -DskipTests

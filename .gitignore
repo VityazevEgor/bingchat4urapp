@@ -30,3 +30,5 @@ serverimpl/bingchat4urapp_server/bc4uaDB.db
 *.db
 /llmapi4free_lib/nodriverData
 /serverimpl/bingchat4urapp_server/nodriverData
+/llmapi4free_lib/.idea
+/serverimpl/.idea
