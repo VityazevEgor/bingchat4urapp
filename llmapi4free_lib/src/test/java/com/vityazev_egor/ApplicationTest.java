@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
 
 class ApplicationTest {
 
@@ -24,7 +23,7 @@ class ApplicationTest {
 
     @Test
     void duckduckChatIsNotOpened() throws IOException{
-        var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.DuckDuck, WrapperMode.ExamMode);
+        var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.DuckDuck, WrapperMode.Normal);
         var answer = wrapper.askLLM("How are you today?",40);
         assertTrue(answer.getCleanAnswer().isPresent());
         answer = wrapper.askLLM("Write hello world in java", 40);
@@ -87,13 +86,16 @@ class ApplicationTest {
     }
 
     @Test
-    void testOpanAIChat() throws IOException{
+    void testOpenAIChat() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.OpenAI, WrapperMode.Normal);
         wrapper.auth(LLMproviders.OpenAI, "null", "null");
-        var answer = wrapper.askLLM("Can you write hello world in java?",40);
+        var answer = wrapper.askLLM("Can you write hello world in java?",100);
+        var answer2 = wrapper.askLLM("Can you write quick sort in java?", 100);
         wrapper.exit();
         System.out.println(answer.getCleanAnswer());
-        assertTrue(answer.getCleanAnswer().isPresent());    
+        System.out.println(answer2.getCleanAnswer());
+        assertTrue(answer.getCleanAnswer().isPresent());
+        assertTrue(answer2.getCleanAnswer().isPresent());
     }
 
     @Test
@@ -110,5 +112,25 @@ class ApplicationTest {
         assertTrue(result);
         assertTrue(wrapper.getWorkingLLM().isPresent() && wrapper.getWorkingLLM().get().getProvider() == LLMproviders.Copilot);
         wrapper.exit();
+    }
+
+    @Test
+    void testDeepSeek() throws IOException, InterruptedException{
+        var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.DeepSeek, WrapperMode.Normal);
+        var answer = wrapper.askLLM("Напиши hello world \n на Java",60);
+        var answer2 = wrapper.askLLM("Write quick sort in java", 60);
+        wrapper.exit();
+        System.out.println(answer.getCleanAnswer());
+        System.out.println(answer2.getCleanAnswer());
+        assertTrue(answer2.getCleanAnswer().isPresent());
+        assertTrue(answer.getCleanAnswer().isPresent());
+    }
+
+    @Test
+    void deepSeekAuth() throws IOException{
+        var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.DeepSeek, WrapperMode.Normal);
+        var result = wrapper.auth(LLMproviders.DeepSeek, "login", "password");
+        wrapper.exit();
+        assertTrue(result);
     }
 }

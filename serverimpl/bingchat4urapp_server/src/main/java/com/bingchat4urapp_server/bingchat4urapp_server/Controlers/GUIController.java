@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.bingchat4urapp_server.bingchat4urapp_server.Shared;
 import com.bingchat4urapp_server.bingchat4urapp_server.BgTasks.CommandsExecutor;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskRepo;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.PromtCacheRepo;
@@ -54,9 +53,16 @@ public class GUIController {
         return model;
     }
 
+    @GetMapping("/ask")
+    public ModelAndView ask(@RequestParam(name = "p") String promt) {
+        var newTask = utils.createPromtTask(promt, "120");
+        context.save(newTask);
+        return new ModelAndView("redirect:/task/" + newTask.id);
+    }
+
     @GetMapping("/auth")
     public ModelAndView auth() {
-        // we need to provide list of avaibel providers
+        // we need to provide list of available providers
         var authRequired = executor.getWrapper().getLlms().stream().filter(llm-> llm.getAuthRequired() && !llm.getAuthDone()).toList();
         return new ModelAndView("auth", "authRequired", authRequired);
     }
@@ -77,9 +83,9 @@ public class GUIController {
 
     @PostMapping("/send")
     public String sendPromt(@RequestParam String promt){
-        if (Shared.examMode){
-            promt = promt + " При ответе на этот вопрос записывай формулы в обычном текстовом виде, без использования разметки, такой как LaTeX. Например, дробь следует записывать так: (a+b)/(a-b). Переменную с индексом 0 записывай так: a_0.";
-        }
+        // if (Shared.examMode){
+        //     promt = promt;
+        // }
         var newTask = utils.createPromtTask(promt, "120");
         context.save(newTask);
         return "redirect:/task/" + newTask.id;

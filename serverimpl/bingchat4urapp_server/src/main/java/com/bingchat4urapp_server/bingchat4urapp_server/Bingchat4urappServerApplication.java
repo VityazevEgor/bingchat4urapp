@@ -46,12 +46,11 @@ public class Bingchat4urappServerApplication {
 					break;
 				default:
 					System.out.println("Unknown arg: " + args[i]);
-					System.exit(1);
 			}
 		}
 		//proxy = "127.0.0.1:2080";
 		// Если указан proxy и он валидный
-		if (proxy != null && isValidProxy(proxy)) {
+		if (proxy != null) {
 			System.out.println("Using proxy: " + proxy);
 			Shared.proxy = proxy;
 		} else {
@@ -72,7 +71,7 @@ public class Bingchat4urappServerApplication {
 
 		SpringApplication app = new SpringApplication(Bingchat4urappServerApplication.class);
 		app.setHeadless(false);
-		app.run();
+		app.run(args);
 	}
 
 	private static boolean isValidProxy(String proxy) {

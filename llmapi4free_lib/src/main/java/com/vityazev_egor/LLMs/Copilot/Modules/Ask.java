@@ -31,7 +31,7 @@ public class Ask {
             }
         }
 
-        if (enterPromt(promt) && waitForAnswer(timeOutForAnswer)){
+        if (sendPromt(promt) && waitForAnswer(timeOutForAnswer)){
             return new ChatAnswer(
                 getLastAnswerText(), 
                 getLastAnswerHtml(),
@@ -60,7 +60,7 @@ public class Ask {
         return false;
     }
 
-    private Boolean enterPromt(String promt){
+    private Boolean sendPromt(String promt){
         var userInput = driver.findElement(By.id("userInput"));
         var sendButton = driver.findElement(By.cssSelector("button[title='Submit message']"));
         var continueButton = driver.findElement(By.cssSelector("button[title='Continue']"));
