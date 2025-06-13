@@ -45,8 +45,8 @@ public class Utils {
         return newTask;
     }
 
-    public TaskModel createAuthTask(String login, String password, String provider){
-        Map<String, String> authTask = Map.of("login", login, "password", password, "provider", provider);
+    public TaskModel createAuthTask(String provider){
+        Map<String, String> authTask = Map.of("provider", provider);
         var newTask = new TaskModel();
         newTask.type = 1;
         newTask.data = authTask;
@@ -65,6 +65,6 @@ public class Utils {
     }
 
     public TaskModel createAuthTask(RequestsModels.AuthRequest authRequest){
-        return createAuthTask(authRequest.getLogin(), authRequest.getPassword(), authRequest.getProvider().toString());
+        return createAuthTask(authRequest.getProvider().toString());
     }
 }

@@ -16,15 +16,6 @@ public class RequestsModels {
     @Setter
     @NoArgsConstructor
     public static class AuthRequest {
-
-        @NotBlank(message = "Login is mandatory")
-        @Size(min = 6, max = 50, message = "Login must be less than 50 characters")
-        private String login;
-
-        @NotBlank(message = "Password is mandatory")
-        @Size(min = 8, max = 50, message = "Password must be at least 8 characters")
-        private String password;
-
         @NotNull(message = "Provider is mandatory")
         private LLMproviders provider;
     }

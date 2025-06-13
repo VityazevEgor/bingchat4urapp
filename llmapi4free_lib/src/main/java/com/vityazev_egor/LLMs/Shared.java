@@ -9,7 +9,7 @@ public class Shared {
         return waitForElements(checkForClicable, 8, elements);
     }
 
-    public static Boolean waitForElements(Boolean checkForClicable, Integer timeOutSeconds, WebElement... elements){
+    public static Boolean waitForElements(Boolean checkForClickable, Integer timeOutSeconds, WebElement... elements){
         var waitTask = new WaitTask() {
 
             @Override
@@ -17,7 +17,7 @@ public class Shared {
                 for (WebElement element : elements){
                     if (!element.isExists()) return false;
                 }
-                if (checkForClicable){
+                if (checkForClickable){
                     if (!elements[elements.length-1].isClickable()) return false;
                 }
                 return true;

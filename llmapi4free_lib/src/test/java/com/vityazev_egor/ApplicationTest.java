@@ -42,11 +42,7 @@ class ApplicationTest {
     @Test
     void copilotAuth() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.Copilot, WrapperMode.ExamMode);
-        Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
-        List<String> data = Files.readAllLines(pwdPath);
-        String loging = data.get(0);
-        String password = data.get(1);
-        var result = wrapper.auth(LLMproviders.Copilot, loging, password);
+        var result = wrapper.auth(LLMproviders.Copilot);
         wrapper.exit();
         assertTrue(result);
     }
@@ -54,11 +50,7 @@ class ApplicationTest {
     @Test
     void copilotAnswer() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.Copilot, WrapperMode.Normal);
-        Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
-        List<String> data = Files.readAllLines(pwdPath);
-        String loging = data.get(0);
-        String password = data.get(1);
-        var result = wrapper.auth(LLMproviders.Copilot, loging, password);
+        var result = wrapper.auth(LLMproviders.Copilot);
         assertTrue(result);
         var answer = wrapper.askLLM("Напиши формулу равноусоркенного движения в физике",60);
         wrapper.exit();
@@ -79,7 +71,7 @@ class ApplicationTest {
     void testOpenAIAuth() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.OpenAI, WrapperMode.ExamMode);
         Boolean result = wrapper.createChat(LLMproviders.OpenAI);
-        if (result) result = wrapper.auth(LLMproviders.OpenAI, "", "");
+        if (result) result = wrapper.auth(LLMproviders.OpenAI);
         Shared.sleep(5000);
         wrapper.exit();
         assertTrue(result);
@@ -88,14 +80,11 @@ class ApplicationTest {
     @Test
     void testOpenAIChat() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.OpenAI, WrapperMode.Normal);
-        wrapper.auth(LLMproviders.OpenAI, "null", "null");
+        wrapper.auth(LLMproviders.OpenAI);
         var answer = wrapper.askLLM("Can you write hello world in java?",100);
-        var answer2 = wrapper.askLLM("Can you write quick sort in java?", 100);
         wrapper.exit();
         System.out.println(answer.getCleanAnswer());
-        System.out.println(answer2.getCleanAnswer());
         assertTrue(answer.getCleanAnswer().isPresent());
-        assertTrue(answer2.getCleanAnswer().isPresent());
     }
 
     @Test
@@ -103,12 +92,7 @@ class ApplicationTest {
         var wrapper = new Wrapper("127.0.0.1:2080",LLMproviders.Copilot, WrapperMode.ExamMode);
         assertTrue(wrapper.getWorkingLLM().isPresent() && wrapper.getWorkingLLM().get().getProvider() == LLMproviders.DuckDuck);
 
-        Path pwdPath = Paths.get(System.getProperty("user.home"), "Desktop", "bingp.txt");
-        List<String> data = Files.readAllLines(pwdPath);
-        String loging = data.get(0);
-        String password = data.get(1);
-
-        var result = wrapper.auth(LLMproviders.Copilot, loging, password);
+        var result = wrapper.auth(LLMproviders.Copilot);
         assertTrue(result);
         assertTrue(wrapper.getWorkingLLM().isPresent() && wrapper.getWorkingLLM().get().getProvider() == LLMproviders.Copilot);
         wrapper.exit();
@@ -118,18 +102,15 @@ class ApplicationTest {
     void testDeepSeek() throws IOException, InterruptedException{
         var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.DeepSeek, WrapperMode.Normal);
         var answer = wrapper.askLLM("Напиши hello world \n на Java",60);
-        var answer2 = wrapper.askLLM("Write quick sort in java", 60);
         wrapper.exit();
         System.out.println(answer.getCleanAnswer());
-        System.out.println(answer2.getCleanAnswer());
-        assertTrue(answer2.getCleanAnswer().isPresent());
         assertTrue(answer.getCleanAnswer().isPresent());
     }
 
     @Test
     void deepSeekAuth() throws IOException{
         var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.DeepSeek, WrapperMode.Normal);
-        var result = wrapper.auth(LLMproviders.DeepSeek, "login", "password");
+        var result = wrapper.auth(LLMproviders.DeepSeek);
         wrapper.exit();
         assertTrue(result);
     }

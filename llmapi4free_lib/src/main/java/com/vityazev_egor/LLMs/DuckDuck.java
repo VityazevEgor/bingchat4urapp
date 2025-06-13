@@ -18,14 +18,11 @@ public class DuckDuck implements iChat{
     }
 
     /**
-     * Authenticates the user by logging in with the provided credentials.
      *
-     * @param login Is not used.
-     * @param password Is not used.
      * @return {@code true} if authentication is successful, {@code false} otherwise.
      */
     @Override
-    public Boolean auth(String login, String password) {
+    public Boolean auth() {
         try{
             if (!driver.getNavigation().loadUrlAndWait(url, 10))
                 throw new Exception("Could not load DuckDuckGo chat in time.");
@@ -49,17 +46,13 @@ public class DuckDuck implements iChat{
         }
     }
 
-    private Boolean auth(){
-        return auth(null, null);
-    }
-
     @Override
     public ChatAnswer ask(String prompt, Integer timeOutForAnswer) {
         try {
             // MAKE SURE THAT CHAT IS OPENED
             Boolean isChatOpened = driver.getTitle().map(title -> title.contains("Duck.ai")).orElse(false);
             if (!isChatOpened)
-                if (!auth() || !creatNewChat())
+                if (!auth() || !createNewChat())
                     throw new Exception("Could not open chat");
 
             // SEND PROMPT
@@ -91,7 +84,7 @@ public class DuckDuck implements iChat{
     }
 
     @Override
-    public Boolean creatNewChat() {
+    public Boolean createNewChat() {
         try {
             if (!driver.getNavigation().loadUrlAndWait(url, 10))
                 throw new Exception("Could not load duck duck in time");

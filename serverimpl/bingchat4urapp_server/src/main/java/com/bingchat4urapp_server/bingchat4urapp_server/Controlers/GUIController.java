@@ -62,14 +62,12 @@ public class GUIController {
 
     @GetMapping("/auth")
     public ModelAndView auth() {
-        // we need to provide list of available providers
-        var authRequired = executor.getWrapper().getLlms().stream().filter(llm-> llm.getAuthRequired() && !llm.getAuthDone()).toList();
-        return new ModelAndView("auth", "authRequired", authRequired);
+        return new ModelAndView("auth", "llmList", executor.getWrapper().getLlms());
     }
 
     @PostMapping("/auth")
-    public String createAuthTask(@RequestParam String login, @RequestParam String password, @RequestParam String provider) {
-        var newTask = utils.createAuthTask(login, password, provider);
+    public String createAuthTask(@RequestParam String provider) {
+        var newTask = utils.createAuthTask(provider);
         context.save(newTask);
         return "redirect:/task/" + newTask.id;
     }

@@ -9,7 +9,7 @@ fi
 cd target || { echo "Не удалось перейти в папку target"; exit 1; }
 
 # Находим основной fat JAR файл
-jar_file=$(find . -name "llmapi4free_lib-1.1-SNAPSHOT.jar" -print -quit)
+jar_file=$(find . -name "llmapi4free_lib-1.2-SNAPSHOT.jar" -print -quit)
 if [ -z "$jar_file" ]; then
     echo "Не найден основной .jar файл в папке target"
     exit 1
@@ -19,7 +19,7 @@ fi
 mvn install:install-file -Dfile="$jar_file" \
     -DgroupId=com.vityazev_egor \
     -DartifactId=llmapi4free \
-    -Dversion=1.1 \
+    -Dversion=1.2 \
     -Dpackaging=jar \
     -Dname=llmapi4free
 
@@ -29,7 +29,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Находим JAR файл с JavaDoc
-javadoc_jar_file=$(find . -name "llmapi4free_lib-1.1-SNAPSHOT-javadoc.jar" -print -quit)
+javadoc_jar_file=$(find . -name "llmapi4free_lib-1.2-SNAPSHOT-javadoc.jar" -print -quit)
 if [ -z "$javadoc_jar_file" ]; then
     echo "Не найден файл с JavaDoc в папке target"
     exit 1
@@ -39,7 +39,7 @@ fi
 mvn install:install-file -Dfile="$javadoc_jar_file" \
     -DgroupId=com.vityazev_egor \
     -DartifactId=llmapi4free \
-    -Dversion=1.1 \
+    -Dversion=1.2 \
     -Dpackaging=jar \
     -Dclassifier=javadoc
 

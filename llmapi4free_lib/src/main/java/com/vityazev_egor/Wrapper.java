@@ -3,10 +3,10 @@ package com.vityazev_egor;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vityazev_egor.Core.CustomLogger;
-import com.vityazev_egor.LLMs.Copilot.Copilot;
 import com.vityazev_egor.LLMs.DeepSeek;
 import com.vityazev_egor.LLMs.DuckDuck;
 import com.vityazev_egor.LLMs.OpenAI;
@@ -60,16 +60,14 @@ public class Wrapper {
     }
 
     /**
-     * Authenticates with the specified LLM provider using the provided login and password.
+     * Authenticates with the specified LLM provider using Google Account.
      *
-     * @param provider The LLM provider to authenticate with.
-     * @param login The user's login credentials.
-     * @param password The user's password (if required).
+     * @param provider The LLM provider to authenticate with..
      * @return {@code true} if authentication is successful, {@code false} otherwise.
      */
-    public Boolean auth(LLMproviders provider, String login, String password){
+    public Boolean auth(LLMproviders provider){
         return llms.stream().filter(l -> l.getProvider() == provider).findFirst().map(l->{
-            Boolean result = l.getChat().auth(login, password);
+            Boolean result = l.getChat().auth();
             l.setAuthDone(result);
             return result;
         }).orElse(false);
@@ -83,7 +81,7 @@ public class Wrapper {
      */
     public Boolean createChat(LLMproviders provider){
         return llms.stream().filter(l -> l.getProvider() == provider).findFirst().map(l->{
-            Boolean result = l.getChat().creatNewChat();
+            Boolean result = l.getChat().createNewChat();
             if (!result) l.setGotError(true);
             return result;
         }).orElse(false);
@@ -126,26 +124,23 @@ public class Wrapper {
      * @return A {@link ChatAnswer} object containing the response from the LLM, or an empty {@link ChatAnswer} if no valid provider is available or if the LLM does not respond within the timeout period.
      */
     public ChatAnswer askLLM(String prompt, Integer timeOutForAnswer){
-        switch (wrapperMode) {
-            case ExamMode:
-                for (int i=0; i<llms.size(); i++){
-                    var workingLLM = getWorkingLLM();
-                    if (!workingLLM.isPresent()) {
-                        logger.error("There is no working providers available", null);
-                        return new ChatAnswer();
-                    }
-                    ChatAnswer answer = askLLM(workingLLM.get(), prompt, timeOutForAnswer);
-                    if (!answer.getCleanAnswer().isPresent()) {
-                        logger.error("LLM " + workingLLM.get().getProvider().name() + " didn't answer", null);
-                        continue;
-                    }
-                    answer.addPrefixToCleanAnswer(String.format("[Answer from %s provider]\n", workingLLM.get().getProvider().name()));
-                    return answer;
+        if (Objects.requireNonNull(wrapperMode) == WrapperMode.ExamMode) {
+            for (int i = 0; i < llms.size(); i++) {
+                var workingLLM = getWorkingLLM();
+                if (!workingLLM.isPresent()) {
+                    logger.error("There is no working providers available", null);
+                    return new ChatAnswer();
                 }
-        
-            default:
-                return getWorkingLLM().map(llm -> askLLM(llm, prompt, timeOutForAnswer)).orElse(new ChatAnswer());
+                ChatAnswer answer = askLLM(workingLLM.get(), prompt, timeOutForAnswer);
+                if (!answer.getCleanAnswer().isPresent()) {
+                    logger.error("LLM " + workingLLM.get().getProvider().name() + " didn't answer", null);
+                    continue;
+                }
+                answer.addPrefixToCleanAnswer(String.format("[Answer from %s provider]\n", workingLLM.get().getProvider().name()));
+                return answer;
+            }
         }
+        return getWorkingLLM().map(llm -> askLLM(llm, prompt, timeOutForAnswer)).orElse(new ChatAnswer());
     }
 
     /**

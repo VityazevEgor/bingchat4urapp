@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.bingchat4urapp_server</groupId>
 	<artifactId>bingchat4urapp_server</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.2-SNAPSHOT</version>
 	<name>bingchat4urapp_server</name>
 	<description>Server version of BingChat4urApp</description>
 	<properties>
@@ -72,7 +72,7 @@
 		<dependency>
 			<groupId>com.vityazev_egor</groupId>
 			<artifactId>llmapi4free</artifactId>
-			<version>1.1</version>
+			<version>1.2</version>
 		</dependency>
 
 		<dependency>

@@ -12,27 +12,11 @@
     <div class="container min-vh-100 d-flex align-items-center justify-content-center">
         <form class="text-center p-5 double-border" th:action="@{/auth}" method="post" style="width: 500px; background-color: #0a0a0a; border: 1px solid #1a1a1a;">
             <h1 class="mb-5 fw-bold">Create auth task</h1>
-            
-            <!-- Email -->
-            <div class="mb-4">
-                <input type="email" 
-                       name="login" 
-                       class="form-control input-custom" 
-                       placeholder="Login">
-            </div>
-
-            <!-- Password -->
-            <div class="mb-4">
-                <input type="password" 
-                       name="password" 
-                       class="form-control input-custom" 
-                       placeholder="Password">
-            </div>
 
             <!-- Select -->
             <div class="mb-4">
                 <select class="form-select input-custom" name="provider">
-                    <option th:each="llm: ${authRequired}" th:text="${llm.provider}" th:value="${llm.provider}"></option>
+                    <option th:each="llm: ${llmList}" th:text="${llm.provider}" th:value="${llm.provider}"></option>
                 </select>
             </div>
 

@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping(path = "/api/promtChache/")
-public class PromtCacheController {
+@RequestMapping(path = "/api/promptCache/")
+public class PromptCacheController {
     @Autowired
     private PromtCacheRepo promtCacheRepo;
 
@@ -26,18 +26,18 @@ public class PromtCacheController {
     @NoArgsConstructor
     @AllArgsConstructor
     private static class SaveRequest {
-        public String promt;
+        public String prompt;
     }
 
     @PostMapping("update")
-    public Boolean updatePromtChache(@RequestBody SaveRequest promt) {
+    public Boolean updatePromptCache(@RequestBody SaveRequest prompt) {
         if (promtCacheRepo.count() == 0) {
-            promtCacheRepo.save(new PromtCache(promt.getPromt()));
+            promtCacheRepo.save(new PromtCache(prompt.getPrompt()));
             return true;
         }
 
         var promtCache = promtCacheRepo.findAll().get(0);
-        promtCache.setPromt(promt.getPromt());
+        promtCache.setPromt(prompt.getPrompt());
         promtCacheRepo.save(promtCache);
         return true;
     }    
