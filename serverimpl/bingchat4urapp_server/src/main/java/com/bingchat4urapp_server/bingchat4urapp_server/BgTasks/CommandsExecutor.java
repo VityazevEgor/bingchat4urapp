@@ -140,7 +140,7 @@ public class CommandsExecutor {
 
     private void processPromptTask(TaskModel task) {
         logger.info("Got prompt task");
-        String prompt = task.data.get("promt");
+        String prompt = task.data.get("prompt");
         Integer timeOutForAnswer = Integer.parseInt(task.data.get("timeOutForAnswer"));
         try{
             // var chatAnswer = chat.askLLM(prompt, timeOutForAnswer);

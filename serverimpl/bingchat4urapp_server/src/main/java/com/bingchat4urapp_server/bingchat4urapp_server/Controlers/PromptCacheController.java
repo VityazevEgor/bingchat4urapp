@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bingchat4urapp_server.bingchat4urapp_server.Models.PromtCache;
-import com.bingchat4urapp_server.bingchat4urapp_server.Models.PromtCacheRepo;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.PromptCache;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.PromptCacheRepo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping(path = "/api/promptCache/")
 public class PromptCacheController {
     @Autowired
-    private PromtCacheRepo promtCacheRepo;
+    private PromptCacheRepo promptCacheRepo;
 
     @Getter
     @Setter
@@ -31,14 +31,14 @@ public class PromptCacheController {
 
     @PostMapping("update")
     public Boolean updatePromptCache(@RequestBody SaveRequest prompt) {
-        if (promtCacheRepo.count() == 0) {
-            promtCacheRepo.save(new PromtCache(prompt.getPrompt()));
+        if (promptCacheRepo.count() == 0) {
+            promptCacheRepo.save(new PromptCache(prompt.getPrompt()));
             return true;
         }
 
-        var promtCache = promtCacheRepo.findAll().get(0);
-        promtCache.setPromt(prompt.getPrompt());
-        promtCacheRepo.save(promtCache);
+        var promptCache = promptCacheRepo.findAll().get(0);
+        promptCache.setPrompt(prompt.getPrompt());
+        promptCacheRepo.save(promptCache);
         return true;
     }    
 }

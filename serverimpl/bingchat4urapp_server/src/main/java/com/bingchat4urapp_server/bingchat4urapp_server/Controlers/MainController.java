@@ -72,11 +72,11 @@ public class MainController {
         });
     }
     
-    @PostMapping("/sendpromt")
-    public ResponseEntity<?> createPromptTask(@Valid @RequestBody RequestsModels.PromtRequest promptRequest, BindingResult bindingResult) {
+    @PostMapping("/sendprompt")
+    public ResponseEntity<?> createPromptTask(@Valid @RequestBody RequestsModels.PromptRequest promptRequest, BindingResult bindingResult) {
         return processBindingResult(bindingResult).orElseGet(()->{
             try {
-                var model = utils.createPromtTask(promptRequest);
+                var model = utils.createPromptTask(promptRequest);
                 taskRepo.save(model);
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .body(model.id);

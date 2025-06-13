@@ -22,11 +22,11 @@ public class RequestsModels {
 
     @Getter
     @Setter
-    public static class PromtRequest {
+    public static class PromptRequest {
 
         @NotBlank(message = "Prompt is mandatory")
         @Size(min = 4, max = 4000, message = "Prompt must be less than 4000 characters")
-        private String promt;
+        private String prompt;
 
         @NotNull(message = "Timeout for answer is mandatory")
         @Min(value = 30, message = "Timeout for answer must be at least 30 seconds")

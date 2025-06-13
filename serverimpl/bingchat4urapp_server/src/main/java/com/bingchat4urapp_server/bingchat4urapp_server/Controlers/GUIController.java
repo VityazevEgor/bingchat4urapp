@@ -14,7 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.bingchat4urapp_server.bingchat4urapp_server.BgTasks.CommandsExecutor;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskRepo;
-import com.bingchat4urapp_server.bingchat4urapp_server.Models.PromtCacheRepo;
+import com.bingchat4urapp_server.bingchat4urapp_server.Models.PromptCacheRepo;
 import com.bingchat4urapp_server.bingchat4urapp_server.Models.TaskModel;
 import com.vityazev_egor.Wrapper.LLMproviders;
 
@@ -25,7 +25,7 @@ public class GUIController {
     private TaskRepo context;
 
     @Autowired
-    private PromtCacheRepo promtCacheRepo;
+    private PromptCacheRepo promptCacheRepo;
 
     @Autowired
     private Utils utils;
@@ -39,23 +39,23 @@ public class GUIController {
     public ModelAndView main(){
         var model = new ModelAndView("main");
 
-        var promtModels = context.findLatestFinishedPromtTasks();
-        for (TaskModel currentPromt : promtModels) {
-            if (currentPromt.result != null && currentPromt.result.length() >60){
-                currentPromt.result = currentPromt.result.substring(0,60);
+        var promptModels = context.findLatestFinishedPromptTasks();
+        for (TaskModel currentPrompt : promptModels) {
+            if (currentPrompt.result != null && currentPrompt.result.length() >60){
+                currentPrompt.result = currentPrompt.result.substring(0,60);
             }
         }
-        model.addObject("latestPromts", promtModels);
+        model.addObject("latestPrompts", promptModels);
         String aiInUse = executor.getWrapper().getWorkingLLM().map(llm -> llm.getChat().getName()).orElse("None");
         model.addObject("aiInUse", aiInUse);
 
-        model.addObject("promtChache", promtCacheRepo.count() == 0 ? "" : promtCacheRepo.findAll().get(0).getPromt());
+        model.addObject("promptCache", promptCacheRepo.count() == 0 ? "" : promptCacheRepo.findAll().get(0).getPrompt());
         return model;
     }
 
     @GetMapping("/ask")
-    public ModelAndView ask(@RequestParam(name = "p") String promt) {
-        var newTask = utils.createPromtTask(promt, "120");
+    public ModelAndView ask(@RequestParam(name = "p") String prompt) {
+        var newTask = utils.createPromptTask(prompt, "120");
         context.save(newTask);
         return new ModelAndView("redirect:/task/" + newTask.id);
     }
@@ -80,11 +80,11 @@ public class GUIController {
     }
 
     @PostMapping("/send")
-    public String sendPromt(@RequestParam String promt){
+    public String sendPrompt(@RequestParam String prompt){
         // if (Shared.examMode){
-        //     promt = promt;
+        //     prompt = prompt;
         // }
-        var newTask = utils.createPromtTask(promt, "120");
+        var newTask = utils.createPromptTask(prompt, "120");
         context.save(newTask);
         return "redirect:/task/" + newTask.id;
     }

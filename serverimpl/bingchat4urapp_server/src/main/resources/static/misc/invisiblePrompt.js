@@ -1,9 +1,9 @@
 let message = "";
 let recording = false;
 async function sendPrompt(prompt) {
-    const url = window.location.origin + "/api/sendpromt";
+    const url = window.location.origin + "/api/sendprompt";
     const params = {
-        promt: prompt,
+        prompt: prompt,
         timeOutForAnswer: "120"
     };
     try {
