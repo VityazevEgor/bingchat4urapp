@@ -70,7 +70,7 @@ public class DuckDuck implements iChat{
             var answerBlocks = driver.findElements(By.cssSelector("." + answerDivClass));
             if (answerBlocks.isEmpty())
                 throw new Exception("Could not find answer div");
-            var latestAnswer = answerBlocks.get(answerBlocks.size()-1);
+            var latestAnswer = answerBlocks.getLast();
             return new ChatAnswer(
                     latestAnswer.getText(),
                     latestAnswer.getHTMLContent(),

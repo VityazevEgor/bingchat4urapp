@@ -9,6 +9,7 @@ import java.util.Optional;
 import com.vityazev_egor.Core.CustomLogger;
 import com.vityazev_egor.LLMs.DeepSeek;
 import com.vityazev_egor.LLMs.DuckDuck;
+import com.vityazev_egor.LLMs.Gemini;
 import com.vityazev_egor.LLMs.OpenAI;
 import com.vityazev_egor.Models.ChatAnswer;
 import com.vityazev_egor.Models.LLM;
@@ -27,7 +28,8 @@ public class Wrapper {
         Copilot,
         DuckDuck,
         OpenAI,
-        DeepSeek
+        DeepSeek,
+        Gemini
     }
 
     public enum WrapperMode{
@@ -49,11 +51,10 @@ public class Wrapper {
         this.logger = new CustomLogger(Wrapper.class.getName());
         this.driver.getXdo().calibrate();
         this.llms = Arrays.asList(
-//            new LLM(new Copilot(driver), true, LLMproviders.Copilot),
-            // auth required == false for OpenAI only means that you do not need to call "auth" method. You still have to log in in into your Google account
             new LLM(new OpenAI(driver),false, LLMproviders.OpenAI),
             new LLM(new DuckDuck(driver),false, LLMproviders.DuckDuck),
-            new LLM(new DeepSeek(driver), false, LLMproviders.DeepSeek)
+            new LLM(new DeepSeek(driver), false, LLMproviders.DeepSeek),
+            new LLM(new Gemini(driver), false, LLMproviders.Gemini)
         );
         this.preferredProvider = preferredProvider;
         this.wrapperMode = wrapperMode;
@@ -127,12 +128,12 @@ public class Wrapper {
         if (Objects.requireNonNull(wrapperMode) == WrapperMode.ExamMode) {
             for (int i = 0; i < llms.size(); i++) {
                 var workingLLM = getWorkingLLM();
-                if (!workingLLM.isPresent()) {
+                if (workingLLM.isEmpty()) {
                     logger.error("There is no working providers available", null);
                     return new ChatAnswer();
                 }
                 ChatAnswer answer = askLLM(workingLLM.get(), prompt, timeOutForAnswer);
-                if (!answer.getCleanAnswer().isPresent()) {
+                if (answer.getCleanAnswer().isEmpty()) {
                     logger.error("LLM " + workingLLM.get().getProvider().name() + " didn't answer", null);
                     continue;
                 }
@@ -161,7 +162,7 @@ public class Wrapper {
         }
         
         return workingLLMs.stream().filter(llm -> llm.getProvider() == preferredProvider).findFirst()
-                .or(() -> Optional.ofNullable(workingLLMs.get(0)));
+                .or(() -> Optional.ofNullable(workingLLMs.getFirst()));
 
     }
 

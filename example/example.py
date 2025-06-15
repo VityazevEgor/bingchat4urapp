@@ -61,7 +61,8 @@ def select_provider():
     providers = {
         "1": "OpenAI",
         "2": "DeepSeek", 
-        "3": "DuckDuck"
+        "3": "DuckDuck",
+        "4": "Gemini"
     }
     
     print(f"{Colors.OKBLUE}Available providers:{Colors.ENDC}")
@@ -69,13 +70,13 @@ def select_provider():
         print(f"  {Colors.BOLD}{key}.{Colors.ENDC} {value}")
     
     while True:
-        choice = input(f"\n{Colors.OKCYAN}Select provider (1-3): {Colors.ENDC}").strip()
+        choice = input(f"\n{Colors.OKCYAN}Select provider (1-4): {Colors.ENDC}").strip()
         if choice in providers:
             selected_provider = providers[choice]
             print_success(f"Selected provider: {selected_provider}")
             return selected_provider
         else:
-            print_error("Invalid choice. Please select 1, 2, or 3.")
+            print_error("Invalid choice. Please select 1, 2, 3, or 4.")
 
 def set_preferred_provider(provider):
     """Set the preferred provider on the server"""

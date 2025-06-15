@@ -114,4 +114,21 @@ class ApplicationTest {
         wrapper.exit();
         assertTrue(result);
     }
+
+    @Test
+    void testGeminiAuth() throws IOException{
+        var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.Gemini, WrapperMode.Normal);
+        var result = wrapper.auth(LLMproviders.Gemini);
+        wrapper.exit();
+        assertTrue(result);
+    }
+
+    @Test
+    void testGemini() throws IOException{
+        var wrapper = new Wrapper("127.0.0.1:2080", LLMproviders.Gemini, WrapperMode.Normal);
+        var answer = wrapper.askLLM("Напиши hello world \n на Java",120);
+        wrapper.exit();
+        System.out.println(answer.getCleanAnswer());
+        assertTrue(answer.getCleanAnswer().isPresent());
+    }
 }

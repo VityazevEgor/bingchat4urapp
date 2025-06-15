@@ -91,7 +91,7 @@ public class OpenAI implements iChat{
             var answerBlocks = driver.findElements(By.cssSelector("div[data-message-author-role='assistant']"));
             if (answerBlocks.isEmpty())
                 throw new Exception("Could not get answer from OpenAI");
-            var latestAnswer = answerBlocks.get(answerBlocks.size()-1);
+            var latestAnswer = answerBlocks.getLast();
             return new ChatAnswer(
                     latestAnswer.getText(),
                     latestAnswer.getHTMLContent(),

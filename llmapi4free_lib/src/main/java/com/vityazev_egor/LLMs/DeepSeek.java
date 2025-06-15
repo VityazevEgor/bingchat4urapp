@@ -109,7 +109,7 @@ public class DeepSeek implements iChat{
             var answerDivs = driver.findElements(By.cssSelector("div.ds-markdown.ds-markdown--block"));
             if (answerDivs.isEmpty())
                 throw new RuntimeException("No answer received.");
-            var lastestAnswer = answerDivs.get(answerDivs.size() - 1);
+            var lastestAnswer = answerDivs.getLast();
             return new ChatAnswer(
                 lastestAnswer.getText(),
                 lastestAnswer.getHTMLContent(),
