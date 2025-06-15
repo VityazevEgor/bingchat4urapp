@@ -20,7 +20,7 @@ public class TaskModel {
     @GeneratedValue(strategy = GenerationType.AUTO)
     public Integer id;
 
-    // 1 - auth Bing. 2 - send promt to bing
+    // 1 - auth Bing. 2 - send prompt to bing
     public Integer type;
 
     // Json of taks parametrs

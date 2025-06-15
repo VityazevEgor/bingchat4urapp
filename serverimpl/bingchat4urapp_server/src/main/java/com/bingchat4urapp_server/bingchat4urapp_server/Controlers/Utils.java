@@ -35,18 +35,18 @@ public class Utils {
         }
     }
 
-    public TaskModel createPromtTask(String promt, String timeOutForAnswer){
-        Map<String, String> promtTask = Map.of("promt", promt, "timeOutForAnswer", timeOutForAnswer);
+    public TaskModel createPromptTask(String prompt, String timeOutForAnswer){
+        Map<String, String> promptTask = Map.of("prompt", prompt, "timeOutForAnswer", timeOutForAnswer);
 
         var newTask = new TaskModel();
         newTask.type = 2;
-        newTask.data = promtTask;
+        newTask.data = promptTask;
 
         return newTask;
     }
 
-    public TaskModel createAuthTask(String login, String password, String provider){
-        Map<String, String> authTask = Map.of("login", login, "password", password, "provider", provider);
+    public TaskModel createAuthTask(String provider){
+        Map<String, String> authTask = Map.of("provider", provider);
         var newTask = new TaskModel();
         newTask.type = 1;
         newTask.data = authTask;
@@ -60,11 +60,11 @@ public class Utils {
         return newTask;
     }
 
-    public TaskModel createPromtTask(RequestsModels.PromtRequest promptRequest) {
-        return createPromtTask(promptRequest.getPromt(), promptRequest.getTimeOutForAnswer().toString());
+    public TaskModel createPromptTask(RequestsModels.PromptRequest promptRequest) {
+        return createPromptTask(promptRequest.getPrompt(), promptRequest.getTimeOutForAnswer().toString());
     }
 
     public TaskModel createAuthTask(RequestsModels.AuthRequest authRequest){
-        return createAuthTask(authRequest.getLogin(), authRequest.getPassword(), authRequest.getProvider().toString());
+        return createAuthTask(authRequest.getProvider().toString());
     }
 }

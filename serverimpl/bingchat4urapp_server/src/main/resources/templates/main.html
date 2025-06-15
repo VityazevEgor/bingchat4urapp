@@ -20,7 +20,7 @@
                     <a th:href="@{~/newchat}" style="text-align: center;" class="btn btn-custom side-button w-100 rounded-end-0">Create new chat</a>
                 </div>
                 <div class="col-12 col-md-10 mb-2 mb-md-0">
-                    <textarea th:text="${promtChache}" class="form-control textarea-custom w-100 rounded-0" name="promt" id="promtArea" placeholder="Enter your message here..." style="min-height: 200px;"></textarea>
+                    <textarea th:text="${promptCache}" class="form-control textarea-custom w-100 rounded-0" name="prompt" id="promptArea" placeholder="Enter your message here..." style="min-height: 200px;"></textarea>
                 </div>
                 <div class="col-12 col-md-1">
                     <button class="btn btn-custom side-button w-100 rounded-start-0" type="submit">Send</button>
@@ -37,9 +37,9 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:if="${latestPromts != null}" th:each="promt: ${latestPromts}">
-                            <td th:text="${promt.result}">Question 1</td>
-                            <td class="text-end"><a class="btn btn-outline-custom w-100" th:href="@{'~/task/' + ${promt.id}}">View</a></td>
+                        <tr th:if="${latestPrompts != null}" th:each="prompt: ${latestPrompts}">
+                            <td th:text="${prompt.result}">Question 1</td>
+                            <td class="text-end"><a class="btn btn-outline-custom w-100" th:href="@{'~/task/' + ${prompt.id}}">View</a></td>
                         </tr>
                     </tbody>
                 </table>
@@ -50,19 +50,19 @@
     <script th:src="@{~/bootstrap.bundle.min.js}"></script>
     <script th:src="@{~/stars.js}"></script>
     <script>
-        document.getElementById('promtArea').addEventListener('input', () => {
-            const text = document.getElementById('promtArea').value;
+        document.getElementById('promptArea').addEventListener('input', () => {
+            const text = document.getElementById('promptArea').value;
             saveText(text);
         });
 
         function saveText(text) {
-            fetch('/api/promtChache/update', {
+            fetch('/api/promptCache/update', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    promt: text
+                    prompt: text
                 })
             })
             .then(response => response.json())

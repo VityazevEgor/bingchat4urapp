@@ -127,7 +127,7 @@ public class CommandsExecutor {
         Boolean result = false;
         try{
             LLMproviders provider = LLMproviders.valueOf(task.data.get("provider"));
-            result = wrapper.auth(provider, task.data.get("login"), task.data.get("password"));
+            result = wrapper.auth(provider);
         }
         catch (Exception ex){
             logger.error("Got error in auth task", ex);
@@ -140,19 +140,19 @@ public class CommandsExecutor {
 
     private void processPromptTask(TaskModel task) {
         logger.info("Got prompt task");
-        String prompt = task.data.get("promt");
+        String prompt = task.data.get("prompt");
         Integer timeOutForAnswer = Integer.parseInt(task.data.get("timeOutForAnswer"));
         try{
             // var chatAnswer = chat.askLLM(prompt, timeOutForAnswer);
             var chatAnswer = wrapper.askLLM(prompt, timeOutForAnswer);
             task.isFinished = true;
-            task.gotError = !chatAnswer.getCleanAnswer().isPresent();
+            task.gotError = chatAnswer.getCleanAnswer().isEmpty();
             task.result = chatAnswer.getCleanAnswer().isPresent() ? chatAnswer.getCleanAnswer().get() : null;
             task.htmlResult = chatAnswer.getHtmlAnswer().isPresent() ? chatAnswer.getHtmlAnswer().get() : null;
 
             // save answer image
             if (chatAnswer.getAnswerImage().isPresent()){
-                String imageName = UUID.randomUUID().toString()+".png";
+                String imageName = UUID.randomUUID() +".png";
                 ImageIO.write(chatAnswer.getAnswerImage().get(), "png", Paths.get(Shared.imagesPath.toString(), imageName).toFile());
                 task.imageResult = imageName;
             }

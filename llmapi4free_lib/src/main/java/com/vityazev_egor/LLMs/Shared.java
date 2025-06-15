@@ -5,11 +5,11 @@ import com.vityazev_egor.Core.WaitTask;
 import com.vityazev_egor.Core.WebElements.WebElement;
 
 public class Shared {
-    public static Boolean waitForElements(Boolean checkForClicable, WebElement... elements){
-        return waitForElements(checkForClicable, 8, elements);
+    public static Boolean waitForElements(Boolean checkForClickable, WebElement... elements){
+        return waitForElements(checkForClickable, 8, elements);
     }
 
-    public static Boolean waitForElements(Boolean checkForClicable, Integer timeOutSeconds, WebElement... elements){
+    public static Boolean waitForElements(Boolean checkForClickable, Integer timeOutSeconds, WebElement... elements){
         var waitTask = new WaitTask() {
 
             @Override
@@ -17,8 +17,8 @@ public class Shared {
                 for (WebElement element : elements){
                     if (!element.isExists()) return false;
                 }
-                if (checkForClicable){
-                    if (!elements[elements.length-1].isClickable()) return false;
+                if (checkForClickable){
+                    return elements[elements.length - 1].isClickable();
                 }
                 return true;
             }
@@ -28,9 +28,9 @@ public class Shared {
         return waitTask.execute(timeOutSeconds, 400);
     }
 
-    public static Boolean waitForAnswer(NoDriver driver, Integer timeOutForAnswer, Integer delayMiliseconds){
+    public static Boolean waitForAnswer(NoDriver driver, Integer timeOutForAnswer, Integer delayMilliseconds){
         var waitTask = new WaitTask() {
-            private String html = driver.getHtml().map(result -> result).orElse("");
+            private String html = driver.getHtml().orElse("");
 
             @Override
             public Boolean condition() {
@@ -47,8 +47,8 @@ public class Shared {
             }
             
         };
-        com.vityazev_egor.Core.Shared.sleep(delayMiliseconds);
-        return waitTask.execute(timeOutForAnswer, delayMiliseconds);
+        com.vityazev_egor.Core.Shared.sleep(delayMilliseconds);
+        return waitTask.execute(timeOutForAnswer, delayMilliseconds);
     }
 
     public static class ProviderException extends Exception {

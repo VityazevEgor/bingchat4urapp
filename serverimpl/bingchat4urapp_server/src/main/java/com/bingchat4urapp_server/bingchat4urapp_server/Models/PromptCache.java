@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Entity
 @NoArgsConstructor
-public class PromtCache {
+public class PromptCache {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Getter
@@ -18,9 +18,9 @@ public class PromtCache {
 
     @Getter
     @Setter
-    private String promt;
+    private String prompt;
 
-    public PromtCache(String promt) {
-        this.promt = promt;
+    public PromptCache(String prompt) {
+        this.prompt = prompt;
     }
 }

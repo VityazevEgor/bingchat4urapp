@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.vityazev_egor.Models.LLM;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -72,24 +73,24 @@ public class MainController {
         });
     }
     
-    @PostMapping("/sendpromt")
-    public ResponseEntity<?> createPromptTask(@Valid @RequestBody RequestsModels.PromtRequest promptRequest, BindingResult bindingResult) {
+    @PostMapping("/sendprompt")
+    public ResponseEntity<?> createPromptTask(@Valid @RequestBody RequestsModels.PromptRequest promptRequest, BindingResult bindingResult) {
         return processBindingResult(bindingResult).orElseGet(()->{
             try {
-                var model = utils.createPromtTask(promptRequest);
+                var model = utils.createPromptTask(promptRequest);
                 taskRepo.save(model);
                 return ResponseEntity.status(HttpStatus.CREATED)
                         .body(model.id);
             } catch (Exception e) {
                 logger.error("Error while creating prompt task", e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Failed to create prompt task");
+                        .body(-1);
             }
         });
     }
 
     @PostMapping("/createchat")
-    public ResponseEntity<?> createChat() {
+    public ResponseEntity<Integer> createChat() {
         try {
             var model = utils.createNewChatTask();
             taskRepo.save(model);
@@ -98,14 +99,14 @@ public class MainController {
         } catch (Exception e) {
             logger.error("Error while creating chat task", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to create chat task");
+                    .body(-1);
         }
     }
 
     @RequestMapping(value = "get/{id}", method = RequestMethod.GET)
-    public ResponseEntity<?> GetTask(@PathVariable Integer id) {
+    public ResponseEntity<TaskModel> getTask(@PathVariable Integer id) {
         return taskRepo.findById(id)
-            .map(task-> ResponseEntity.ok(task))
+            .map(ResponseEntity::ok)
             .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
 
@@ -114,14 +115,14 @@ public class MainController {
         return ResponseEntity.ok(executor.getWrapper().getLlms());
     }
 
-    @PostMapping("/setPreferedProvider")
-    public ResponseEntity<?> setPreferedProvider(@Valid @RequestBody RequestsModels.SetPreferedRequest setPreferedRequest, BindingResult bindingResult) {
+    @PostMapping("/setPreferredProvider")
+    public ResponseEntity<?> setPreferredProvider(@Valid @RequestBody RequestsModels.SetPreferedRequest setPreferedRequest, BindingResult bindingResult) {
         return processBindingResult(bindingResult).orElseGet(()->{
             try {
                 executor.getWrapper().setPreferredProvider(setPreferedRequest.getProvider());
                 return ResponseEntity.ok().body("Done!");
             } catch (Exception e) {
-                logger.error("Error while setting prefered provider", e);
+                logger.error("Error while setting preferred provider", e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body("Failed to set provider. Check server console for details");
             }
@@ -136,7 +137,7 @@ public class MainController {
     }
 
     @GetMapping("/getWorkingLLM")
-    public ResponseEntity<?> getWorkingLLM(){
+    public ResponseEntity<Optional<LLM>> getWorkingLLM(){
         return ResponseEntity.ok(executor.getWrapper().getWorkingLLM());
     }
 

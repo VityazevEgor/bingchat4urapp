@@ -24,28 +24,19 @@ public class OpenAI implements iChat{
      *
      * @return TRUE if the user is logged in, FALSE otherwise
      */
-    private Boolean isLoggedIn() throws Exception {
-        var profileButton = driver.findElement(By.cssSelector("button[data-testid='profile-button']"));
-        try {
-            profileButton.waitToAppear(10, 100);
-            return true;
-        } catch (Exception ex) {
-            logger.warning("User is not logged into openAI account");
-            return false;
-        }
+    private Boolean isLoggedIn() {
+        var profileImage = driver.findElement(By.className("rounded-xs"));
+        return Shared.waitForElements(false, 10, profileImage);
     }
 
     /**
-     * Authenticates a user with the given login and password.
-     *
-     * @param login    The user's login credentials.
-     * @param password The user's password.
+     * Authenticates a user with Google account.
      * @return true if authentication is successful, false otherwise.
      */
     @Override
-    public Boolean auth(String login, String password) {
+    public Boolean auth() {
         try {
-            if (!creatNewChat())
+            if (!createNewChat())
                 throw new Exception("Can't create new chat");
 
             if (isLoggedIn())
@@ -82,7 +73,7 @@ public class OpenAI implements iChat{
             // MAKE SURE THAT CHAT IS OPENED
             Boolean chatIsOpened = driver.getHtml().map(html->html.contains("ChatGPT")).orElse(false);
             if (!chatIsOpened){
-                if (!auth(null, null))
+                if (!auth())
                     throw new Exception("Can't open chat");
             }
 
@@ -98,15 +89,14 @@ public class OpenAI implements iChat{
             if (!Shared.waitForAnswer(driver, timeOutForAnswer, 2000))
                 throw new Exception("Can't get answer from AI in time");
             var answerBlocks = driver.findElements(By.cssSelector("div[data-message-author-role='assistant']"));
-            if (answerBlocks.size() == 0)
+            if (answerBlocks.isEmpty())
                 throw new Exception("Could not get answer from OpenAI");
-            var latestAnswer = answerBlocks.get(answerBlocks.size()-1);
-            var chatAnswer = new ChatAnswer(
+            var latestAnswer = answerBlocks.getLast();
+            return new ChatAnswer(
                     latestAnswer.getText(),
                     latestAnswer.getHTMLContent(),
                     driver.getMisc().captureScreenshot()
             );
-            return chatAnswer;
         }
         catch (Exception ex){
             logger.error("Error occurred while processing the prompt: " + ex.getMessage(), ex);
@@ -120,7 +110,7 @@ public class OpenAI implements iChat{
      * @return true if the chat was successfully created or no CAPTCHA needed, false otherwise
      */
     @Override
-    public Boolean creatNewChat() {
+    public Boolean createNewChat() {
         driver.getNavigation().loadUrlAndWait(OpenAI.url, 10);
         var cfPleaseWait = driver.findElement(By.id("cf-please-wait"));
 

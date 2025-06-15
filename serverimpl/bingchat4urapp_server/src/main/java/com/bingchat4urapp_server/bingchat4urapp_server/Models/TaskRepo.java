@@ -20,5 +20,5 @@ public interface TaskRepo extends JpaRepository<TaskModel, Integer> {
     TaskModel findLastFinishedTask();
 
     @Query("SELECT t FROM TaskModel t WHERE t.isFinished = true AND t.gotError = false AND t.type = 2 ORDER BY t.id DESC LIMIT 5")
-    List<TaskModel> findLatestFinishedPromtTasks();
+    List<TaskModel> findLatestFinishedPromptTasks();
 }
